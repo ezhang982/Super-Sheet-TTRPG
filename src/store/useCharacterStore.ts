@@ -369,6 +369,28 @@ export const useCharacterStore = create<CharacterStore>()(
         });
       },
 
+      updateBlockTitle: (blockId: string, title: string) => {
+        const { character } = get();
+        const block = character.blocks[blockId];
+        if (!block) return;
+
+        const updatedBlock = {
+          ...block,
+          title,
+        } as Block;
+
+        set({
+          character: {
+            ...character,
+            blocks: {
+              ...character.blocks,
+              [blockId]: updatedBlock,
+            },
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
       // ---- Theme ----
       setGlobalTheme: (patch: Partial<GlobalTheme>) => {
         const { character } = get();

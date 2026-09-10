@@ -59,6 +59,7 @@ export interface CharacterStore {
   updateBlockData: (blockId: string, patch: Partial<Block["data"]> | Record<string, unknown>) => void;
   updateBlockStyle: (blockId: string, patch: Partial<BlockStyle>) => void;
   updateBlockTags: (blockId: string, tags: string[]) => void;
+  updateBlockTitle: (blockId: string, title: string) => void;
 
   // ---- Theme ----
   setGlobalTheme: (patch: Partial<GlobalTheme>) => void;

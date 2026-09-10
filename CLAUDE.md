@@ -156,13 +156,13 @@ keep multi-session AI-assisted work from drifting.
 - **Gate:** can create a character, drag/resize an empty block, reload the
   page and have it persist, export/import a JSON round-trip.
 
-### ⬜ Phase 2 — Core Primitives & Content Display
-- [ ] Install: `react-markdown`
-- [ ] Tracker (current/max/temp, +/- steppers)
-- [ ] Pip Matrix (click-to-expend rows)
-- [ ] Stat Pill (score + modifier display, no click-to-roll)
-- [ ] Feature Card (title, badge, tags, markdown, optional embedded tracker)
-- [ ] Notes Block (markdown view/edit)
+### ✅ Phase 2 — Core Primitives & Content Display
+- [x] Install: `react-markdown`
+- [x] Tracker (current/max/temp, +/- steppers, direct numeric input)
+- [x] Pip Matrix (click-to-expend rows, add/remove rows)
+- [x] Stat Pill (score + modifier display, no click-to-roll)
+- [x] Feature Card (title, badge, tags, markdown, embedded tracker)
+- [x] Notes Block (markdown view/edit with preview toggle)
 - **Gate:** all 5 primitives render and edit correctly in both modes.
 
 ### ⬜ Phase 3 — Multi-Tab System & Semantic Tag Engine

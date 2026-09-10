@@ -1,6 +1,11 @@
-import React, { type CSSProperties } from "react";
+import React, { useState, type CSSProperties } from "react";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { Block } from "../types/schema";
+import { TrackerBlock } from "./primitives/TrackerBlock";
+import { PipMatrixBlock } from "./primitives/PipMatrixBlock";
+import { StatGroupBlock } from "./primitives/StatGroupBlock";
+import { FeatureCardBlock } from "./primitives/FeatureCardBlock";
+import { NotesBlock } from "./primitives/NotesBlock";
 
 interface BlockContainerProps {
   block: Block;
@@ -13,6 +18,13 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
   const moveBlockToTab = useCharacterStore((state) => state.moveBlockToTab);
   const updateBlockData = useCharacterStore((state) => state.updateBlockData);
+  const updateBlockTags = useCharacterStore((state) => state.updateBlockTags);
+  const updateBlockTitle = useCharacterStore((state) => state.updateBlockTitle);
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState(block.title);
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [tagInput, setTagInput] = useState("");
 
   // Compute block-level styles falling back to global theme
   const blockStyle: CSSProperties = {
@@ -29,99 +41,76 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
 
   const otherTabs = character.tabs.filter((t) => t.id !== tabId);
 
-  // Quick interactive preview for Phase 1 testing
-  const renderPrimitivePreview = () => {
+  const handleCommitTitle = () => {
+    if (titleInput.trim()) {
+      updateBlockTitle(block.id, titleInput.trim());
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleAddTag = () => {
+    let clean = tagInput.trim();
+    if (!clean) {
+      setIsAddingTag(false);
+      return;
+    }
+    if (!clean.startsWith("#")) {
+      clean = `#${clean}`;
+    }
+    if (!block.tags.includes(clean)) {
+      updateBlockTags(block.id, [...block.tags, clean]);
+    }
+    setTagInput("");
+    setIsAddingTag(false);
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    updateBlockTags(block.id, block.tags.filter((t) => t !== tagToRemove));
+  };
+
+  // Render the dedicated primitive component based on block.type
+  const renderPrimitive = () => {
     switch (block.type) {
-      case "tracker": {
-        const data = block.data;
+      case "tracker":
         return (
-          <div className="preview-tracker">
-            <div className="tracker-values">
-              <span className="current-val">{data.current}</span>
-              <span className="divider">/</span>
-              <span className="max-val">{data.max}</span>
-              {data.temp ? <span className="temp-val">(+{data.temp})</span> : null}
-            </div>
-            {mode === "play" && (
-              <div className="tracker-quick-steppers">
-                <button
-                  type="button"
-                  onClick={() => updateBlockData(block.id, { current: data.current - data.step })}
-                >
-                  -
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateBlockData(block.id, { current: data.current + data.step })}
-                >
-                  +
-                </button>
-              </div>
-            )}
-          </div>
+          <TrackerBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
         );
-      }
-      case "stat_group": {
-        const data = block.data;
+      case "pip_array":
         return (
-          <div className="preview-stats">
-            {data.stats.map((stat, idx) => (
-              <div key={idx} className="stat-pill">
-                <div className="stat-label">{stat.label}</div>
-                <div className="stat-score">{stat.score}</div>
-                <div className="stat-sub">{stat.sub}</div>
-              </div>
-            ))}
-          </div>
+          <PipMatrixBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
         );
-      }
-      case "card": {
-        const data = block.data;
+      case "stat_group":
         return (
-          <div className="preview-card">
-            {data.badge && <span className="card-badge">{data.badge}</span>}
-            <p className="card-description">{data.description}</p>
-            {data.tracker?.enabled && (
-              <div className="card-tracker-badge">
-                Usage: {data.tracker.current} / {data.tracker.max}
-              </div>
-            )}
-          </div>
+          <StatGroupBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
         );
-      }
-      case "pip_array": {
-        const data = block.data;
+      case "card":
         return (
-          <div className="preview-pips">
-            {data.rows.map((row, rIdx) => (
-              <div key={rIdx} className="pip-row">
-                <span className="pip-row-label">{row.label}:</span>
-                <div className="pip-list">
-                  {Array.from({ length: row.total }).map((_, pIdx) => {
-                    const isExpended = pIdx < row.expended;
-                    return (
-                      <span
-                        key={pIdx}
-                        className={`pip ${isExpended ? "expended" : "filled"}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+          <FeatureCardBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
         );
-      }
-      case "notes": {
-        const data = block.data;
+      case "notes":
         return (
-          <div className="preview-notes">
-            <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: "0.85rem" }}>
-              {data.markdown}
-            </pre>
-          </div>
+          <NotesBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
         );
-      }
     }
   };
 
@@ -141,20 +130,84 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
               ⠿
             </span>
           )}
-          <h3 className="block-title">{block.title}</h3>
+
+          {isEditingTitle && mode === "edit" ? (
+            <input
+              type="text"
+              className="block-title-input"
+              value={titleInput}
+              autoFocus
+              onChange={(e) => setTitleInput(e.target.value)}
+              onBlur={handleCommitTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCommitTitle();
+                if (e.key === "Escape") setIsEditingTitle(false);
+              }}
+            />
+          ) : (
+            <h3
+              className="block-title"
+              onDoubleClick={() => {
+                if (mode === "edit") {
+                  setTitleInput(block.title);
+                  setIsEditingTitle(true);
+                }
+              }}
+              title={mode === "edit" ? "Double-click to edit title" : ""}
+            >
+              {block.title}
+            </h3>
+          )}
         </div>
 
         <div className="block-header-right">
-          {block.tags.length > 0 && (
-            <div className="block-tags">
-              {block.tags.map((t, idx) => (
-                <span key={idx} className="tag-badge">
-                  {t}
-                </span>
-              ))}
-            </div>
-          )}
+          {/* Tags Section */}
+          <div className="block-tags">
+            {block.tags.map((t, idx) => (
+              <span key={idx} className="tag-badge">
+                {t}
+                {mode === "edit" && (
+                  <button
+                    type="button"
+                    className="tag-remove-btn"
+                    onClick={() => handleRemoveTag(t)}
+                    title={`Remove ${t}`}
+                  >
+                    ×
+                  </button>
+                )}
+              </span>
+            ))}
 
+            {mode === "edit" && !isAddingTag && (
+              <button
+                type="button"
+                className="add-tag-btn"
+                onClick={() => setIsAddingTag(true)}
+                title="Add tag"
+              >
+                +
+              </button>
+            )}
+
+            {mode === "edit" && isAddingTag && (
+              <input
+                type="text"
+                className="tag-new-input"
+                placeholder="#tag"
+                value={tagInput}
+                autoFocus
+                onChange={(e) => setTagInput(e.target.value)}
+                onBlur={handleAddTag}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddTag();
+                  if (e.key === "Escape") setIsAddingTag(false);
+                }}
+              />
+            )}
+          </div>
+
+          {/* Edit Mode Block Management Actions */}
           {mode === "edit" && (
             <div className="block-actions">
               {otherTabs.length > 0 && (
@@ -191,7 +244,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
         </div>
       </div>
 
-      <div className="block-body">{renderPrimitivePreview()}</div>
+      <div className="block-body">{renderPrimitive()}</div>
     </div>
   );
 };
