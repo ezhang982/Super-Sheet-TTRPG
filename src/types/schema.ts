@@ -104,6 +104,29 @@ const ProfileDataSchema = z.object({
   extraInfo: z.string().optional(),
 });
 
+const InventoryItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  quantity: z.number().default(1),
+  weight: z.number().default(0),
+  cost: z.string().optional(),
+  equipped: z.boolean().default(false),
+  description: z.string().default(""),
+  tags: z.array(z.string()).default([]),
+  charges: EmbeddedTrackerSchema.optional(),
+});
+
+const InventoryCapacitySchema = z.object({
+  enabled: z.boolean().default(false),
+  maxWeight: z.number().default(100),
+});
+
+const InventoryDataSchema = z.object({
+  items: z.array(InventoryItemSchema),
+  currency: z.record(z.string(), z.string()).optional(),
+  capacity: InventoryCapacitySchema.optional(),
+});
+
 // ---------- Block discriminated union ----------
 // Every block shares { id, title, tags, style }; `type` discriminates the
 // `data` payload. tags[] is the ONLY reset/filter mechanism — no separate
@@ -151,6 +174,12 @@ const ProfileBlockSchema = z.object({
   data: ProfileDataSchema,
 });
 
+const InventoryBlockSchema = z.object({
+  ...BaseBlockFields,
+  type: z.literal("inventory"),
+  data: InventoryDataSchema,
+});
+
 export const BlockSchema = z.discriminatedUnion("type", [
   TrackerBlockSchema,
   StatGroupBlockSchema,
@@ -158,6 +187,7 @@ export const BlockSchema = z.discriminatedUnion("type", [
   PipArrayBlockSchema,
   NotesBlockSchema,
   ProfileBlockSchema,
+  InventoryBlockSchema,
 ]);
 
 // ---------- Root character document ----------
@@ -180,6 +210,9 @@ export type LayoutItem = z.infer<typeof LayoutItemSchema>;
 export type GlobalTheme = z.infer<typeof GlobalThemeSchema>;
 export type BlockStyle = z.infer<typeof BlockStyleSchema>;
 export type CharacterMeta = z.infer<typeof CharacterMetaSchema>;
+export type InventoryItem = z.infer<typeof InventoryItemSchema>;
+export type InventoryData = z.infer<typeof InventoryDataSchema>;
+export type InventoryBlock = z.infer<typeof InventoryBlockSchema>;
 
 // ---------- Reserved reset-tag vocabulary ----------
 // Reset tags are ordinary strings in `tags[]` — the schema does not special-

@@ -7,7 +7,9 @@ import { StatGroupBlock } from "./primitives/StatGroupBlock";
 import { FeatureCardBlock } from "./primitives/FeatureCardBlock";
 import { NotesBlock } from "./primitives/NotesBlock";
 import { ProfileCardBlock } from "./primitives/ProfileCardBlock";
+import { InventoryBlock } from "./primitives/InventoryBlock";
 import { BlockStyleModal } from "./BlockStyleModal";
+import { CardContextMenu } from "./CardContextMenu";
 
 interface BlockContainerProps {
   block: Block;
@@ -16,10 +18,8 @@ interface BlockContainerProps {
 
 export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) => {
   const mode = useCharacterStore((state) => state.mode);
-  const character = useCharacterStore((state) => state.character);
   const activeTagFilter = useCharacterStore((state) => state.activeTagFilter);
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
-  const moveBlockToTab = useCharacterStore((state) => state.moveBlockToTab);
   const updateBlockData = useCharacterStore((state) => state.updateBlockData);
   const updateBlockTags = useCharacterStore((state) => state.updateBlockTags);
   const updateBlockTitle = useCharacterStore((state) => state.updateBlockTitle);
@@ -29,6 +29,14 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [isStylingOpen, setIsStylingOpen] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (mode !== "edit") return;
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
 
   // Compute block-level styles falling back to global theme
   const isOrnate = block.style?.borderStyle === "ornate";
@@ -46,8 +54,6 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
     backgroundSize: "cover",
     backgroundPosition: "center",
   };
-
-  const otherTabs = character.tabs.filter((t) => t.id !== tabId);
 
   const handleCommitTitle = () => {
     if (titleInput.trim()) {
@@ -127,6 +133,14 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
             onUpdateData={(patch) => updateBlockData(block.id, patch)}
           />
         );
+      case "inventory":
+        return (
+          <InventoryBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
+        );
     }
   };
 
@@ -138,6 +152,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
         isDimmed ? "dimmed-by-filter" : ""
       }`}
       style={blockStyle}
+      onContextMenu={handleContextMenu}
     >
       {block.style?.headerBannerUrl && (
         <div
@@ -171,7 +186,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
             <h3
               className="block-title"
               onDoubleClick={() => mode === "edit" && setIsEditingTitle(true)}
-              title={mode === "edit" ? "Double-click to rename" : undefined}
+              title={mode === "edit" ? "Double-click to rename (or right-click)" : undefined}
             >
               {block.title}
             </h3>
@@ -225,43 +240,14 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
             )}
           </div>
 
-          {/* Edit Mode Block Management Actions */}
+          {/* Edit Mode Delete Action */}
           {mode === "edit" && (
             <div className="block-actions">
               <button
                 type="button"
-                className="block-style-btn"
-                onClick={() => setIsStylingOpen(true)}
-                title="Customize block style & border"
-              >
-                🎨
-              </button>
-              {otherTabs.length > 0 && (
-                <select
-                  className="move-tab-select"
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      moveBlockToTab(block.id, tabId, e.target.value);
-                    }
-                  }}
-                  title="Move block to another tab"
-                >
-                  <option value="" disabled>
-                    Move to...
-                  </option>
-                  {otherTabs.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <button
-                type="button"
                 className="delete-block-btn"
                 onClick={() => deleteBlock(block.id)}
-                title="Delete this block"
+                title="Delete this block (or right-click for options)"
               >
                 ×
               </button>
@@ -278,6 +264,21 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
           isOpen={isStylingOpen}
           onClose={() => setIsStylingOpen(false)}
           block={block}
+        />
+      )}
+
+      {/* Right-Click Context Menu in Edit Mode */}
+      {contextMenu && (
+        <CardContextMenu
+          isOpen={!!contextMenu}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          block={block}
+          tabId={tabId}
+          onClose={() => setContextMenu(null)}
+          onOpenStyleModal={() => setIsStylingOpen(true)}
+          onStartRename={() => setIsEditingTitle(true)}
+          onStartAddTag={() => setIsAddingTag(true)}
         />
       )}
     </div>

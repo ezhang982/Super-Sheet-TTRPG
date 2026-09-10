@@ -103,10 +103,9 @@ custom properties. No Tailwind, no CSS-in-JS, no backend, no ORM, no auth.
 ## 3. The Primitives
 
 `tracker`, `stat_group` (called "Stat Pill" in UI copy), `card` (Action/
-Feature Card), `pip_array` (Pip Matrix), `notes`, and `profile` (Character
-Profile & Identity Card). Full field specs are in `schema.ts`; UX behavior per
-primitive is in the blueprint §5 and wireframes. None of them own reset logic
-directly — it always comes from the parent block's `tags[]`.
+Feature Card), `pip_array` (Pip Matrix), `notes`, `profile` (Character
+Profile & Identity Card), and `inventory` (Container / Inventory List). Full field specs are in `schema.ts`; UX behavior per
+primitive is in the blueprint §5 and wireframes. Rest logic applies to block tags and item-level tags.
 
 ---
 
@@ -184,6 +183,12 @@ keep multi-session AI-assisted work from drifting.
 - [x] Custom Rest Action add/remove UI (`RestActionModal.tsx` accessible via FAB and Play Mode rest bar)
 - [x] Final audit: zero-formula friction, undo/redo scope matches §8.3, mobile Play Mode usability, all 4 test suites green
 - **Gate:** full MVP completed, verified, and ready for release.
+
+### ✅ Post-MVP Enhancements (Inventory, Context Menu, Native File System)
+- [x] Modern File System Access API (`window.showSaveFilePicker`) for native Save As dialog allowing folder selection on export (with automatic fallback).
+- [x] Edit Mode Right-Click Card Context Menu (`CardContextMenu.tsx`) eliminating card header bloat (Customize Style, Rename, Add Tag, Move to Tab, Delete).
+- [x] Container / Inventory List Primitive (`InventoryBlock.tsx`, `type: "inventory"`): items with quantity steppers, unit weights, costs, equipped status, markdown notes, currencies, carrying capacity meter, and item charges with rest engine recharge.
+- [x] Comprehensive user-facing `README.md` and complete regression verification test suite (`verify-inventory.ts`).
 
 ---
 
