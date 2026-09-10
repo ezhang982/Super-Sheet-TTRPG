@@ -176,14 +176,14 @@ keep multi-session AI-assisted work from drifting.
 - [x] Profile / Identity Card primitive (`type: "profile"`) allowing customizable placement of Character Name, System, Level, XP, Player, and Origin on the canvas
 - **Gate:** tag filtering and rest resets work end-to-end on a multi-tab sheet; wireframe redesign verified.
 
-### ⬜ Phase 4 — Expressive Styling Suite & Polish
-- [ ] Global Theme Drawer (background, font pairs, accent colors)
-- [ ] Block-level style overrides (borders, background, header banner)
-- [ ] "Export as Clean Template" (`exportTemplate`)
-- [ ] Mobile Play Mode single-column reflow
-- [ ] Optional: custom Rest Action add/remove UI (store already supports it)
-- [ ] Final audit: zero-formula friction, undo/redo scope matches §8.3,
-      mobile Play Mode usability
+### ✅ Phase 4 — Expressive Styling Suite & Polish
+- [x] Global Theme Drawer (`ThemeDrawer.tsx`: presets, font pairs, color pickers, live CSS variables injection)
+- [x] Block-level style overrides (`BlockStyleModal.tsx`: border style, border color, background opacity slider, background URL, header banner URL)
+- [x] "Export as Clean Template" (`exportTemplate` wired with instant toast notifications)
+- [x] Mobile Play Mode single-column reflow (`.mobile-single-column-flow` with touch-friendly controls)
+- [x] Custom Rest Action add/remove UI (`RestActionModal.tsx` accessible via FAB and Play Mode rest bar)
+- [x] Final audit: zero-formula friction, undo/redo scope matches §8.3, mobile Play Mode usability, all 4 test suites green
+- **Gate:** full MVP completed, verified, and ready for release.
 
 ---
 

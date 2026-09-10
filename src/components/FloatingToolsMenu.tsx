@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { BlockType } from "../types/schema";
+import { ThemeDrawer } from "./ThemeDrawer";
+import { RestActionModal } from "./RestActionModal";
 
 export const FloatingToolsMenu: React.FC = () => {
   const mode = useCharacterStore((state) => state.mode);
@@ -12,11 +15,14 @@ export const FloatingToolsMenu: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Floating position state (default right: 32px, top: 80px)
+  // Floating position state (default right: 32px, top: 70px)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const hasDraggedRef = useRef(false);
   const dragStartRef = useRef<{ startX: number; startY: number; initX: number; initY: number }>({
     startX: 0,
     startY: 0,
@@ -26,32 +32,54 @@ export const FloatingToolsMenu: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize position near top right on mount
+  // Initialize position near top right on mount and listen for resize
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const defaultX = Math.max(20, window.innerWidth - 80);
-      const defaultY = 80;
+      const defaultX = Math.max(20, window.innerWidth - 76);
+      const defaultY = 70;
       setPosition({ x: defaultX, y: defaultY });
+
+      const handleResize = () => {
+        setPosition((prev) => {
+          if (!prev) return prev;
+          const clampedX = Math.max(16, Math.min(window.innerWidth - 60, prev.x));
+          const clampedY = Math.max(16, Math.min(window.innerHeight - 60, prev.y));
+          return { x: clampedX, y: clampedY };
+        });
+      };
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, []);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    // Only drag on the FAB button or header drag handle, not inside menu inputs
-    if ((e.target as HTMLElement).closest(".tools-menu-content")) return;
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 2500);
+  };
 
-    setIsDragging(false);
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Only drag on the circular FAB or the menu header
+    const target = e.target as HTMLElement;
+    const isFab = !!target.closest(".floating-tools-fab");
+    const isHeader = !!target.closest(".tools-menu-header");
+    if (!isFab && !isHeader) return;
+
+    hasDraggedRef.current = false;
     const startX = e.clientX;
     const startY = e.clientY;
-    const initX = position?.x ?? (window.innerWidth - 80);
-    const initY = position?.y ?? 80;
+    const initX = position?.x ?? Math.max(20, window.innerWidth - 76);
+    const initY = position?.y ?? 70;
 
     dragStartRef.current = { startX, startY, initX, initY };
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       const dx = moveEvent.clientX - startX;
       const dy = moveEvent.clientY - startY;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        setIsDragging(true);
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+        hasDraggedRef.current = true;
       }
       const newX = Math.max(16, Math.min(window.innerWidth - 60, initX + dx));
       const newY = Math.max(16, Math.min(window.innerHeight - 60, initY + dy));
@@ -68,7 +96,7 @@ export const FloatingToolsMenu: React.FC = () => {
   };
 
   const handleFabClick = () => {
-    if (!isDragging) {
+    if (!hasDraggedRef.current) {
       setIsOpen(!isOpen);
     }
   };
@@ -88,6 +116,7 @@ export const FloatingToolsMenu: React.FC = () => {
         } else {
           setImportError(null);
           setIsOpen(false);
+          showToast("Sheet imported successfully!");
         }
       } catch (err) {
         setImportError(`Failed to parse file: ${(err as Error).message}`);
@@ -105,16 +134,34 @@ export const FloatingToolsMenu: React.FC = () => {
     setIsOpen(false);
   };
 
-  if (!position) return null;
+  const handleExportCharacter = () => {
+    exportCharacter();
+    setIsOpen(false);
+    showToast("Character sheet exported!");
+  };
+
+  const handleExportTemplate = () => {
+    exportTemplate();
+    setIsOpen(false);
+    showToast("Clean template exported!");
+  };
+
+  // Compute smart positioning for open menu based on screen edge proximity
+  const isNearRight = !position || (typeof window !== "undefined" && position.x > window.innerWidth / 2);
+  const isNearBottom = !!position && (typeof window !== "undefined" && position.y > window.innerHeight - 340);
 
   return (
     <div
       ref={menuRef}
       className={`floating-tools-wrapper ${isOpen ? "open" : ""}`}
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      style={{
+        left: position ? `${position.x}px` : "auto",
+        top: position ? `${position.y}px` : "70px",
+        right: position ? "auto" : "24px",
+      }}
       onPointerDown={handlePointerDown}
     >
-      {/* Draggable Circular FAB Icon */}
+      {/* Draggable FAB circular trigger */}
       <button
         type="button"
         className="floating-tools-fab"
@@ -126,10 +173,18 @@ export const FloatingToolsMenu: React.FC = () => {
 
       {/* Expanded Tools Menu Panel */}
       {isOpen && (
-        <div className="tools-menu-content">
-          <div className="tools-menu-header">
+        <div
+          className="tools-menu-content"
+          style={{
+            top: isNearBottom ? "auto" : "52px",
+            bottom: isNearBottom ? "52px" : "auto",
+            right: isNearRight ? 0 : "auto",
+            left: isNearRight ? "auto" : 0,
+          }}
+        >
+          <div className="tools-menu-header" title="Drag to move">
             <span className="tools-menu-title">Sheet Tools</span>
-            <span className="tools-menu-hint">(Drag icon to move)</span>
+            <span className="tools-menu-hint">(Drag to move)</span>
           </div>
 
           <div className="tools-menu-items">
@@ -171,9 +226,28 @@ export const FloatingToolsMenu: React.FC = () => {
               type="button"
               className="tools-btn"
               onClick={() => {
-                exportCharacter();
+                setIsThemeOpen(true);
                 setIsOpen(false);
               }}
+            >
+              🎨 Theme & Styling
+            </button>
+
+            <button
+              type="button"
+              className="tools-btn"
+              onClick={() => {
+                setIsRestModalOpen(true);
+                setIsOpen(false);
+              }}
+            >
+              ⏳ Rest Actions
+            </button>
+
+            <button
+              type="button"
+              className="tools-btn"
+              onClick={handleExportCharacter}
             >
               💾 Export Sheet
             </button>
@@ -181,10 +255,7 @@ export const FloatingToolsMenu: React.FC = () => {
             <button
               type="button"
               className="tools-btn"
-              onClick={() => {
-                exportTemplate();
-                setIsOpen(false);
-              }}
+              onClick={handleExportTemplate}
             >
               📋 Export Template
             </button>
@@ -207,22 +278,63 @@ export const FloatingToolsMenu: React.FC = () => {
         </div>
       )}
 
-      {/* Error Modal */}
-      {importError && (
-        <div className="modal-overlay">
-          <div className="modal-dialog">
-            <h3 style={{ color: "#e06c75", marginBottom: "8px" }}>Import Validation Failed</h3>
-            <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "16px", wordBreak: "break-word" }}>
-              {importError}
-            </p>
-            <div className="modal-actions">
-              <button type="button" onClick={() => setImportError(null)}>
-                Close
-              </button>
+      {/* Temporary Toast feedback */}
+      {toastMessage && <div className="floating-toast">{toastMessage}</div>}
+
+      {/* Global Theme Customizer Drawer */}
+      <ThemeDrawer isOpen={isThemeOpen} onClose={() => setIsThemeOpen(false)} />
+
+      {/* Rest Actions Configuration Modal */}
+      <RestActionModal
+        isOpen={isRestModalOpen}
+        onClose={() => setIsRestModalOpen(false)}
+      />
+
+      {/* Error Modal rendered via createPortal */}
+      {importError &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="modal-overlay" onClick={() => setImportError(null)}>
+            <div
+              className="modal-dialog"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="modal-header">
+                <h3 style={{ color: "#e06c75" }}>Import Validation Failed</h3>
+                <button
+                  type="button"
+                  className="modal-close-btn"
+                  onClick={() => setImportError(null)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                <p
+                  style={{
+                    fontSize: "0.875rem",
+                    color: "var(--text-muted)",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {importError}
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setImportError(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
