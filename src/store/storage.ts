@@ -95,19 +95,47 @@ export function debouncedSaveCharacter(char: Character, delayMs = 300): void {
   }, delayMs);
 }
 
-export function exportCharacterAsJson(char: Character, isTemplate = false): void {
-  if (typeof document === "undefined") return;
+export async function exportCharacterAsJson(char: Character, isTemplate = false): Promise<boolean> {
   const dataStr = JSON.stringify(char, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
   const filename = `${char.meta.name.toLowerCase().replace(/[^a-z0-9]/g, "-") || "character"}${
     isTemplate ? "-template" : "-sheet"
   }.json`;
+
+  // Modern File System Access API: opens native OS file save dialog (folder picker)
+  if (typeof window !== "undefined" && "showSaveFilePicker" in window) {
+    try {
+      const handle = await (window as any).showSaveFilePicker({
+        suggestedName: filename,
+        types: [
+          {
+            description: isTemplate ? "JSON Character Template" : "JSON Character Sheet",
+            accept: { "application/json": [".json"] },
+          },
+        ],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(dataStr);
+      await writable.close();
+      return true;
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        // User cancelled the file picker dialog
+        return false;
+      }
+      console.warn("showSaveFilePicker failed, falling back to standard download:", err);
+    }
+  }
+
+  // Fallback for browsers without File System Access API
+  if (typeof document === "undefined") return false;
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  return true;
 }

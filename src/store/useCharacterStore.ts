@@ -200,6 +200,24 @@ export const useCharacterStore = create<CharacterStore>()(
                 extraInfo: "",
               };
               break;
+            case "inventory":
+              data = {
+                items: [
+                  {
+                    id: `item_${crypto.randomUUID()}`,
+                    name: "Adventurer's Pack",
+                    quantity: 1,
+                    weight: 5,
+                    cost: "10 gp",
+                    equipped: true,
+                    description: "Backpack filled with survival rations, bedroll, and torch.",
+                    tags: ["#gear"],
+                  },
+                ],
+                currency: { GP: "15", SP: "5", CP: "10" },
+                capacity: { enabled: true, maxWeight: 60 },
+              };
+              break;
           }
         }
 
@@ -210,6 +228,7 @@ export const useCharacterStore = create<CharacterStore>()(
           pip_array: "New Pip Array",
           notes: "New Notes",
           profile: "Character Profile",
+          inventory: "Inventory & Items",
         };
 
         const newBlock = {
@@ -228,8 +247,8 @@ export const useCharacterStore = create<CharacterStore>()(
           i: blockId,
           x: 0,
           y: maxY,
-          w: type === "notes" ? 12 : type === "tracker" ? 4 : 6,
-          h: 3,
+          w: type === "notes" || type === "inventory" ? 12 : type === "tracker" ? 4 : 6,
+          h: type === "inventory" ? 5 : 3,
         };
 
         set({
@@ -429,9 +448,9 @@ export const useCharacterStore = create<CharacterStore>()(
         const newBlocks = { ...character.blocks };
 
         for (const [id, block] of Object.entries(newBlocks)) {
-          if (!block.tags.includes(tag)) continue;
+          const blockHasTag = block.tags.includes(tag);
 
-          if (block.type === "tracker") {
+          if (blockHasTag && block.type === "tracker") {
             newBlocks[id] = {
               ...block,
               data: {
@@ -441,7 +460,7 @@ export const useCharacterStore = create<CharacterStore>()(
               },
             };
             changed = true;
-          } else if (block.type === "pip_array") {
+          } else if (blockHasTag && block.type === "pip_array") {
             newBlocks[id] = {
               ...block,
               data: {
@@ -450,7 +469,7 @@ export const useCharacterStore = create<CharacterStore>()(
               },
             };
             changed = true;
-          } else if (block.type === "card" && block.data.tracker?.enabled) {
+          } else if (blockHasTag && block.type === "card" && block.data.tracker?.enabled) {
             newBlocks[id] = {
               ...block,
               data: {
@@ -462,6 +481,33 @@ export const useCharacterStore = create<CharacterStore>()(
               },
             };
             changed = true;
+          } else if (block.type === "inventory") {
+            let itemsChanged = false;
+            const updatedItems = block.data.items.map((item) => {
+              const itemMatches = blockHasTag || item.tags.includes(tag);
+              if (itemMatches && item.charges?.enabled && item.charges.current !== item.charges.max) {
+                itemsChanged = true;
+                return {
+                  ...item,
+                  charges: {
+                    ...item.charges,
+                    current: item.charges.max,
+                  },
+                };
+              }
+              return item;
+            });
+
+            if (itemsChanged) {
+              newBlocks[id] = {
+                ...block,
+                data: {
+                  ...block.data,
+                  items: updatedItems,
+                },
+              };
+              changed = true;
+            }
           }
         }
 
@@ -544,6 +590,19 @@ export const useCharacterStore = create<CharacterStore>()(
                   ...block.data.tracker,
                   current: block.data.tracker.max,
                 },
+              },
+            };
+          } else if (block.type === "inventory") {
+            cleanedBlocks[id] = {
+              ...block,
+              data: {
+                ...block.data,
+                items: block.data.items.map((it) => ({
+                  ...it,
+                  charges: it.charges
+                    ? { ...it.charges, current: it.charges.max }
+                    : undefined,
+                })),
               },
             };
           }
