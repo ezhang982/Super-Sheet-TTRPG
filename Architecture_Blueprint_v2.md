@@ -81,16 +81,15 @@ This is the mutation surface every component talks to. Locking this list before 
 **Tabs**
 * `addTab(label)`
 * `renameTab(tabId, label)`
-* `removeTab(tabId)`
+* `removeTab(tabId)` — cascades deletion to all blocks on this tab, prevents deleting last tab, reassigns active tab.
 * `setActiveTab(tabId)`
 
 **Layout & blocks**
 * `addBlock(tabId, type, initialData)`
 * `deleteBlock(blockId)`
-* `moveBlock(tabId, blockId, x, y)`
-* `resizeBlock(tabId, blockId, w, h)`
+* `updateTabLayout(tabId, layout)` — commits full tab layout snapshot on drag/resize stop to handle collisions and keep undo atomic.
 * `moveBlockToTab(blockId, fromTabId, toTabId)`
-* `updateBlockData(blockId, patch)`
+* `updateBlockData(blockId, patch)` — deep merge patch preserving nested properties (e.g. card trackers).
 * `updateBlockStyle(blockId, patch)`
 * `updateBlockTags(blockId, tags)`
 
@@ -433,10 +432,10 @@ Phase 0: Foundation Contracts
 ===================================================================
 Phase 1: Core Foundation & Grid Canvas
 -------------------------------------------------------------------
-- Initialize Vite + React + TypeScript project. Vanilla CSS with custom
+- Initialize Vite + React 19 + TypeScript project. Vanilla CSS with custom
   properties for theming — no CSS framework dependency.
-- Integrate `react-grid-layout` for the 12-column responsive canvas.
-- Set up the Zustand store from Phase 0's contract, with undo/redo
+- Integrate `react-grid-layout` for the 12-column responsive canvas wired to `updateTabLayout`.
+- Set up the Zustand store from Phase 0's contract, with `zundo` undo/redo
   middleware wrapping structural mutations (§8.3).
 - Implement Edit Mode (freeform layout/resize) vs. Play Mode (locked grid).
 - Implement local persistence (`localStorage`) and Export/Import JSON,

@@ -1,0 +1,1321 @@
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--canvas-bg);
+  color: var(--text-main);
+  position: relative;
+}
+
+/* =============================================================================
+   1. UNIFIED TOP BAR (TABS + TINY EDIT/PLAY TOGGLE)
+   ============================================================================= */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px 0 24px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.tab-bar-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.tab-list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-top-left-radius: var(--radius-sm);
+  border-top-right-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.tab-item:hover {
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+
+.tab-item.active {
+  background: var(--canvas-bg);
+  color: var(--text-main);
+  border-color: var(--border-color);
+  border-top: 2px solid var(--accent-color);
+}
+
+.tab-rename-input {
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  width: 100px;
+}
+
+.tab-delete-btn {
+  background: transparent;
+  border: none;
+  padding: 0 2px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-dim);
+  border-radius: 50%;
+}
+
+.tab-delete-btn:hover {
+  color: #e06c75;
+}
+
+.add-tab-btn {
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  margin-left: 8px;
+}
+
+.add-tab-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--text-main);
+}
+
+/* Tiny Unobtrusive Edit/Play Mode Toggle (Matching Wireframe Top-Right) */
+.tab-bar-right {
+  display: flex;
+  align-items: center;
+  padding-bottom: 6px;
+}
+
+.tiny-mode-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 2px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.tiny-mode-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: all var(--transition-fast);
+}
+
+.tiny-mode-btn.active.edit {
+  background: rgba(229, 192, 123, 0.2);
+  color: #e5c07b;
+  border: 1px solid #e5c07b;
+}
+
+.tiny-mode-btn.active.play {
+  background: rgba(152, 195, 121, 0.2);
+  color: #98c379;
+  border: 1px solid #98c379;
+}
+
+/* =============================================================================
+   2. PLAY MODE TAG FILTER & REST BAR (§6.1 & §6.2)
+   ============================================================================= */
+.tag-and-rest-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  background: rgba(20, 22, 27, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.tag-filter-scroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.tag-filter-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.filter-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.filter-chip:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--accent-color);
+}
+
+.filter-chip.active {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px rgba(224, 108, 117, 0.4);
+}
+
+.rest-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rest-action-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.rest-action-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.rest-toast-badge {
+  font-size: 0.75rem;
+  color: #98c379;
+  font-weight: 700;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* =============================================================================
+   3. CANVAS & GRID ITEMS
+   ============================================================================= */
+.canvas-wrapper {
+  flex: 1;
+  padding: 16px 24px;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.empty-canvas-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 16px;
+  text-align: center;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  margin-top: 32px;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.canvas-grid-item {
+  width: 100%;
+  height: 100%;
+}
+
+.block-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  position: relative;
+  transition: opacity 0.25s ease, filter 0.25s ease, border-color var(--transition-fast);
+}
+
+.edit-mode .block-container:hover {
+  border-color: var(--accent-color);
+}
+
+/* Play Mode Tag Filter Dimming */
+.block-container.dimmed-by-filter {
+  opacity: 0.15;
+  filter: grayscale(85%);
+  pointer-events: none;
+}
+
+.block-header-banner {
+  height: 36px;
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.28);
+  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
+  min-height: 42px;
+}
+
+.block-header-left, .block-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  user-select: none;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.drag-handle:hover {
+  color: var(--text-main);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.block-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.block-title-input {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  padding: 2px 6px;
+  width: 140px;
+}
+
+/* Tag System in Block Header */
+.block-tags {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.tag-remove-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0;
+  line-height: 1;
+  color: var(--text-dim);
+}
+
+.tag-remove-btn:hover {
+  color: #e06c75;
+}
+
+.add-tag-btn {
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  font-size: 0.75rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.tag-new-input {
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  width: 60px;
+}
+
+.block-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.move-tab-select {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+}
+
+.delete-block-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.delete-block-btn:hover {
+  color: #e06c75;
+}
+
+.block-body {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-primitive-hint {
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 0.85rem;
+  text-align: center;
+  margin: auto;
+}
+
+/* =============================================================================
+   4. NEW PRIMITIVE: PROFILE / IDENTITY CARD
+   ============================================================================= */
+.profile-card-play {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  justify-content: center;
+}
+
+.profile-header-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-character-name {
+  font-size: 1.45rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  color: var(--text-main);
+  letter-spacing: 0.04em;
+}
+
+.profile-system-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.profile-details-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.profile-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.profile-detail-chip .level-text {
+  font-weight: 700;
+  color: #e5c07b;
+}
+
+.profile-detail-chip .chip-sep {
+  color: var(--text-dim);
+}
+
+.profile-detail-chip .exp-text {
+  color: var(--text-muted);
+}
+
+.profile-detail-chip .chip-label {
+  color: var(--text-dim);
+}
+
+.profile-detail-chip .chip-value {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Profile Edit Mode */
+.profile-card-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.profile-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.profile-edit-field label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.profile-edit-field input {
+  font-size: 0.8rem;
+  padding: 4px 6px;
+}
+
+.profile-edit-row {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-edit-field.small {
+  max-width: 90px;
+}
+
+/* =============================================================================
+   5. PRIMITIVE 1: TRACKER BLOCK (§5.1)
+   ============================================================================= */
+.tracker-play-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+}
+
+.tracker-main-counter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stepper-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 1.3rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.stepper-btn:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+}
+
+.stepper-btn:active {
+  transform: scale(0.92);
+}
+
+.tracker-numeric-group {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-heading);
+  user-select: none;
+}
+
+.current-number {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--accent-color);
+  cursor: pointer;
+}
+
+.direct-counter-input, .direct-temp-input {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  width: 75px;
+  text-align: center;
+  padding: 2px;
+}
+
+.counter-divider {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+}
+
+.max-number {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+}
+
+.temp-indicator {
+  font-size: 1rem;
+  color: #61afef;
+  font-weight: 700;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.tracker-footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-temp-btn, .clear-temp-btn {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: #61afef;
+  border-color: rgba(97, 175, 239, 0.4);
+}
+
+.add-temp-btn:hover, .clear-temp-btn:hover {
+  border-color: #61afef;
+  background: rgba(97, 175, 239, 0.15);
+}
+
+.tracker-edit-panel, .card-edit-panel, .pip-matrix-edit, .stat-group-edit, .notes-edit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.config-row, .card-config-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.config-row input, .card-config-row input {
+  width: 100px;
+}
+
+/* =============================================================================
+   6. PRIMITIVE 2: PIP MATRIX BLOCK (§5.2)
+   ============================================================================= */
+.pip-matrix-play {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  height: 100%;
+}
+
+.pip-matrix-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pip-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.8rem;
+}
+
+.row-label {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.row-counter {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.pips-track {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pip-toggle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pip-toggle.available {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px var(--accent-color);
+}
+
+.pip-toggle.expended {
+  background-color: transparent;
+  border-color: var(--text-dim);
+  opacity: 0.45;
+}
+
+.pip-toggle:hover {
+  transform: scale(1.15);
+}
+
+.pip-rows-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.pip-row-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.row-label-input {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+.row-total-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+
+.row-total-group input {
+  width: 50px;
+}
+
+.remove-row-btn, .stat-remove-btn {
+  background: transparent;
+  border: none;
+  color: #e06c75;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.add-row-btn, .add-stat-btn {
+  font-size: 0.8rem;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* =============================================================================
+   7. PRIMITIVE 3: STAT GROUP BLOCK (§5.3)
+   ============================================================================= */
+.stat-group-play {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-pills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.stat-pill-badge {
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: border-color var(--transition-fast);
+}
+
+.stat-pill-badge:hover {
+  border-color: var(--accent-color);
+}
+
+.stat-badge-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.stat-badge-score {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.stat-badge-sub {
+  font-size: 0.75rem;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.stat-pills-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.stat-pill-edit-card {
+  position: relative;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-pill-edit-card .stat-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.stat-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.stat-edit-field input {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+}
+
+/* =============================================================================
+   8. PRIMITIVE 4: FEATURE CARD BLOCK (§5.4)
+   ============================================================================= */
+.card-play-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.card-sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-badge-chip {
+  font-size: 0.7rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card-embedded-tracker {
+  margin-left: auto;
+}
+
+.card-pips-strip {
+  display: flex;
+  gap: 5px;
+}
+
+.card-pip {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid var(--accent-color);
+  padding: 0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.card-pip.available {
+  background: var(--accent-color);
+  box-shadow: 0 0 6px var(--accent-color);
+}
+
+.card-pip.expended {
+  background: transparent;
+  border-color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.card-counter-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.card-step-btn {
+  background: transparent;
+  border: none;
+  padding: 0 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.card-step-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.card-body-content {
+  flex: 1;
+  overflow-y: auto;
+  transition: max-height 0.2s ease;
+}
+
+.card-body-content.collapsed {
+  max-height: 80px;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+.card-expand-toggle {
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--accent-color);
+  cursor: pointer;
+  align-self: center;
+  padding: 2px 6px;
+}
+
+.card-tracker-config {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.tracker-inputs-inline {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.tracker-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tracker-field input {
+  width: 60px;
+}
+
+.card-description-editor, .notes-edit-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 6px;
+}
+
+.editor-tab-bar {
+  display: flex;
+  gap: 4px;
+}
+
+.editor-tab {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+.editor-tab.active {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--accent-color);
+}
+
+.card-textarea, .notes-textarea {
+  flex: 1;
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.card-markdown-preview, .notes-preview-scroll {
+  flex: 1;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  overflow-y: auto;
+}
+
+/* =============================================================================
+   9. PRIMITIVE 5: NOTES BLOCK (§5.5)
+   ============================================================================= */
+.notes-play-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-reading-view {
+  flex: 1;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.notes-textarea {
+  min-height: 120px;
+}
+
+/* =============================================================================
+   10. DRAGGABLE FLOATING TOOLS MENU (FAB)
+   ============================================================================= */
+.floating-tools-wrapper {
+  position: fixed;
+  z-index: 1000;
+  user-select: none;
+}
+
+.floating-tools-fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  padding: 0;
+}
+
+.floating-tools-fab:hover {
+  transform: scale(1.08);
+  background: var(--bg-hover);
+}
+
+.floating-tools-fab:active {
+  cursor: grabbing;
+}
+
+.fab-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.tools-menu-content {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 210px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.tools-menu-header {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.tools-menu-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tools-menu-hint {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.tools-menu-items {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.tools-btn {
+  background: transparent;
+  border: none;
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  text-align: left;
+  justify-content: flex-start;
+  width: 100%;
+  border-radius: 0;
+  color: var(--text-main);
+  transition: background var(--transition-fast);
+}
+
+.tools-btn:hover {
+  background: var(--bg-hover);
+}
+
+.tools-btn.primary {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.tools-submenu {
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.tools-submenu button {
+  background: transparent;
+  border: none;
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  text-align: left;
+  justify-content: flex-start;
+  color: var(--text-muted);
+}
+
+.tools-submenu button:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+/* =============================================================================
+   11. MINIMAL BOTTOM UNDO / REDO BAR
+   ============================================================================= */
+.bottom-history-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 20px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(28, 30, 36, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 3px 6px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.2s ease;
+}
+
+.bottom-history-bar.disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.history-icon-btn {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.history-icon-btn:hover:not(:disabled) {
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+
+.history-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   12. MARKDOWN & PROSE TYPOGRAPHY
+   ============================================================================= */
+.prose-content {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+.prose-content h1, .prose-content h2, .prose-content h3, .prose-content h4 {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+
+.prose-content h1 { font-size: 1.15rem; }
+.prose-content h2 { font-size: 1.05rem; }
+.prose-content h3 { font-size: 0.95rem; }
+
+.prose-content p {
+  margin-bottom: 6px;
+}
+
+.prose-content p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-content ul, .prose-content ol {
+  margin-left: 20px;
+  margin-bottom: 6px;
+}
+
+.prose-content li {
+  margin-bottom: 2px;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid var(--accent-color);
+  padding-left: 8px;
+  color: var(--text-muted);
+  margin: 6px 0;
+  font-style: italic;
+}
+
+.prose-content code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  color: #e5c07b;
+}
+
+.prose-content strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.prose-content em {
+  color: var(--text-muted);
+}
+
+/* =============================================================================
+   13. MOBILE REFLOW (§4.4)
+   ============================================================================= */
+.mobile-single-column-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.mobile-single-column-flow .block-container {
+  min-height: 140px;
+}
