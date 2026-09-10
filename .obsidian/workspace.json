@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Architecture_Blueprint_v2.md",
+                "file": "CLAUDE.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Architecture_Blueprint_v2"
+              "title": "CLAUDE"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Architecture_Blueprint_v2.md",
+                "file": "CLAUDE.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Architecture_Blueprint_v2.md",
+                "file": "CLAUDE.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Architecture_Blueprint_v2.md",
+                "file": "CLAUDE.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -189,5 +189,52 @@
     }
   },
   "active": "06bde6601349c41e",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "src/types/schema.ts",
+    "src/types",
+    "node_modules/zod/v4/package.json",
+    "node_modules/zod/v4/mini/schemas.js",
+    "node_modules/zod/v4/mini/schemas.d.ts",
+    "node_modules/zod/v4/mini/schemas.d.cts",
+    "node_modules/zod/v4/mini/parse.cjs",
+    "node_modules/zod/v4/mini/schemas.cjs",
+    "node_modules/zod/v4/mini/parse.d.ts",
+    "node_modules/zod/v4/mini/parse.js",
+    "node_modules/zod/v4/mini/parse.d.cts",
+    "node_modules/@types/react-grid-layout/README.md",
+    "node_modules/js-tokens/README.md",
+    "node_modules/js-tokens/CHANGELOG.md",
+    "node_modules/react-is/README.md",
+    "node_modules/object-assign/readme.md",
+    "node_modules/loose-envify/README.md",
+    "node_modules/react-resizable/README.md",
+    "node_modules/resize-observer-polyfill/README.md",
+    "node_modules/react-draggable/README.md",
+    "node_modules/react-draggable/CHANGELOG.md",
+    "node_modules/prop-types/README.md",
+    "node_modules/fast-equals/recipes/using-meta-in-comparison.md",
+    "node_modules/fast-equals/recipes/non-standard-properties.md",
+    "node_modules/fast-equals/recipes/strict-property-descriptor-check.md",
+    "node_modules/fast-equals/recipes/legacy-circular-equal-support.md",
+    "node_modules/fast-equals/recipes/legacy-regexp-support.md",
+    "node_modules/fast-equals/recipes/explicit-property-check.md",
+    "node_modules/fast-equals/README.md",
+    "node_modules/fast-equals/BUILD.md",
+    "node_modules/fast-equals/CHANGELOG.md",
+    "node_modules/clsx/readme.md",
+    "node_modules/zustand/README.md",
+    "node_modules/zundo/README.md",
+    "node_modules/react-grid-layout/README.md",
+    "node_modules/zod/README.md",
+    "src/assets/vite.svg",
+    "src/assets/react.svg",
+    "src/assets/hero.png",
+    "public/icons.svg",
+    "public/favicon.svg",
+    "temp-vite/src/assets/vite.svg",
+    "temp-vite/src/assets/react.svg",
+    "temp-vite/src/assets/hero.png",
+    "temp-vite/public/icons.svg",
+    "temp-vite/public/favicon.svg"
+  ]
 }
