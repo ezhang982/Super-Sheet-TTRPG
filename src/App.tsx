@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { useCharacterStore } from "./store/useCharacterStore";
-import { ControlBar } from "./components/ControlBar";
 import { TabBar } from "./components/TabBar";
+import { TagFilterAndRestBar } from "./components/TagFilterAndRestBar";
 import { Canvas } from "./components/Canvas";
+import { FloatingToolsMenu } from "./components/FloatingToolsMenu";
+import { BottomHistoryBar } from "./components/BottomHistoryBar";
 import "./App.css";
 
 export const App: React.FC = () => {
@@ -50,9 +52,20 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-root">
-      <ControlBar />
+      {/* Top Bar with Tabs on left and tiny Edit/Play toggle on right */}
       <TabBar />
+
+      {/* Play Mode Semantic Tag Filter & Rest Actions */}
+      <TagFilterAndRestBar />
+
+      {/* Main 12-Column Canvas */}
       <Canvas />
+
+      {/* Draggable Floating Tools Menu (FAB) */}
+      <FloatingToolsMenu />
+
+      {/* Minimal Bottom Undo/Redo Bar */}
+      <BottomHistoryBar />
     </div>
   );
 };

@@ -100,12 +100,13 @@ custom properties. No Tailwind, no CSS-in-JS, no backend, no ORM, no auth.
 
 ---
 
-## 3. The Five Primitives
+## 3. The Primitives
 
 `tracker`, `stat_group` (called "Stat Pill" in UI copy), `card` (Action/
-Feature Card), `pip_array` (Pip Matrix), `notes`. Full field specs are in
-`schema.ts`; UX behavior per primitive is in the blueprint §5. None of them
-own reset logic directly — it always comes from the parent block's `tags[]`.
+Feature Card), `pip_array` (Pip Matrix), `notes`, and `profile` (Character
+Profile & Identity Card). Full field specs are in `schema.ts`; UX behavior per
+primitive is in the blueprint §5 and wireframes. None of them own reset logic
+directly — it always comes from the parent block's `tags[]`.
 
 ---
 
@@ -165,14 +166,15 @@ keep multi-session AI-assisted work from drifting.
 - [x] Notes Block (markdown view/edit with preview toggle)
 - **Gate:** all 5 primitives render and edit correctly in both modes.
 
-### ⬜ Phase 3 — Multi-Tab System & Semantic Tag Engine
-- [ ] Tab bar: add/rename/remove/switch (with last-tab protection & block deletion confirmation)
-- [ ] `moveBlockToTab`
-- [ ] Tag manager on Cards/Trackers
-- [ ] Play Mode filter bar (isolate/dim by tag)
-- [ ] Rest Action Bar calling `applyRest(tag)`, seeded with
-      `DEFAULT_REST_TAGS`
-- **Gate:** tag filtering and rest resets work end-to-end on a multi-tab sheet.
+### ✅ Phase 3 — Multi-Tab System & Semantic Tag Engine
+- [x] Tab bar: add/rename/remove/switch (with last-tab protection & block deletion confirmation)
+- [x] `moveBlockToTab`
+- [x] Tag manager on Cards/Trackers/Blocks
+- [x] Play Mode filter bar (isolate/dim non-matching blocks by tag)
+- [x] Rest Action Bar calling `applyRest(tag)`, seeded with `DEFAULT_REST_TAGS`
+- [x] Wireframe UI Redesign: eliminated obstructive top control banner; clean TabBar with tiny right-side Edit/Play toggle; floating draggable Tools FAB (Import, Export, Template, Add Block); bottom-left minimal `↩`/`↪` history controls
+- [x] Profile / Identity Card primitive (`type: "profile"`) allowing customizable placement of Character Name, System, Level, XP, Player, and Origin on the canvas
+- **Gate:** tag filtering and rest resets work end-to-end on a multi-tab sheet; wireframe redesign verified.
 
 ### ⬜ Phase 4 — Expressive Styling Suite & Polish
 - [ ] Global Theme Drawer (background, font pairs, accent colors)

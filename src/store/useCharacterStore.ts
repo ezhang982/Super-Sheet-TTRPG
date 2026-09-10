@@ -54,8 +54,9 @@ export const useCharacterStore = create<CharacterStore>()(
       character: loadInitialCharacter(),
       restActions: defaultRestActions,
       mode: "edit",
+      activeTagFilter: null,
 
-      // ---- Mode ----
+      // ---- Mode & Tag Filter ----
       setMode: (mode: Mode) => {
         set({ mode });
         const temporalState = (useCharacterStore as unknown as { temporal?: { getState: () => { pause: () => void; resume: () => void } } })
@@ -67,6 +68,10 @@ export const useCharacterStore = create<CharacterStore>()(
             temporalState.resume();
           }
         }
+      },
+
+      setActiveTagFilter: (tag: string | null) => {
+        set({ activeTagFilter: tag });
       },
 
       // ---- Character / Meta ----
@@ -185,6 +190,16 @@ export const useCharacterStore = create<CharacterStore>()(
             case "notes":
               data = { markdown: "Enter notes here..." };
               break;
+            case "profile":
+              data = {
+                characterName: "New Character",
+                system: "Custom",
+                level: "1",
+                experience: "0 XP",
+                playerName: "",
+                extraInfo: "",
+              };
+              break;
           }
         }
 
@@ -194,6 +209,7 @@ export const useCharacterStore = create<CharacterStore>()(
           card: "New Feature Card",
           pip_array: "New Pip Array",
           notes: "New Notes",
+          profile: "Character Profile",
         };
 
         const newBlock = {

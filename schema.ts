@@ -95,6 +95,15 @@ const NotesDataSchema = z.object({
   markdown: z.string(),
 });
 
+const ProfileDataSchema = z.object({
+  characterName: z.string(),
+  system: z.string(),
+  level: z.string().optional(),
+  experience: z.string().optional(),
+  playerName: z.string().optional(),
+  extraInfo: z.string().optional(),
+});
+
 // ---------- Block discriminated union ----------
 // Every block shares { id, title, tags, style }; `type` discriminates the
 // `data` payload. tags[] is the ONLY reset/filter mechanism — no separate
@@ -136,12 +145,19 @@ const NotesBlockSchema = z.object({
   data: NotesDataSchema,
 });
 
+const ProfileBlockSchema = z.object({
+  ...BaseBlockFields,
+  type: z.literal("profile"),
+  data: ProfileDataSchema,
+});
+
 export const BlockSchema = z.discriminatedUnion("type", [
   TrackerBlockSchema,
   StatGroupBlockSchema,
   CardBlockSchema,
   PipArrayBlockSchema,
   NotesBlockSchema,
+  ProfileBlockSchema,
 ]);
 
 // ---------- Root character document ----------

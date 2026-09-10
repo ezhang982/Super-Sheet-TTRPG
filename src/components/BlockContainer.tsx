@@ -6,6 +6,7 @@ import { PipMatrixBlock } from "./primitives/PipMatrixBlock";
 import { StatGroupBlock } from "./primitives/StatGroupBlock";
 import { FeatureCardBlock } from "./primitives/FeatureCardBlock";
 import { NotesBlock } from "./primitives/NotesBlock";
+import { ProfileCardBlock } from "./primitives/ProfileCardBlock";
 
 interface BlockContainerProps {
   block: Block;
@@ -15,6 +16,7 @@ interface BlockContainerProps {
 export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) => {
   const mode = useCharacterStore((state) => state.mode);
   const character = useCharacterStore((state) => state.character);
+  const activeTagFilter = useCharacterStore((state) => state.activeTagFilter);
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
   const moveBlockToTab = useCharacterStore((state) => state.moveBlockToTab);
   const updateBlockData = useCharacterStore((state) => state.updateBlockData);
@@ -111,11 +113,21 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
             onUpdateData={(patch) => updateBlockData(block.id, patch)}
           />
         );
+      case "profile":
+        return (
+          <ProfileCardBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
+        );
     }
   };
 
+  const isDimmed = mode === "play" && activeTagFilter !== null && !block.tags.includes(activeTagFilter);
+
   return (
-    <div className={`block-container ${block.type}`} style={blockStyle}>
+    <div className={`block-container ${block.type} ${isDimmed ? "dimmed-by-filter" : ""}`} style={blockStyle}>
       {block.style?.headerBannerUrl && (
         <div
           className="block-header-banner"

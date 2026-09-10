@@ -24,16 +24,32 @@ export const createDefaultCharacter = (): Character => ({
   activeTabId: "tab_main",
   layouts: {
     tab_main: [
-      { i: "block_hp", x: 0, y: 0, w: 4, h: 3 },
-      { i: "block_stats", x: 4, y: 0, w: 8, h: 3 },
-      { i: "block_action", x: 0, y: 3, w: 6, h: 3 },
-      { i: "block_slots", x: 6, y: 3, w: 6, h: 3 },
+      { i: "block_profile", x: 0, y: 0, w: 5, h: 3 },
+      { i: "block_hp", x: 5, y: 0, w: 7, h: 3 },
+      { i: "block_stats", x: 0, y: 3, w: 12, h: 2 },
+      { i: "block_action", x: 0, y: 5, w: 6, h: 3 },
+      { i: "block_slots", x: 6, y: 5, w: 6, h: 3 },
     ],
     tab_notes: [
       { i: "block_backstory", x: 0, y: 0, w: 12, h: 5 },
     ],
   },
   blocks: {
+    block_profile: {
+      id: "block_profile",
+      type: "profile",
+      title: "Character Profile",
+      tags: ["#core", "#identity"],
+      data: {
+        characterName: "Valerius Drake",
+        system: "Custom / D&D 5e",
+        level: "5",
+        experience: "6,500 XP",
+        playerName: "Eden",
+        extraInfo: "Oath of the Crown Paladin",
+      },
+      style: {},
+    },
     block_hp: {
       id: "block_hp",
       type: "tracker",

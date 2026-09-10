@@ -29,9 +29,11 @@ export interface CharacterStore {
   character: Character;
   restActions: RestAction[]; // seeded from DEFAULT_REST_TAGS; user can add/rename/remove (UI ships Phase 4, store supports it from Phase 0)
   mode: Mode;
+  activeTagFilter: string | null;
 
-  // ---- Mode ----
+  // ---- Mode & Filter ----
   setMode: (mode: Mode) => void;
+  setActiveTagFilter: (tag: string | null) => void;
 
   // ---- Character / meta ----
   setCharacterMeta: (patch: Partial<Character["meta"]>) => void;

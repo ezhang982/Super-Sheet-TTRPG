@@ -4,171 +4,36 @@
   flex-direction: column;
   background-color: var(--canvas-bg);
   color: var(--text-main);
+  position: relative;
 }
 
 /* =============================================================================
-   1. CONTROL BAR
+   1. UNIFIED TOP BAR (TABS + TINY EDIT/PLAY TOGGLE)
    ============================================================================= */
-.control-bar {
+.tab-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 8px 24px 0 24px;
   background: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
   gap: 16px;
-  flex-wrap: wrap;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.control-bar-left, .control-bar-center, .control-bar-right {
+.tab-bar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.character-title-area {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.character-name-display {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.character-name-input {
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: var(--font-heading);
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-color);
-  padding: 4px 8px;
-  width: 180px;
-}
-
-.character-system-badge {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  color: var(--text-muted);
-}
-
-.character-system-input {
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  width: 110px;
-}
-
-/* Mode Switcher */
-.mode-toggle-group {
-  display: flex;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-}
-
-.mode-btn {
-  background: transparent;
-  border: none;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.mode-btn.active.edit {
-  background: var(--card-bg);
-  color: #e5c07b;
-  border: 1px solid #e5c07b;
-}
-
-.mode-btn.active.play {
-  background: var(--card-bg);
-  color: #98c379;
-  border: 1px solid #98c379;
-}
-
-/* History & Persistence Buttons */
-.history-group, .persistence-group {
-  display: flex;
-  gap: 6px;
-}
-
-.history-btn, .action-btn {
-  font-size: 0.8rem;
-  padding: 6px 10px;
-}
-
-.action-btn.primary {
-  background: var(--accent-color);
-  color: #ffffff;
-  border-color: var(--accent-color);
-}
-
-.action-btn.primary:hover {
-  filter: brightness(1.1);
-}
-
-/* Add Block Dropdown */
-.add-block-container {
-  position: relative;
-}
-
-.add-block-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  z-index: 200;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-.add-block-menu button {
-  background: transparent;
-  border: none;
-  padding: 10px 14px;
-  text-align: left;
-  justify-content: flex-start;
-  width: 100%;
-  border-radius: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.add-block-menu button:hover {
-  background: var(--bg-hover);
-}
-
-/* =============================================================================
-   2. TAB BAR
-   ============================================================================= */
-.tab-bar {
-  display: flex;
-  align-items: center;
-  padding: 8px 24px 0 24px;
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border-color);
+  flex: 1;
+  overflow-x: auto;
 }
 
 .tab-list {
   display: flex;
   align-items: center;
   gap: 4px;
-  overflow-x: auto;
 }
 
 .tab-item {
@@ -236,8 +101,130 @@
   color: var(--text-main);
 }
 
+/* Tiny Unobtrusive Edit/Play Mode Toggle (Matching Wireframe Top-Right) */
+.tab-bar-right {
+  display: flex;
+  align-items: center;
+  padding-bottom: 6px;
+}
+
+.tiny-mode-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 2px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.tiny-mode-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: all var(--transition-fast);
+}
+
+.tiny-mode-btn.active.edit {
+  background: rgba(229, 192, 123, 0.2);
+  color: #e5c07b;
+  border: 1px solid #e5c07b;
+}
+
+.tiny-mode-btn.active.play {
+  background: rgba(152, 195, 121, 0.2);
+  color: #98c379;
+  border: 1px solid #98c379;
+}
+
 /* =============================================================================
-   3. CANVAS & BLOCK CONTAINER
+   2. PLAY MODE TAG FILTER & REST BAR (§6.1 & §6.2)
+   ============================================================================= */
+.tag-and-rest-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  background: rgba(20, 22, 27, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.tag-filter-scroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.tag-filter-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.filter-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.filter-chip:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--accent-color);
+}
+
+.filter-chip.active {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px rgba(224, 108, 117, 0.4);
+}
+
+.rest-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rest-action-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.rest-action-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.rest-toast-badge {
+  font-size: 0.75rem;
+  color: #98c379;
+  font-weight: 700;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* =============================================================================
+   3. CANVAS & GRID ITEMS
    ============================================================================= */
 .canvas-wrapper {
   flex: 1;
@@ -275,11 +262,18 @@
   overflow: hidden;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   position: relative;
-  transition: border-color var(--transition-fast);
+  transition: opacity 0.25s ease, filter 0.25s ease, border-color var(--transition-fast);
 }
 
 .edit-mode .block-container:hover {
   border-color: var(--accent-color);
+}
+
+/* Play Mode Tag Filter Dimming */
+.block-container.dimmed-by-filter {
+  opacity: 0.15;
+  filter: grayscale(85%);
+  pointer-events: none;
 }
 
 .block-header-banner {
@@ -341,7 +335,7 @@
   width: 140px;
 }
 
-/* Tag System */
+/* Tag System in Block Header */
 .block-tags {
   display: flex;
   gap: 4px;
@@ -429,7 +423,118 @@
 }
 
 /* =============================================================================
-   4. PRIMITIVE 1: TRACKER BLOCK (§5.1)
+   4. NEW PRIMITIVE: PROFILE / IDENTITY CARD
+   ============================================================================= */
+.profile-card-play {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  justify-content: center;
+}
+
+.profile-header-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profile-character-name {
+  font-size: 1.45rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  color: var(--text-main);
+  letter-spacing: 0.04em;
+}
+
+.profile-system-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.profile-details-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.profile-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.profile-detail-chip .level-text {
+  font-weight: 700;
+  color: #e5c07b;
+}
+
+.profile-detail-chip .chip-sep {
+  color: var(--text-dim);
+}
+
+.profile-detail-chip .exp-text {
+  color: var(--text-muted);
+}
+
+.profile-detail-chip .chip-label {
+  color: var(--text-dim);
+}
+
+.profile-detail-chip .chip-value {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Profile Edit Mode */
+.profile-card-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.profile-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.profile-edit-field label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.profile-edit-field input {
+  font-size: 0.8rem;
+  padding: 4px 6px;
+}
+
+.profile-edit-row {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-edit-field.small {
+  max-width: 90px;
+}
+
+/* =============================================================================
+   5. PRIMITIVE 1: TRACKER BLOCK (§5.1)
    ============================================================================= */
 .tracker-play-container {
   display: flex;
@@ -530,7 +635,6 @@
   background: rgba(97, 175, 239, 0.15);
 }
 
-/* Tracker Edit Mode */
 .tracker-edit-panel, .card-edit-panel, .pip-matrix-edit, .stat-group-edit, .notes-edit-panel {
   display: flex;
   flex-direction: column;
@@ -551,7 +655,7 @@
 }
 
 /* =============================================================================
-   5. PRIMITIVE 2: PIP MATRIX BLOCK (§5.2)
+   6. PRIMITIVE 2: PIP MATRIX BLOCK (§5.2)
    ============================================================================= */
 .pip-matrix-play {
   display: flex;
@@ -618,7 +722,6 @@
   transform: scale(1.15);
 }
 
-/* Pip Matrix Edit Mode */
 .pip-rows-edit-list {
   display: flex;
   flex-direction: column;
@@ -668,7 +771,7 @@
 }
 
 /* =============================================================================
-   6. PRIMITIVE 3: STAT GROUP BLOCK (§5.3)
+   7. PRIMITIVE 3: STAT GROUP BLOCK (§5.3)
    ============================================================================= */
 .stat-group-play {
   height: 100%;
@@ -720,7 +823,6 @@
   font-weight: 700;
 }
 
-/* Stat Group Edit Mode */
 .stat-pills-edit-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -760,7 +862,7 @@
 }
 
 /* =============================================================================
-   7. PRIMITIVE 4: FEATURE CARD BLOCK (§5.4)
+   8. PRIMITIVE 4: FEATURE CARD BLOCK (§5.4)
    ============================================================================= */
 .card-play-container {
   display: flex;
@@ -867,7 +969,6 @@
   padding: 2px 6px;
 }
 
-/* Card Edit Mode */
 .card-tracker-config {
   display: flex;
   flex-direction: column;
@@ -951,7 +1052,7 @@
 }
 
 /* =============================================================================
-   8. PRIMITIVE 5: NOTES BLOCK (§5.5)
+   9. PRIMITIVE 5: NOTES BLOCK (§5.5)
    ============================================================================= */
 .notes-play-container {
   height: 100%;
@@ -970,7 +1071,181 @@
 }
 
 /* =============================================================================
-   9. MARKDOWN / PROSE TYPOGRAPHY
+   10. DRAGGABLE FLOATING TOOLS MENU (FAB)
+   ============================================================================= */
+.floating-tools-wrapper {
+  position: fixed;
+  z-index: 1000;
+  user-select: none;
+}
+
+.floating-tools-fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  padding: 0;
+}
+
+.floating-tools-fab:hover {
+  transform: scale(1.08);
+  background: var(--bg-hover);
+}
+
+.floating-tools-fab:active {
+  cursor: grabbing;
+}
+
+.fab-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.tools-menu-content {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 210px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.tools-menu-header {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.tools-menu-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tools-menu-hint {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.tools-menu-items {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.tools-btn {
+  background: transparent;
+  border: none;
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  text-align: left;
+  justify-content: flex-start;
+  width: 100%;
+  border-radius: 0;
+  color: var(--text-main);
+  transition: background var(--transition-fast);
+}
+
+.tools-btn:hover {
+  background: var(--bg-hover);
+}
+
+.tools-btn.primary {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.tools-submenu {
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.tools-submenu button {
+  background: transparent;
+  border: none;
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  text-align: left;
+  justify-content: flex-start;
+  color: var(--text-muted);
+}
+
+.tools-submenu button:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+/* =============================================================================
+   11. MINIMAL BOTTOM UNDO / REDO BAR
+   ============================================================================= */
+.bottom-history-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 20px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(28, 30, 36, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 3px 6px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.2s ease;
+}
+
+.bottom-history-bar.disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.history-icon-btn {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.history-icon-btn:hover:not(:disabled) {
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+
+.history-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   12. MARKDOWN & PROSE TYPOGRAPHY
    ============================================================================= */
 .prose-content {
   font-size: 0.85rem;
@@ -1032,7 +1307,7 @@
 }
 
 /* =============================================================================
-   10. MOBILE REFLOW (§4.4)
+   13. MOBILE REFLOW (§4.4)
    ============================================================================= */
 .mobile-single-column-flow {
   display: flex;

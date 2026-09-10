@@ -4,6 +4,7 @@ import { useCharacterStore } from "../store/useCharacterStore";
 export const TabBar: React.FC = () => {
   const character = useCharacterStore((state) => state.character);
   const mode = useCharacterStore((state) => state.mode);
+  const setMode = useCharacterStore((state) => state.setMode);
   const activeTabId = character.activeTabId;
   const setActiveTab = useCharacterStore((state) => state.setActiveTab);
   const addTab = useCharacterStore((state) => state.addTab);
@@ -46,65 +47,87 @@ export const TabBar: React.FC = () => {
 
   return (
     <nav className="tab-bar">
-      <div className="tab-list">
-        {character.tabs.map((tab) => {
-          const isActive = tab.id === activeTabId;
-          const isEditing = editingTabId === tab.id;
+      <div className="tab-bar-left">
+        <div className="tab-list">
+          {character.tabs.map((tab) => {
+            const isActive = tab.id === activeTabId;
+            const isEditing = editingTabId === tab.id;
 
-          return (
-            <div
-              key={tab.id}
-              className={`tab-item ${isActive ? "active" : ""}`}
-              onClick={() => setActiveTab(tab.id)}
+            return (
+              <div
+                key={tab.id}
+                className={`tab-item ${isActive ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {isEditing ? (
+                  <input
+                    type="text"
+                    className="tab-rename-input"
+                    value={editingLabel}
+                    autoFocus
+                    onChange={(e) => setEditingLabel(e.target.value)}
+                    onBlur={() => handleFinishRename(tab.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleFinishRename(tab.id);
+                      if (e.key === "Escape") setEditingTabId(null);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <span
+                    className="tab-label"
+                    onDoubleClick={() => handleStartRename(tab.id, tab.label)}
+                    title={mode === "edit" ? "Double-click to rename" : ""}
+                  >
+                    {tab.label}
+                  </span>
+                )}
+
+                {mode === "edit" && character.tabs.length > 1 && (
+                  <button
+                    type="button"
+                    className="tab-delete-btn"
+                    title="Delete tab"
+                    onClick={(e) => handleDeleteClick(e, tab.id)}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {mode === "edit" && (
+            <button
+              type="button"
+              className="add-tab-btn"
+              onClick={() => addTab(`Tab ${character.tabs.length + 1}`)}
+              title="Create a new tab"
             >
-              {isEditing ? (
-                <input
-                  type="text"
-                  className="tab-rename-input"
-                  value={editingLabel}
-                  autoFocus
-                  onChange={(e) => setEditingLabel(e.target.value)}
-                  onBlur={() => handleFinishRename(tab.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleFinishRename(tab.id);
-                    if (e.key === "Escape") setEditingTabId(null);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <span
-                  className="tab-label"
-                  onDoubleClick={() => handleStartRename(tab.id, tab.label)}
-                  title={mode === "edit" ? "Double-click to rename" : ""}
-                >
-                  {tab.label}
-                </span>
-              )}
+              + Tab
+            </button>
+          )}
+        </div>
+      </div>
 
-              {mode === "edit" && character.tabs.length > 1 && (
-                <button
-                  type="button"
-                  className="tab-delete-btn"
-                  title="Delete tab"
-                  onClick={(e) => handleDeleteClick(e, tab.id)}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          );
-        })}
-
-        {mode === "edit" && (
+      {/* Tiny Unobtrusive Edit/Play Mode Toggle (Matching Wireframe Top-Right) */}
+      <div className="tab-bar-right">
+        <div className="tiny-mode-toggle" title="Toggle Edit / Play mode">
           <button
             type="button"
-            className="add-tab-btn"
-            onClick={() => addTab(`Tab ${character.tabs.length + 1}`)}
-            title="Create a new tab"
+            className={`tiny-mode-btn ${mode === "edit" ? "active edit" : ""}`}
+            onClick={() => setMode("edit")}
           >
-            + Tab
+            Edit
           </button>
-        )}
+          <button
+            type="button"
+            className={`tiny-mode-btn ${mode === "play" ? "active play" : ""}`}
+            onClick={() => setMode("play")}
+          >
+            Play
+          </button>
+        </div>
       </div>
 
       {/* Tab Deletion Confirmation Modal */}
