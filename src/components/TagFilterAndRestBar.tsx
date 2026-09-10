@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { useCharacterStore } from "../store/useCharacterStore";
 
+import { RestActionModal } from "./RestActionModal";
+
 export const TagFilterAndRestBar: React.FC = () => {
   const mode = useCharacterStore((state) => state.mode);
   const character = useCharacterStore((state) => state.character);
@@ -10,6 +12,7 @@ export const TagFilterAndRestBar: React.FC = () => {
   const setActiveTagFilter = useCharacterStore((state) => state.setActiveTagFilter);
 
   const [restToast, setRestToast] = useState<string | null>(null);
+  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
 
   // Collect unique tags from blocks currently in active tab
   const uniqueTags = useMemo(() => {
@@ -76,8 +79,23 @@ export const TagFilterAndRestBar: React.FC = () => {
           </button>
         ))}
 
+        <button
+          type="button"
+          className="rest-config-btn"
+          onClick={() => setIsRestModalOpen(true)}
+          title="Configure rest actions"
+        >
+          ⚙
+        </button>
+
         {restToast && <span className="rest-toast-badge">{restToast}</span>}
       </div>
+
+      {/* Rest Action Settings Modal */}
+      <RestActionModal
+        isOpen={isRestModalOpen}
+        onClose={() => setIsRestModalOpen(false)}
+      />
     </div>
   );
 };

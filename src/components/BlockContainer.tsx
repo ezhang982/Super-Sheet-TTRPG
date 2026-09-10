@@ -7,6 +7,7 @@ import { StatGroupBlock } from "./primitives/StatGroupBlock";
 import { FeatureCardBlock } from "./primitives/FeatureCardBlock";
 import { NotesBlock } from "./primitives/NotesBlock";
 import { ProfileCardBlock } from "./primitives/ProfileCardBlock";
+import { BlockStyleModal } from "./BlockStyleModal";
 
 interface BlockContainerProps {
   block: Block;
@@ -27,14 +28,19 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const [titleInput, setTitleInput] = useState(block.title);
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [isStylingOpen, setIsStylingOpen] = useState(false);
 
   // Compute block-level styles falling back to global theme
+  const isOrnate = block.style?.borderStyle === "ornate";
+  const borderStyleVal = isOrnate ? "double" : (block.style?.borderStyle || "solid");
+  const borderWidthVal = block.style?.borderStyle === "none" ? "0px" : (isOrnate || block.style?.borderStyle === "double") ? "3px" : "1px";
+
   const blockStyle: CSSProperties = {
     borderColor: block.style?.borderColor || "var(--border-color)",
-    borderStyle: block.style?.borderStyle || "solid",
-    borderWidth: block.style?.borderStyle && block.style.borderStyle !== "none" ? "1px" : "1px",
+    borderStyle: borderStyleVal,
+    borderWidth: borderWidthVal,
     backgroundColor: block.style?.backgroundOpacity !== undefined
-      ? `rgba(28, 30, 36, ${block.style.backgroundOpacity})`
+      ? (block.style.backgroundOpacity === 0 ? "transparent" : `rgba(28, 30, 36, ${block.style.backgroundOpacity})`)
       : "var(--card-bg)",
     backgroundImage: block.style?.backgroundUrl ? `url(${block.style.backgroundUrl})` : undefined,
     backgroundSize: "cover",
@@ -127,7 +133,12 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const isDimmed = mode === "play" && activeTagFilter !== null && !block.tags.includes(activeTagFilter);
 
   return (
-    <div className={`block-container ${block.type} ${isDimmed ? "dimmed-by-filter" : ""}`} style={blockStyle}>
+    <div
+      className={`block-container ${block.type} ${isOrnate ? "border-ornate" : ""} ${
+        isDimmed ? "dimmed-by-filter" : ""
+      }`}
+      style={blockStyle}
+    >
       {block.style?.headerBannerUrl && (
         <div
           className="block-header-banner"
@@ -159,13 +170,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
           ) : (
             <h3
               className="block-title"
-              onDoubleClick={() => {
-                if (mode === "edit") {
-                  setTitleInput(block.title);
-                  setIsEditingTitle(true);
-                }
-              }}
-              title={mode === "edit" ? "Double-click to edit title" : ""}
+              onDoubleClick={() => mode === "edit" && setIsEditingTitle(true)}
+              title={mode === "edit" ? "Double-click to rename" : undefined}
             >
               {block.title}
             </h3>
@@ -173,10 +179,10 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
         </div>
 
         <div className="block-header-right">
-          {/* Tags Section */}
+          {/* Block Tags Strip */}
           <div className="block-tags">
-            {block.tags.map((t, idx) => (
-              <span key={idx} className="tag-badge">
+            {block.tags.map((t) => (
+              <span key={t} className="tag-badge">
                 {t}
                 {mode === "edit" && (
                   <button
@@ -222,6 +228,14 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
           {/* Edit Mode Block Management Actions */}
           {mode === "edit" && (
             <div className="block-actions">
+              <button
+                type="button"
+                className="block-style-btn"
+                onClick={() => setIsStylingOpen(true)}
+                title="Customize block style & border"
+              >
+                🎨
+              </button>
               {otherTabs.length > 0 && (
                 <select
                   className="move-tab-select"
@@ -257,6 +271,15 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
       </div>
 
       <div className="block-body">{renderPrimitive()}</div>
+
+      {/* Block Style Customization Modal */}
+      {isStylingOpen && (
+        <BlockStyleModal
+          isOpen={isStylingOpen}
+          onClose={() => setIsStylingOpen(false)}
+          block={block}
+        />
+      )}
     </div>
   );
 };
