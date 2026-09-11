@@ -1,123 +1,132 @@
-# ⚔️ Super-Sheet TTRPG
+# ⚔️ Super-Sheet
 
-**Super-Sheet** is a modular, system-agnostic, grid-based character sheet builder and manager for tabletop roleplaying games (TTRPGs). Designed for players and Game Masters who want complete freedom over their character sheets without clunky page layouts or rigid system locks.
+> A free, open-source character sheet builder for tabletop RPGs that puts creative control back in your hands.
 
-Whether you're running **D&D 5e**, **Pathfinder 2e**, **Blades in the Dark**, **Cyberpunk RED**, **Call of Cthulhu**, or your own homebrew system, Super-Sheet adapts to your campaign.
-
----
-
-## 🌟 Key Features
-
-- **🧱 Completely Modular 12-Column Grid**: Arrange, resize, and organize every piece of your character sheet using intuitive drag-and-drop.
-- **⚡ Two Distinct Modes**:
-  - **Edit Mode**: Build your sheet, drag and resize cards, configure stats, customize themes, and manage tabs.
-  - **Play Mode**: Distraction-free, responsive layout optimized for live sessions. Single-click resource pips, quick HP adjustments, live tag filters, and equipment toggles.
-- **🖱️ Right-Click Card Context Menu**: Right-click any card in Edit Mode to customize border themes, rename, add tags, move across tabs, or delete.
-- **💤 Universal Rest Engine**: Press a single button (like *Short Rest* or *Long Rest*) to automatically reset HP, spell slots, class features, and magic item charges based on tags (`#short-rest`, `#long-rest`, or custom tags).
-- **🎨 Expressive Theming & Borders**: Choose from high-fantasy, sci-fi, parchment, or eldritch presets—or customize fonts, colors, border styles (including ornamental double borders), and custom header banner art for individual cards.
-- **🎒 Native Inventory & Container List**: Track items, quantities with fast single-click steppers, weights, currencies, equipped statuses, item charges, and carrying capacity.
-- **💾 Local-First & Native File Picker**: Your data stays private in your browser's local storage. Export full sheets or blank templates directly to your chosen folder using modern browser File System Access (`Save As...`).
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.2-646cff.svg)](https://vitejs.dev/)
 
 ---
 
-## 🧩 The 7 Modular Card Primitives
+## Why I Built Super-Sheet
 
-Super-Sheet breaks down any tabletop system into 7 flexible primitives:
+If you've played tabletop RPGs online over the last few years, you've probably used tools like D&D Beyond or Demiplane. They're great at what they do: if you want a digital character builder that handles all the official math, looks up rules from books you've purchased, and guides you step-by-step through character creation, those platforms work well.
 
-| Primitive | Icon | Description & Example Uses |
-| :--- | :---: | :--- |
-| **Character Profile** | 👤 | Tracks core character identity: Name, System, Level, Experience, Player, and Class/Archetype. Syncs directly with sheet metadata. |
-| **Resource Tracker** | 📊 | Continuous numeric pools with current, maximum, temporary values, and custom step sizes. Ideal for Hit Points, Temporary HP, Shield Capacity, Mana, or Sanity. |
-| **Stat Group** | 🏷️ | Compact grid of attribute pills featuring label, score, and modifier/subtext. Perfect for D&D Abilities (STR, DEX, CON), Saving Throws, Skills, or SPECIAL stats. |
-| **Feature Card** | 🃏 | Markdown-enabled cards for actions, spells, feats, and class features. Includes activation badges (*Action*, *Bonus Action*, *Reaction*, *Passive*) and optional embedded usage counters (e.g. 1/Short Rest). |
-| **Pip Matrix** | 🔘 | Multi-row discrete pip counters. Click to expend, click to restore. Essential for Spell Slots, Ki Points, Sorcery Points, Death Saves, Grit, or Momentum. |
-| **Notes / Journal** | 📝 | Full-featured Markdown text area with live reading preview. Great for character backstories, session notes, quest logs, and spell descriptions. |
-| **Container / Inventory** | 🎒 | Item container list for backpacks, pouches, or chests. Features quantity `−` / `+` steppers, unit weights, item charges, equipped toggles, currencies, and carrying capacity. |
+But they also come with heavy trade-offs:
+- Your sheet is locked into a rigid, one-size-fits-all layout.
+- The second you want to use homebrew rules, a weird third-party class, or house rules your table agreed on, the automated rules engine fights you every step of the way.
+- They're tied to specific commercial systems and paywalled storefronts. If you want to switch from 5e to *Shadowdark*, *Pathfinder*, *Call of Cthulhu*, or a game you designed yourself on a weekend, you have to find an entirely new tool.
 
----
+**Super-Sheet takes the opposite approach.** 
 
-## 🎮 How to Play & Manage Your Sheet
-
-### 1. Switching Modes
-Use the toggle in the top-right corner to switch between **Edit Mode** (pencil) and **Play Mode** (dice).
-- In **Edit Mode**, drag cards by their grab handle (`⠿`), drag bottom-right corners to resize, or right-click cards for options.
-- In **Play Mode**, the grid locks into a clean, game-ready interface.
-
-### 2. Right-Click Context Menu (Edit Mode)
-Right-clicking any card opens a context menu with zero header clutter:
-- **🎨 Customize Style & Borders**: Open the block styling modal.
-- **✏️ Rename Block**: Inline rename the card title.
-- **🏷️ Add Tag**: Add semantic tags like `#short-rest`, `#combat`, or `#inventory`.
-- **📑 Move to Tab**: Instantly teleport the card to another tab without dragging across screens.
-- **🗑️ Delete Block**: Remove the card from your sheet.
-
-### 3. Inventory & Equipment Management
-The **Container / Inventory** card lets you manage equipment on the fly:
-- **Equip / Unequip**: Click the `⚪` / `⚔️` icon to equip or stow weapons, armor, or rings.
-- **Quantity Steppers**: Single-click `−` and `+` to spend arrows, rations, or potions.
-- **Item Charges**: Add usage charges to items (e.g., *Wand of Magic Missiles* with 7 charges). Click pips or use the stepper to spend charges.
-- **Rest Recharging**: Give an item a `#short-rest` or `#long-rest` tag (or tag the entire container) to automatically recharge its charges when you rest!
-- **Currencies & Capacity**: Track your coins (GP, SP, CP, or custom currencies like Credits/Gold) and monitor your total carried weight against your strength limit.
-
-### 4. Semantic Tagging & Rest Engine
-Every card and item can be tagged (e.g., `#short-rest`, `#long-rest`, `#spells`, `#combat`).
-- **Tag Filtering (Play Mode)**: Click any tag in the filter bar at the top to highlight relevant cards and dim everything else.
-- **Rest Action Bar**: Click **Short Rest** or **Long Rest** (or open the Rest Actions modal from the floating tools button to create custom rests like *Downtime Week*). Any tracker, pip row, or item tagged with that rest will automatically recharge to full.
-
-### 5. Floating Tools Menu (FAB)
-The draggable circular button (`⚙️`) in the corner gives quick access to:
-- **+ Add Block**: Spawn any of the 7 primitives onto your active tab.
-- **🎨 Theme & Styling**: Change fonts, backgrounds, card colors, or pick presets.
-- **⏳ Rest Actions**: Trigger or configure custom rest buttons.
-- **💾 Export Sheet**: Save your character JSON file to your computer.
-- **📋 Export Template**: Export a clean template with all current values and name cleared, ready to share with friends.
-- **📂 Import Sheet**: Load any previously saved Super-Sheet JSON file.
+Think of it like a digital corkboard or a flexible canvas made specifically for TTRPGs. It doesn't calculate your math behind the scenes, it doesn't roll dice for you, and it doesn't care what game system you're playing. Instead, it gives you a freeform grid, a set of clean building blocks (health bars, spell slot trackers, stat groups, inventory lists, action cards), and lets you build a character sheet that actually fits how your brain works during a session.
 
 ---
 
-## 🛠️ Development & Technology Stack
+## Who This Is For (And Who It Isn't For)
 
-- **Framework**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand) with [Zundo](https://github.com/charkour/zundo) (Undo / Redo history)
-- **Grid Layout**: [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout)
-- **Schema Validation**: [Zod](https://zod.dev/) (Strict runtime JSON schema validation)
-- **Markdown Rendering**: [react-markdown](https://github.com/remarkjs/react-markdown)
-- **File System**: Native [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) with universal fallback
+I want to be upfront about what Super-Sheet is:
 
-### Running Locally
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/ezhang982/Super-Sheet-TTRPG.git
-   cd Super-Sheet-TTRPG
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
-
-4. **Run the automated test suites**:
-   ```bash
-   npx tsx src/test/verify-phase1.ts
-   npx tsx src/test/verify-phase2.ts
-   npx tsx src/test/verify-phase3.ts
-   npx tsx src/test/verify-phase4.ts
-   npx tsx src/test/verify-inventory.ts
-   ```
-
-5. **Build for production**:
-   ```bash
-   npm run build
-   ```
+- **This is for players and GMs who like tinkering.** If you enjoy opening up a blank sheet, picking your colors and fonts, deciding where your abilities sit, and crafting a layout that feels distinctly *yours*, you'll feel right at home here.
+- **This requires a little bit of time and intention.** While Super-Sheet includes pre-made starter templates to get you moving quickly, this isn't a "click three buttons and auto-generate a level 10 wizard" tool. You type your stats in manually, write out your features, and decide how your page is organized.
+- **This is for any tabletop game.** D&D 5e (2024 or 2014), *Pathfinder 2e*, *Blades in the Dark*, *Cyberpunk RED*, *MÖRK BORG*, *Mothership*, or your own homebrew campaign—if it uses numbers, trackers, or notes, it works here.
 
 ---
 
-## 📜 License
+## What You Can Do
 
-Created for tabletop gamers everywhere. Open source under the MIT License.
+### 1. Build On an Open 12-Column Grid
+Every block on your sheet can be dragged around and resized to your liking. Want your spells right next to your actions? Move them there. Want your hit points huge in the center of the screen? Expand them. You can also organize your character across multiple tabs (like *Core Combat*, *Spells*, *Inventory*, and *Backstory*) so your screen stays uncluttered.
+
+### 2. Inspect and Edit Small Cards Without Messing Up Your Layout
+One of the most annoying things about grid layouts is sizing a card small so it looks tidy during gameplay, only to realize you can't read or edit the text without dragging everything else out of place. 
+
+In Super-Sheet, every card has a little **Pop-Out button (`⛶`)**. Click it, and the card smoothly pops up into a roomy focus window where you can read or edit everything comfortably. When you close it, your grid layout hasn't budged at all.
+
+### 3. The 8 Building Blocks
+You build your sheet by mixing and matching 8 simple card types:
+- **Character Profile (`👤`)**: Tracks your character's name, game system, level, XP, player name, and background details.
+- **Resource Tracker (`📊`)**: Number pools with `+` / `−` buttons, max values, and temporary HP/shields. Great for Hit Points, Mana, Sanity, or Stress.
+- **Stat Group (`🏷️`)**: Clean attribute pills showing a stat label, score, and modifier (like STR 16 / +3 or INT 18 / +4).
+- **Skill List (`🎯`)**: A dedicated list for skills with associated stats, modifiers (`+5`, `65%`, `2d6`), live search filtering, and click-to-cycle proficiency dots (Untrained `○`, Proficient `●`, Expertise `⨂`). There's also a one-click button to seed all 18 standard 5e skills.
+- **Feature & Action Cards (`🃏`)**: Cards for abilities, spells, and feats. Supports Markdown formatting, action badges (*Action*, *Bonus Action*, *Reaction*, *Passive*), and optional embedded usage trackers (e.g. *1 per Short Rest*).
+- **Pip Matrix (`🔘`)**: Rows of clickable bubbles. Click to cross them off, click to bring them back. Perfect for spell slots, Ki points, Sorcery points, death saves, or ammunition.
+- **Notes & Lore (`📝`)**: A full Markdown notepad with a live preview toggle for backstories, session recaps, quest logs, and spell descriptions.
+- **Container & Inventory (`🎒`)**: Item lists with single-click quantity steppers, unit weights, item charges (like wands), equipped weapon toggles (`⚔️`), coin pouches, and carrying capacity tracking.
+
+### 4. Two Modes: Editing vs. Playing
+- **Edit Mode (Pencil icon)**: Drag and resize cards, change titles, add tags, tweak colors, and use full `Ctrl+Z` undo/redo.
+- **Play Mode (Dice icon)**: Locks the grid completely so you don't accidentally move cards during an encounter. Buttons turn into quick toggles: tap a pip to expend a spell slot, adjust your HP with a click, toggle equipped weapons, or filter cards by tag. On phone screens, Play Mode automatically stacks into a clean, easy-to-scroll single column.
+
+### 5. Tagging and Rest Resets
+You can tag any card, tracker, or item with hashtags (like `#short-rest`, `#long-rest`, `#combat`, or `#spells`).
+- In Play Mode, clicking a tag at the top highlights matching cards and dims everything else so you can focus on what matters in the moment.
+- Clicking **Short Rest** or **Long Rest** (or any custom rest you create, like *Scene Reset* or *Downtime*) automatically refills any tracker, pip row, or item charges tagged for that rest.
+
+### 6. Multiple Characters & Auto-Saving
+Everything is stored directly in your browser using **IndexedDB**. That means:
+- No 5MB browser storage limits crashing your sheets.
+- No accounts to create and no passwords to remember.
+- A live status indicator in the bottom corner lets you know when your edits are saved (`✓ Saved locally`).
+- The **Character Switcher (`👥`)** lets you keep unlimited character sheets saved locally, search through them, duplicate an existing character to try out a new build, or safely delete old ones.
+
+### 7. Shareable Community Templates
+When you design a layout you're proud of, you can click **Export Template**. Super-Sheet automatically wipes your personal details (character name, current health, filled inventory, and backstory notes) while preserving your layout, custom themes, stat blocks, skill lists, and card descriptions. 
+
+You get a clean `.json` file that you can send to your friends or post online so others can use your design for their own games.
+
+---
+
+## Theming & Styling
+
+Everyone's character has a different vibe, so your sheet should too:
+- **Global Themes**: Pick from built-in presets (*High Fantasy*, *Cyberpunk / Sci-Fi*, *Antique Parchment*, *Eldritch Arcane*, *Clean Obsidian*) or dial in your own colors, fonts, and background textures.
+- **Per-Card Customization**: Right-click any card in Edit Mode to give it a custom border color, choose an ornate frame style, or add a custom banner image across the header.
+
+---
+
+## Running It Locally
+
+Super-Sheet runs entirely in your browser with zero backend or database servers to manage.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ezhang982/Super-Sheet-TTRPG.git
+cd Super-Sheet-TTRPG
+
+# 2. Install dependencies
+npm install
+
+# 3. Start the local development server
+npm run dev
+```
+
+If you want to run the automated test suites:
+```bash
+node ./node_modules/tsx/dist/cli.mjs src/test/verify-phase7.ts
+```
+
+Or build a production bundle:
+```bash
+npm run build
+```
+
+---
+
+## Open Source & The GPLv3 License
+
+Super-Sheet is free software licensed under the **[GNU General Public License v3.0 (GPLv3)](LICENSE)**.
+
+### Why GPL?
+I deliberately chose the GNU GPLv3 because it is a **copyleft** license. That means Super-Sheet will remain free, open, and community-owned forever. 
+
+Anyone can look at the code, learn from it, modify it, or run their own version. But if someone takes this project and distributes a modified version, they are legally required to keep their code open and free under the same GPLv3 license too. No company can take this community work, close the source, slap a subscription on it, and lock it behind a paywall.
+
+---
+
+## Feedback & Community
+
+This project is built for the community. If you have ideas for new card primitives, suggestions for quality-of-life improvements, or cool sheet templates you've built, please open an issue or share your templates in the repository discussions. 
+
+Happy gaming! 🎲
