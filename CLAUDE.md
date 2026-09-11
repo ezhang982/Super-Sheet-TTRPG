@@ -43,7 +43,7 @@ other way around.
 | Reset logic | `tags[]` only, no separate reset field | one source of truth (§6.1) |
 | Undo/redo | Scoped to Edit Mode structural changes only via `zundo` | Play Mode value changes are frequent + trivially correctable; would just add stack noise |
 | Mobile Play Mode | Single-column reflow, not the drag grid | Edit Mode is desktop/tablet-primary in MVP |
-| Persistence | `localStorage` + JSON import/export | zero backend, human-readable, portable |
+| Persistence | Native `IndexedDB` (with `localStorage` fallback) + JSON import/export | zero backend, no 5MB quota limit, multi-character manifest, portable |
 
 Canonical code for the two biggest Phase 0 deliverables:
 - **`schema.ts`** — full Zod schema, discriminated union over the 5 block
@@ -213,10 +213,13 @@ keep multi-session AI-assisted work from drifting.
 - [x] Regression verification suite `verify-phase6.ts` passing 100%.
 - **Gate:** skill list primitive verified with all 18 D&D 2024 skills; card popout functional without grid layout disruption; all test suites green.
 
-### 🔮 Phase 7 — Free & Reliable Persistence (IndexedDB & Multi-Character Switcher)
-- [ ] Migrate local persistence from 5MB `localStorage` to zero-dependency asynchronous `IndexedDB`.
-- [ ] Character Switcher modal: manage multiple local character sheets, switch active character, duplicate, delete.
-- [ ] Autosave indicators ("Saved locally") with automatic snapshot backups.
+### ✅ Phase 7 — Free & Reliable Persistence (IndexedDB & Multi-Character Switcher)
+- [x] Migrate local persistence from 5MB `localStorage` to zero-dependency browser-native `IndexedDB` (`super_sheet_db` with `sheets` and `meta` stores).
+- [x] Automated seamless migration (`initStorageAndMigrate`) preserving all legacy `localStorage` sheets on first boot.
+- [x] Character Switcher modal (`CharacterSwitcherModal.tsx`): manage multiple local character sheets, switch active character, duplicate, delete with safety guards, search, and direct import.
+- [x] Autosave indicators (`.autosave-badge` in `BottomHistoryBar.tsx`) reporting "⏳ Saving..." and "✓ Saved locally" states cleanly synchronized with store mutations.
+- [x] Full regression verification suite `verify-phase7.ts` passing 100%.
+- **Gate:** Multi-character management and robust IndexedDB persistence verified end-to-end.
 
 ---
 

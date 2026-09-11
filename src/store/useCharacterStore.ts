@@ -16,8 +16,19 @@ import {
   debouncedSaveCharacter,
   saveCharacterToStorage,
   exportCharacterAsJson,
+  loadCharacterById as loadCharFromStorage,
+  duplicateCharacterById as duplicateCharInStorage,
+  deleteCharacterById as deleteCharFromStorage,
+  initStorageAndMigrate,
 } from "./storage";
 import { blankTemplate } from "../templates/blank";
+
+// Initialize IndexedDB and migrate legacy localStorage data
+if (typeof window !== "undefined") {
+  initStorageAndMigrate().catch((err) =>
+    console.warn("Storage initialization/migration warning:", err)
+  );
+}
 
 function deepMerge<T extends Record<string, unknown>>(target: T, patch: Record<string, unknown>): T {
   const output = { ...target };
@@ -56,6 +67,7 @@ export const useCharacterStore = create<CharacterStore>()(
       restActions: defaultRestActions,
       mode: "edit",
       activeTagFilter: null,
+      saveStatus: "saved",
 
       // ---- Mode & Tag Filter ----
       setMode: (mode: Mode) => {
@@ -585,6 +597,36 @@ export const useCharacterStore = create<CharacterStore>()(
         saveCharacterToStorage(freshChar);
       },
 
+      loadCharacterById: async (id: string) => {
+        const { character } = get();
+        saveCharacterToStorage(character);
+
+        const found = await loadCharFromStorage(id);
+        if (!found) return false;
+        set({ character: found, activeTagFilter: null, saveStatus: "saved" });
+        saveCharacterToStorage(found);
+        return true;
+      },
+
+      duplicateCharacter: async (id: string) => {
+        const { character } = get();
+        if (character.meta.id === id) {
+          saveCharacterToStorage(character);
+        }
+        const cloned = await duplicateCharInStorage(id);
+        if (!cloned) return null;
+        return cloned.meta.id;
+      },
+
+      deleteCharacter: async (id: string) => {
+        const { character } = get();
+        const success = await deleteCharFromStorage(id);
+        if (success && character.meta.id === id) {
+          get().newCharacter();
+        }
+        return success;
+      },
+
       importCharacter: (json: unknown) => {
         const result = CharacterSchema.safeParse(json);
         if (!result.success) {
@@ -736,7 +778,15 @@ export const useCharacterStore = create<CharacterStore>()(
   )
 );
 
-// Subscribe to automatically debounce-save character changes to localStorage
+// Subscribe to automatically debounce-save character changes to IndexedDB & localStorage
+let prevCharacter = useCharacterStore.getState().character;
 useCharacterStore.subscribe((state) => {
-  debouncedSaveCharacter(state.character);
+  if (state.character !== prevCharacter) {
+    prevCharacter = state.character;
+    debouncedSaveCharacter(state.character, 300, (status) => {
+      if (useCharacterStore.getState().saveStatus !== status) {
+        useCharacterStore.setState({ saveStatus: status });
+      }
+    });
+  }
 });
