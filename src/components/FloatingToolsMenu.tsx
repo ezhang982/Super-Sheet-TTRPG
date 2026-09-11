@@ -239,6 +239,9 @@ export const FloatingToolsMenu: React.FC = () => {
                     <button type="button" onClick={() => handleAddBlock("inventory")}>
                       🎒 Container / Inventory
                     </button>
+                    <button type="button" onClick={() => handleAddBlock("skill_list")}>
+                      🎯 Skill List
+                    </button>
                   </div>
                 )}
               </div>

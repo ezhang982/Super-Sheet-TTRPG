@@ -1,4 +1,5 @@
-import React, { useState, type CSSProperties } from "react";
+import React, { useState, useEffect, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { Block } from "../types/schema";
 import { TrackerBlock } from "./primitives/TrackerBlock";
@@ -8,6 +9,7 @@ import { FeatureCardBlock } from "./primitives/FeatureCardBlock";
 import { NotesBlock } from "./primitives/NotesBlock";
 import { ProfileCardBlock } from "./primitives/ProfileCardBlock";
 import { InventoryBlock } from "./primitives/InventoryBlock";
+import { SkillListBlock } from "./primitives/SkillListBlock";
 import { BlockStyleModal } from "./BlockStyleModal";
 import { CardContextMenu } from "./CardContextMenu";
 
@@ -29,7 +31,18 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [isStylingOpen, setIsStylingOpen] = useState(false);
+  const [isPopout, setIsPopout] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // Close popout on Escape
+  useEffect(() => {
+    if (!isPopout) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsPopout(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPopout]);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     if (mode !== "edit") return;
@@ -141,6 +154,14 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
             onUpdateData={(patch) => updateBlockData(block.id, patch)}
           />
         );
+      case "skill_list":
+        return (
+          <SkillListBlock
+            block={block}
+            mode={mode}
+            onUpdateData={(patch) => updateBlockData(block.id, patch)}
+          />
+        );
     }
   };
 
@@ -240,9 +261,18 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
             )}
           </div>
 
-          {/* Edit Mode Delete Action */}
-          {mode === "edit" && (
-            <div className="block-actions">
+          {/* Block Actions: Popout & Delete */}
+          <div className="block-actions">
+            <button
+              type="button"
+              className="block-popout-btn"
+              onClick={() => setIsPopout(true)}
+              title="Expand / Focus view (view & edit full contents without resizing)"
+            >
+              ⛶
+            </button>
+
+            {mode === "edit" && (
               <button
                 type="button"
                 className="delete-block-btn"
@@ -251,8 +281,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
               >
                 ×
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -279,8 +309,64 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
           onOpenStyleModal={() => setIsStylingOpen(true)}
           onStartRename={() => setIsEditingTitle(true)}
           onStartAddTag={() => setIsAddingTag(true)}
+          onPopout={() => setIsPopout(true)}
         />
       )}
+
+      {/* Pop-Out / Full Focus View Modal Portal */}
+      {isPopout &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="card-popout-overlay" onClick={() => setIsPopout(false)}>
+            <div
+              className={`block-container ${block.type} ${isOrnate ? "border-ornate" : ""} is-popout-view`}
+              style={{
+                ...blockStyle,
+                maxWidth:
+                  block.type === "notes" || block.type === "inventory" || block.type === "skill_list"
+                    ? "860px"
+                    : "640px",
+                width: "92vw",
+                maxHeight: "85vh",
+              }}
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              {block.style?.headerBannerUrl && (
+                <div
+                  className="block-header-banner"
+                  style={{ backgroundImage: `url(${block.style.headerBannerUrl})` }}
+                />
+              )}
+              <div className="block-header">
+                <div className="block-header-left">
+                  <span className="popout-badge">⛶ Focus View</span>
+                  <h3 className="block-title">{block.title}</h3>
+                </div>
+                <div className="block-header-right">
+                  <div className="block-tags">
+                    {block.tags.map((t) => (
+                      <span key={t} className="tag-badge">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="popout-close-btn"
+                    onClick={() => setIsPopout(false)}
+                    title="Close focus view (Esc)"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <div className="block-body">{renderPrimitive()}</div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

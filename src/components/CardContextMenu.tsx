@@ -13,6 +13,7 @@ export interface CardContextMenuProps {
   onOpenStyleModal: () => void;
   onStartRename: () => void;
   onStartAddTag: () => void;
+  onPopout: () => void;
 }
 
 export const CardContextMenu: React.FC<CardContextMenuProps> = ({
@@ -25,6 +26,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   onOpenStyleModal,
   onStartRename,
   onStartAddTag,
+  onPopout,
 }) => {
   const character = useCharacterStore((state) => state.character);
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
@@ -80,6 +82,18 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
       </div>
 
       <div className="context-menu-items">
+        <button
+          type="button"
+          className="context-menu-item"
+          onClick={() => {
+            onPopout();
+            onClose();
+          }}
+        >
+          <span className="context-item-icon">⛶</span>
+          <span>Expand / Focus View</span>
+        </button>
+
         <button
           type="button"
           className="context-menu-item"

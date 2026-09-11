@@ -104,6 +104,29 @@ const ProfileDataSchema = z.object({
   extraInfo: z.string().optional(),
 });
 
+const InventoryItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  quantity: z.number().default(1),
+  weight: z.number().default(0),
+  cost: z.string().optional(),
+  equipped: z.boolean().default(false),
+  description: z.string().default(""),
+  tags: z.array(z.string()).default([]),
+  charges: EmbeddedTrackerSchema.optional(),
+});
+
+const InventoryCapacitySchema = z.object({
+  enabled: z.boolean().default(false),
+  maxWeight: z.number().default(100),
+});
+
+const InventoryDataSchema = z.object({
+  items: z.array(InventoryItemSchema),
+  currency: z.record(z.string(), z.string()).optional(),
+  capacity: InventoryCapacitySchema.optional(),
+});
+
 // ---------- Block discriminated union ----------
 // Every block shares { id, title, tags, style }; `type` discriminates the
 // `data` payload. tags[] is the ONLY reset/filter mechanism — no separate
@@ -151,6 +174,32 @@ const ProfileBlockSchema = z.object({
   data: ProfileDataSchema,
 });
 
+const InventoryBlockSchema = z.object({
+  ...BaseBlockFields,
+  type: z.literal("inventory"),
+  data: InventoryDataSchema,
+});
+
+const SkillEntrySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  stat: z.string().default(""), // e.g. "STR", "DEX", "INT"
+  value: z.string().default("+0"), // e.g. "+5", "65%", "2d6"
+  proficiency: z.number().int().min(0).max(2).default(0), // 0: None, 1: Proficient, 2: Expertise
+  notes: z.string().optional(),
+});
+
+const SkillListDataSchema = z.object({
+  skills: z.array(SkillEntrySchema),
+  sortMode: z.enum(["custom", "alpha", "stat"]).default("custom"),
+});
+
+const SkillListBlockSchema = z.object({
+  ...BaseBlockFields,
+  type: z.literal("skill_list"),
+  data: SkillListDataSchema,
+});
+
 export const BlockSchema = z.discriminatedUnion("type", [
   TrackerBlockSchema,
   StatGroupBlockSchema,
@@ -158,6 +207,8 @@ export const BlockSchema = z.discriminatedUnion("type", [
   PipArrayBlockSchema,
   NotesBlockSchema,
   ProfileBlockSchema,
+  InventoryBlockSchema,
+  SkillListBlockSchema,
 ]);
 
 // ---------- Root character document ----------
@@ -180,6 +231,18 @@ export type LayoutItem = z.infer<typeof LayoutItemSchema>;
 export type GlobalTheme = z.infer<typeof GlobalThemeSchema>;
 export type BlockStyle = z.infer<typeof BlockStyleSchema>;
 export type CharacterMeta = z.infer<typeof CharacterMetaSchema>;
+export type InventoryItem = z.infer<typeof InventoryItemSchema>;
+export type InventoryData = z.infer<typeof InventoryDataSchema>;
+export type InventoryBlock = z.infer<typeof InventoryBlockSchema>;
+export type TrackerBlock = z.infer<typeof TrackerBlockSchema>;
+export type StatGroupBlock = z.infer<typeof StatGroupBlockSchema>;
+export type CardBlock = z.infer<typeof CardBlockSchema>;
+export type PipArrayBlock = z.infer<typeof PipArrayBlockSchema>;
+export type NotesBlock = z.infer<typeof NotesBlockSchema>;
+export type ProfileBlock = z.infer<typeof ProfileBlockSchema>;
+export type SkillEntry = z.infer<typeof SkillEntrySchema>;
+export type SkillListData = z.infer<typeof SkillListDataSchema>;
+export type SkillListBlock = z.infer<typeof SkillListBlockSchema>;
 
 // ---------- Reserved reset-tag vocabulary ----------
 // Reset tags are ordinary strings in `tags[]` — the schema does not special-

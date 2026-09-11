@@ -180,6 +180,26 @@ const InventoryBlockSchema = z.object({
   data: InventoryDataSchema,
 });
 
+const SkillEntrySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  stat: z.string().default(""), // e.g. "STR", "DEX", "INT"
+  value: z.string().default("+0"), // e.g. "+5", "65%", "2d6"
+  proficiency: z.number().int().min(0).max(2).default(0), // 0: None, 1: Proficient, 2: Expertise
+  notes: z.string().optional(),
+});
+
+const SkillListDataSchema = z.object({
+  skills: z.array(SkillEntrySchema),
+  sortMode: z.enum(["custom", "alpha", "stat"]).default("custom"),
+});
+
+const SkillListBlockSchema = z.object({
+  ...BaseBlockFields,
+  type: z.literal("skill_list"),
+  data: SkillListDataSchema,
+});
+
 export const BlockSchema = z.discriminatedUnion("type", [
   TrackerBlockSchema,
   StatGroupBlockSchema,
@@ -188,6 +208,7 @@ export const BlockSchema = z.discriminatedUnion("type", [
   NotesBlockSchema,
   ProfileBlockSchema,
   InventoryBlockSchema,
+  SkillListBlockSchema,
 ]);
 
 // ---------- Root character document ----------
@@ -219,6 +240,9 @@ export type CardBlock = z.infer<typeof CardBlockSchema>;
 export type PipArrayBlock = z.infer<typeof PipArrayBlockSchema>;
 export type NotesBlock = z.infer<typeof NotesBlockSchema>;
 export type ProfileBlock = z.infer<typeof ProfileBlockSchema>;
+export type SkillEntry = z.infer<typeof SkillEntrySchema>;
+export type SkillListData = z.infer<typeof SkillListDataSchema>;
+export type SkillListBlock = z.infer<typeof SkillListBlockSchema>;
 
 // ---------- Reserved reset-tag vocabulary ----------
 // Reset tags are ordinary strings in `tags[]` — the schema does not special-
