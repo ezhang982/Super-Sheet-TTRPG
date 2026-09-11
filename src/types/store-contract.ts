@@ -74,7 +74,11 @@ export interface CharacterStore {
   removeRestAction: (id: string) => void;
 
   // ---- Persistence ----
+  saveStatus: "saved" | "saving" | "idle";
   newCharacter: (template?: Character) => void;
+  loadCharacterById: (id: string) => Promise<boolean>;
+  duplicateCharacter: (id: string) => Promise<string | null>;
+  deleteCharacter: (id: string) => Promise<boolean>;
   importCharacter: (json: unknown) => { success: true } | { success: false; error: string };
   exportCharacter: () => Character;
   exportTemplate: () => Character; // strips meta.name + all instance values, keeps layout/tags/theme

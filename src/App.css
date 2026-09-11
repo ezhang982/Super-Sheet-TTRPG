@@ -1226,13 +1226,19 @@
 }
 
 /* =============================================================================
-   11. MINIMAL BOTTOM UNDO / REDO BAR
+   11. MINIMAL BOTTOM CONTROLS & AUTOSAVE BADGE
    ============================================================================= */
-.bottom-history-bar {
+.bottom-left-controls {
   position: fixed;
   bottom: 16px;
   left: 20px;
   z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bottom-history-bar {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1248,6 +1254,42 @@
 .bottom-history-bar.disabled {
   opacity: 0;
   pointer-events: none;
+}
+
+.autosave-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(28, 30, 36, 0.75);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 4px 9px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.autosave-badge.saving {
+  color: #e5c07b;
+  border-color: rgba(229, 192, 123, 0.4);
+}
+
+.autosave-badge.saved .autosave-check {
+  color: #98c379;
+  font-weight: 700;
+}
+
+.autosave-badge.saving .autosave-spinner {
+  display: inline-block;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .history-icon-btn {

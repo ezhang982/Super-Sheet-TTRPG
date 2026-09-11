@@ -5,6 +5,7 @@ import type { BlockType } from "../types/schema";
 import { ThemeDrawer } from "./ThemeDrawer";
 import { RestActionModal } from "./RestActionModal";
 import { NewCharacterModal } from "./NewCharacterModal";
+import { CharacterSwitcherModal } from "./CharacterSwitcherModal";
 
 export const FloatingToolsMenu: React.FC = () => {
   const mode = useCharacterStore((state) => state.mode);
@@ -19,6 +20,7 @@ export const FloatingToolsMenu: React.FC = () => {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isRestModalOpen, setIsRestModalOpen] = useState(false);
   const [isNewCharOpen, setIsNewCharOpen] = useState(false);
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -207,6 +209,17 @@ export const FloatingToolsMenu: React.FC = () => {
               ✨ + New Sheet
             </button>
 
+            <button
+              type="button"
+              className="tools-btn"
+              onClick={() => {
+                setIsSwitcherOpen(true);
+                setIsOpen(false);
+              }}
+            >
+              👥 Switch Character
+            </button>
+
             {mode === "edit" && (
               <div className="tools-menu-item-group">
                 <button
@@ -320,6 +333,14 @@ export const FloatingToolsMenu: React.FC = () => {
         isOpen={isNewCharOpen}
         onClose={() => setIsNewCharOpen(false)}
         onToast={showToast}
+      />
+
+      {/* Character Switcher Modal */}
+      <CharacterSwitcherModal
+        isOpen={isSwitcherOpen}
+        onClose={() => setIsSwitcherOpen(false)}
+        onToast={showToast}
+        onOpenNewModal={() => setIsNewCharOpen(true)}
       />
 
       {/* Error Modal rendered via createPortal */}
