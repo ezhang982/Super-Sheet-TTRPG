@@ -74,6 +74,7 @@ export interface CharacterStore {
   removeRestAction: (id: string) => void;
 
   // ---- Persistence ----
+  newCharacter: (template?: Character) => void;
   importCharacter: (json: unknown) => { success: true } | { success: false; error: string };
   exportCharacter: () => Character;
   exportTemplate: () => Character; // strips meta.name + all instance values, keeps layout/tags/theme

@@ -181,14 +181,58 @@ keep multi-session AI-assisted work from drifting.
 - [x] "Export as Clean Template" (`exportTemplate` wired with instant toast notifications)
 - [x] Mobile Play Mode single-column reflow (`.mobile-single-column-flow` with touch-friendly controls)
 - [x] Custom Rest Action add/remove UI (`RestActionModal.tsx` accessible via FAB and Play Mode rest bar)
-- [x] Final audit: zero-formula friction, undo/redo scope matches §8.3, mobile Play Mode usability, all 4 test suites green
-- **Gate:** full MVP completed, verified, and ready for release.
+- [x] Final audit: zero-formula friction, undo/redo scope matches §8.3, mobile Play Mode usability, all test suites green
+- **Gate:** full MVP completed, verified, and released.
 
 ### ✅ Post-MVP Enhancements (Inventory, Context Menu, Native File System)
 - [x] Modern File System Access API (`window.showSaveFilePicker`) for native Save As dialog allowing folder selection on export (with automatic fallback).
 - [x] Edit Mode Right-Click Card Context Menu (`CardContextMenu.tsx`) eliminating card header bloat (Customize Style, Rename, Add Tag, Move to Tab, Delete).
 - [x] Container / Inventory List Primitive (`InventoryBlock.tsx`, `type: "inventory"`): items with quantity steppers, unit weights, costs, equipped status, markdown notes, currencies, carrying capacity meter, and item charges with rest engine recharge.
 - [x] Comprehensive user-facing `README.md` and complete regression verification test suite (`verify-inventory.ts`).
+
+### ✅ Phase 5 — Template Engine Refinement & Starter Templates
+- [x] Refactor `exportTemplate` in `useCharacterStore.ts` to follow the **Template Scrubbing Contract**:
+      clears personal identity (name, player, level, xp), stat scores/modifiers, notes, and inventory
+      items, while preserving layouts, themes, stat labels, pip totals, card ability text, and capacity settings.
+- [x] Author bundled built-in starter templates inspired by official D&D 2024 and third-party references
+      (`dnd5e.ts` with 4 organized tabs: Combat & Core, Spells & Magic, Features & Traits, Inventory & Lore; and `blank.ts`).
+- [x] Template Registry (`src/templates/index.ts`) for modular template indexing and metadata.
+- [x] "New Character Sheet" flow: "+ New Sheet" action in `FloatingToolsMenu.tsx` with `NewCharacterModal.tsx`
+      enabling 1-click loading of Blank Canvas, D&D 5e Starter, or JSON import.
+- [x] Add `newCharacter` action to store contract and implementation.
+- [x] Regression verification suite `verify-phase5.ts` passing 100%.
+- **Gate:** clean template export confirmed; starter templates validated against Zod schema; full test suite passing.
+
+### 🔮 Phase 6 — Skill List Primitive (`type: "skill_list"`)
+- [ ] Universal game-agnostic Skills Block: custom skill entries with name, associated stat tag, flexible modifier/score
+      string (e.g. `+5`, `65%`, `2d6`), and cycleable proficiency states (untrained, proficient, expertise, or custom dots).
+- [ ] Edit Mode: fast inline add/remove, reordering, and stat linking.
+- [ ] Play Mode: live search/filter bar to locate skills quickly during gameplay, click-to-cycle proficiency.
+- [ ] Backward compatibility with existing sheets and template export scrubbing.
+
+### 🔮 Phase 7 — Free & Reliable Persistence (IndexedDB & Multi-Character Switcher)
+- [ ] Migrate local persistence from 5MB `localStorage` to zero-dependency asynchronous `IndexedDB`.
+- [ ] Character Switcher modal: manage multiple local character sheets, switch active character, duplicate, delete.
+- [ ] Autosave indicators ("Saved locally") with automatic snapshot backups.
+
+---
+
+## 5.1 Template Scrubbing Contract
+
+When exporting a character as a reusable template (`exportTemplate`):
+- **Preserved (Structural & System Configuration):**
+  - All tabs, names, order, and `layouts` grid configurations.
+  - Global theme (fonts, canvas/card backgrounds, borders, accent colors) and individual block custom styles.
+  - Block titles, tags, and types.
+  - `stat_group`: attribute labels (`STR`, `DEX`, etc.) are retained; `score` and `sub` are reset to `""`.
+  - `pip_array`: row labels and `total` pips are retained; `expended` is reset to `0`.
+  - `tracker`: `current` is reset to `max`; `temp` is reset to `0`.
+  - `card`: badge, tags, title, and description (retaining class features, spell rules, action economy reminders); embedded tracker `current = max`.
+  - `inventory`: container title, tags, currencies dictionary (zeroed), and capacity configuration (`maxWeight`, `enabled`) are retained; `items` array is scrubbed to `[]`.
+- **Scrubbed (Personal Instance Data):**
+  - `meta.name` -> `${character.meta.name} (Template)` or custom name.
+  - `profile`: `characterName`, `playerName`, `level`, `experience`, `extraInfo` reset to `""`. `system` is retained.
+  - `notes`: `markdown` reset to `""`.
 
 ---
 

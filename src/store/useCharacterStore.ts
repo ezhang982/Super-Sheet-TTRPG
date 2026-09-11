@@ -17,6 +17,7 @@ import {
   saveCharacterToStorage,
   exportCharacterAsJson,
 } from "./storage";
+import { blankTemplate } from "../templates/blank";
 
 function deepMerge<T extends Record<string, unknown>>(target: T, patch: Record<string, unknown>): T {
   const output = { ...target };
@@ -538,6 +539,23 @@ export const useCharacterStore = create<CharacterStore>()(
       },
 
       // ---- Persistence ----
+      newCharacter: (template?: Character) => {
+        const base = template ?? blankTemplate;
+        const newId = `char_${crypto.randomUUID()}`;
+        const now = Date.now();
+        const freshChar: Character = {
+          ...base,
+          meta: {
+            ...base.meta,
+            id: newId,
+            createdAt: now,
+            updatedAt: now,
+          },
+        };
+        set({ character: freshChar, activeTagFilter: null, mode: "edit" });
+        saveCharacterToStorage(freshChar);
+      },
+
       importCharacter: (json: unknown) => {
         const result = CharacterSchema.safeParse(json);
         if (!result.success) {
@@ -597,12 +615,42 @@ export const useCharacterStore = create<CharacterStore>()(
               ...block,
               data: {
                 ...block.data,
-                items: block.data.items.map((it) => ({
-                  ...it,
-                  charges: it.charges
-                    ? { ...it.charges, current: it.charges.max }
-                    : undefined,
+                items: [], // Clear instance items
+                currency: block.data.currency
+                  ? Object.fromEntries(Object.keys(block.data.currency).map((k) => [k, "0"]))
+                  : undefined,
+              },
+            };
+          } else if (block.type === "profile") {
+            cleanedBlocks[id] = {
+              ...block,
+              data: {
+                ...block.data,
+                characterName: "",
+                playerName: "",
+                level: "",
+                experience: "",
+                extraInfo: "",
+              },
+            };
+          } else if (block.type === "stat_group") {
+            cleanedBlocks[id] = {
+              ...block,
+              data: {
+                ...block.data,
+                stats: block.data.stats.map((s) => ({
+                  ...s,
+                  score: "",
+                  sub: "",
                 })),
+              },
+            };
+          } else if (block.type === "notes") {
+            cleanedBlocks[id] = {
+              ...block,
+              data: {
+                ...block.data,
+                markdown: "",
               },
             };
           }

@@ -213,6 +213,12 @@ export type CharacterMeta = z.infer<typeof CharacterMetaSchema>;
 export type InventoryItem = z.infer<typeof InventoryItemSchema>;
 export type InventoryData = z.infer<typeof InventoryDataSchema>;
 export type InventoryBlock = z.infer<typeof InventoryBlockSchema>;
+export type TrackerBlock = z.infer<typeof TrackerBlockSchema>;
+export type StatGroupBlock = z.infer<typeof StatGroupBlockSchema>;
+export type CardBlock = z.infer<typeof CardBlockSchema>;
+export type PipArrayBlock = z.infer<typeof PipArrayBlockSchema>;
+export type NotesBlock = z.infer<typeof NotesBlockSchema>;
+export type ProfileBlock = z.infer<typeof ProfileBlockSchema>;
 
 // ---------- Reserved reset-tag vocabulary ----------
 // Reset tags are ordinary strings in `tags[]` — the schema does not special-

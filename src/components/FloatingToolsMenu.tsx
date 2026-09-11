@@ -4,6 +4,7 @@ import { useCharacterStore } from "../store/useCharacterStore";
 import type { BlockType } from "../types/schema";
 import { ThemeDrawer } from "./ThemeDrawer";
 import { RestActionModal } from "./RestActionModal";
+import { NewCharacterModal } from "./NewCharacterModal";
 
 export const FloatingToolsMenu: React.FC = () => {
   const mode = useCharacterStore((state) => state.mode);
@@ -17,6 +18,7 @@ export const FloatingToolsMenu: React.FC = () => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isRestModalOpen, setIsRestModalOpen] = useState(false);
+  const [isNewCharOpen, setIsNewCharOpen] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -188,6 +190,23 @@ export const FloatingToolsMenu: React.FC = () => {
           </div>
 
           <div className="tools-menu-items">
+            <button
+              type="button"
+              className="tools-btn"
+              style={{
+                background: "linear-gradient(135deg, rgba(224, 108, 117, 0.18), rgba(97, 175, 239, 0.18))",
+                borderColor: "var(--accent-color, #e06c75)",
+                fontWeight: 600,
+                color: "var(--accent-color, #e06c75)",
+              }}
+              onClick={() => {
+                setIsNewCharOpen(true);
+                setIsOpen(false);
+              }}
+            >
+              ✨ + New Sheet
+            </button>
+
             {mode === "edit" && (
               <div className="tools-menu-item-group">
                 <button
@@ -291,6 +310,13 @@ export const FloatingToolsMenu: React.FC = () => {
       <RestActionModal
         isOpen={isRestModalOpen}
         onClose={() => setIsRestModalOpen(false)}
+      />
+
+      {/* New Character Sheet Modal */}
+      <NewCharacterModal
+        isOpen={isNewCharOpen}
+        onClose={() => setIsNewCharOpen(false)}
+        onToast={showToast}
       />
 
       {/* Error Modal rendered via createPortal */}
