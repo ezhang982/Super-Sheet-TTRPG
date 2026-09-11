@@ -219,6 +219,34 @@ export const useCharacterStore = create<CharacterStore>()(
                 capacity: { enabled: true, maxWeight: 60 },
               };
               break;
+            case "skill_list":
+              data = {
+                skills: [
+                  {
+                    id: `skill_${crypto.randomUUID()}`,
+                    name: "Athletics",
+                    stat: "STR",
+                    value: "+2",
+                    proficiency: 1,
+                  },
+                  {
+                    id: `skill_${crypto.randomUUID()}`,
+                    name: "Stealth",
+                    stat: "DEX",
+                    value: "+4",
+                    proficiency: 1,
+                  },
+                  {
+                    id: `skill_${crypto.randomUUID()}`,
+                    name: "Perception",
+                    stat: "WIS",
+                    value: "+3",
+                    proficiency: 1,
+                  },
+                ],
+                sortMode: "alpha",
+              };
+              break;
           }
         }
 
@@ -230,6 +258,7 @@ export const useCharacterStore = create<CharacterStore>()(
           notes: "New Notes",
           profile: "Character Profile",
           inventory: "Inventory & Items",
+          skill_list: "Skills",
         };
 
         const newBlock = {
@@ -248,8 +277,8 @@ export const useCharacterStore = create<CharacterStore>()(
           i: blockId,
           x: 0,
           y: maxY,
-          w: type === "notes" || type === "inventory" ? 12 : type === "tracker" ? 4 : 6,
-          h: type === "inventory" ? 5 : 3,
+          w: type === "notes" ? 12 : type === "tracker" ? 4 : 6,
+          h: type === "inventory" || type === "skill_list" ? 5 : 3,
         };
 
         set({
@@ -651,6 +680,18 @@ export const useCharacterStore = create<CharacterStore>()(
               data: {
                 ...block.data,
                 markdown: "",
+              },
+            };
+          } else if (block.type === "skill_list") {
+            cleanedBlocks[id] = {
+              ...block,
+              data: {
+                ...block.data,
+                skills: block.data.skills.map((sk) => ({
+                  ...sk,
+                  value: "",
+                  proficiency: 0,
+                })),
               },
             };
           }

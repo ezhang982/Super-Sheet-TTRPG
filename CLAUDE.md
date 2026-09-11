@@ -104,7 +104,7 @@ custom properties. No Tailwind, no CSS-in-JS, no backend, no ORM, no auth.
 
 `tracker`, `stat_group` (called "Stat Pill" in UI copy), `card` (Action/
 Feature Card), `pip_array` (Pip Matrix), `notes`, `profile` (Character
-Profile & Identity Card), and `inventory` (Container / Inventory List). Full field specs are in `schema.ts`; UX behavior per
+Profile & Identity Card), `inventory` (Container / Inventory List), and `skill_list` (Skills List Block). Full field specs are in `schema.ts`; UX behavior per
 primitive is in the blueprint §5 and wireframes. Rest logic applies to block tags and item-level tags.
 
 ---
@@ -203,12 +203,15 @@ keep multi-session AI-assisted work from drifting.
 - [x] Regression verification suite `verify-phase5.ts` passing 100%.
 - **Gate:** clean template export confirmed; starter templates validated against Zod schema; full test suite passing.
 
-### 🔮 Phase 6 — Skill List Primitive (`type: "skill_list"`)
-- [ ] Universal game-agnostic Skills Block: custom skill entries with name, associated stat tag, flexible modifier/score
-      string (e.g. `+5`, `65%`, `2d6`), and cycleable proficiency states (untrained, proficient, expertise, or custom dots).
-- [ ] Edit Mode: fast inline add/remove, reordering, and stat linking.
-- [ ] Play Mode: live search/filter bar to locate skills quickly during gameplay, click-to-cycle proficiency.
-- [ ] Backward compatibility with existing sheets and template export scrubbing.
+### ✅ Phase 6 — Skill List Primitive & Card Pop-Out Expansion
+- [x] Universal game-agnostic Skills Block (`type: "skill_list"`): custom skill entries with name, associated stat tag, flexible modifier/score
+      string (e.g. `+5`, `65%`, `2d6`), and cycleable proficiency states (None `○`, Proficient `●`, Expertise `⨂`).
+- [x] Edit Mode: fast inline add/remove, stat linking, and 1-click "Seed 5e Skills" preset.
+- [x] Play Mode: live search/filter bar to locate skills quickly during gameplay, click-to-cycle proficiency.
+- [x] Card Pop-Out / Expand-on-Focus (`⛶` button and context menu action): smoothly elevates any block into an expanded focus view via portal, allowing full inspection and comfortable editing without resizing cards or disrupting the 12-column grid.
+- [x] Backward compatibility with existing sheets and template export scrubbing.
+- [x] Regression verification suite `verify-phase6.ts` passing 100%.
+- **Gate:** skill list primitive verified with all 18 D&D 2024 skills; card popout functional without grid layout disruption; all test suites green.
 
 ### 🔮 Phase 7 — Free & Reliable Persistence (IndexedDB & Multi-Character Switcher)
 - [ ] Migrate local persistence from 5MB `localStorage` to zero-dependency asynchronous `IndexedDB`.
@@ -229,6 +232,7 @@ When exporting a character as a reusable template (`exportTemplate`):
   - `tracker`: `current` is reset to `max`; `temp` is reset to `0`.
   - `card`: badge, tags, title, and description (retaining class features, spell rules, action economy reminders); embedded tracker `current = max`.
   - `inventory`: container title, tags, currencies dictionary (zeroed), and capacity configuration (`maxWeight`, `enabled`) are retained; `items` array is scrubbed to `[]`.
+  - `skill_list`: skill names, associated stat tags, and sort order are retained; `value` is reset to `""` and `proficiency` is reset to `0`.
 - **Scrubbed (Personal Instance Data):**
   - `meta.name` -> `${character.meta.name} (Template)` or custom name.
   - `profile`: `characterName`, `playerName`, `level`, `experience`, `extraInfo` reset to `""`. `system` is retained.

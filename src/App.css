@@ -2850,3 +2850,385 @@
   color: var(--text-main);
 }
 
+/* =============================================================================
+   PHASE 6: SKILL LIST PRIMITIVE & CARD POP-OUT EXPANSION
+   ============================================================================= */
+
+/* Header Popout Button */
+.block-popout-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.block-popout-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text-main);
+  border-color: var(--accent-color);
+}
+
+/* Pop-out Full Focus View Overlay */
+.card-popout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: popoutOverlayFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoutOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.is-popout-view {
+  animation: popoutCardZoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-color) !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@keyframes popoutCardZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.popout-badge {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(224, 108, 117, 0.2);
+  color: var(--accent-color);
+  font-weight: 600;
+  margin-right: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.popout-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.popout-close-btn:hover {
+  background: rgba(224, 108, 117, 0.2);
+  color: #e06c75;
+}
+
+/* Hover Card Elevation in Canvas */
+.block-container {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color var(--transition-fast);
+}
+
+.block-container:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* --- Skill List Primitive --- */
+.skill-list-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 8px;
+}
+
+.skill-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.skill-search-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.skill-search-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.skill-search-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 24px 4px 26px;
+  font-size: 0.8rem;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.skill-search-input:focus {
+  border-color: var(--accent-color);
+}
+
+.skill-search-clear {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.skill-search-clear:hover {
+  color: var(--text-main);
+}
+
+.skill-sort-select {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 4px 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+.skill-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 60px;
+  padding-right: 2px;
+}
+
+.skill-empty-hint {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 16px 8px;
+  font-style: italic;
+}
+
+.skill-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s ease;
+}
+
+.skill-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.skill-row.proficient {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.skill-row.expertise {
+  background: rgba(229, 192, 123, 0.06);
+}
+
+.skill-prof-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease;
+}
+
+.skill-prof-btn:hover {
+  transform: scale(1.2);
+}
+
+.skill-prof-btn.prof-0 {
+  color: var(--text-dim);
+}
+
+.skill-prof-btn.prof-1 {
+  color: var(--accent-color);
+}
+
+.skill-prof-btn.prof-2 {
+  color: #e5c07b;
+}
+
+.skill-name-col {
+  flex: 1;
+  overflow: hidden;
+}
+
+.skill-name-label {
+  font-size: 0.84rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.skill-name-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  font-size: 0.84rem;
+  color: var(--text-main);
+}
+
+.skill-name-input:focus {
+  border-color: var(--accent-color);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.skill-stat-col {
+  width: 44px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.skill-stat-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.skill-stat-input {
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  color: var(--text-muted);
+}
+
+.skill-stat-input:focus {
+  border-color: var(--accent-color);
+  color: var(--text-main);
+}
+
+.skill-val-col {
+  width: 46px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.skill-val-display {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: monospace;
+}
+
+.skill-val-input {
+  width: 100%;
+  text-align: right;
+  font-size: 0.84rem;
+  font-weight: 700;
+  font-family: monospace;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  color: var(--text-main);
+}
+
+.skill-val-input:focus {
+  border-color: var(--accent-color);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.skill-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.skill-delete-btn:hover {
+  color: #e06c75;
+}
+
+.skill-list-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.skill-add-btn, .skill-preset-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.skill-add-btn:hover, .skill-preset-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  border-color: var(--accent-color);
+}
+
