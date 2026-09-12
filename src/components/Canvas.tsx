@@ -25,7 +25,7 @@ export const Canvas: React.FC = () => {
       y: item.y,
       w: item.w,
       h: item.h,
-      minW: 2,
+      minW: 1,
       minH: 1,
     }));
   }, [currentLayout]);
@@ -49,8 +49,20 @@ export const Canvas: React.FC = () => {
     return [...currentLayout].sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
   }, [currentLayout]);
 
+  const activeTab = character.tabs.find((t) => t.id === activeTabId);
+
   return (
     <main className={`canvas-wrapper ${mode === "play" ? "play-mode" : "edit-mode"}`} ref={containerRef}>
+      {/* Printable Sheet Header Banner (visible only in @media print) */}
+      <div className="print-sheet-header">
+        <div className="print-sheet-title">
+          {character.meta.name || "Character Sheet"}
+        </div>
+        <div className="print-sheet-meta">
+          {character.meta.system && <span>{character.meta.system} • </span>}
+          <span>Tab: {activeTab?.label || "Sheet"}</span>
+        </div>
+      </div>
       {currentLayout.length === 0 ? (
         <div className="empty-canvas-state">
           <h3>This tab has no blocks yet.</h3>
@@ -84,6 +96,7 @@ export const Canvas: React.FC = () => {
             }}
             resizeConfig={{
               enabled: mode === "edit",
+              handles: ["s", "e", "se"],
             }}
             layout={rglLayout}
             onDragStop={(layout) => handleCommitLayout(layout)}

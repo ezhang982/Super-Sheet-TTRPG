@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useCharacterVariables, useCharacterVariableDetails } from "../store/useCharacterVariables";
 import { isFormula, evaluateFormula } from "../utils/mathEngine";
 
@@ -27,9 +28,76 @@ export const FormulaInput: React.FC<FormulaInputProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownPos, setDropdownPos] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+  }>({ left: 0 });
+
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const updateDropdownPosition = () => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const dropdownWidth = 280;
+    const dropdownHeight = 260;
+
+    // Clamp horizontal position so it never overflows screen edges
+    let left = rect.left;
+    if (left + dropdownWidth > window.innerWidth - 12) {
+      left = Math.max(12, window.innerWidth - dropdownWidth - 12);
+    }
+    if (left < 12) {
+      left = 12;
+    }
+
+    // Determine vertical position: open upward if near bottom
+    const spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+      setDropdownPos({
+        bottom: window.innerHeight - rect.top + 4,
+        left,
+      });
+    } else {
+      setDropdownPos({
+        top: rect.bottom + 4,
+        left,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (showDropdown) {
+      updateDropdownPosition();
+      const handleResizeOrScroll = () => updateDropdownPosition();
+      window.addEventListener("resize", handleResizeOrScroll);
+      window.addEventListener("scroll", handleResizeOrScroll, true);
+      return () => {
+        window.removeEventListener("resize", handleResizeOrScroll);
+        window.removeEventListener("scroll", handleResizeOrScroll, true);
+      };
+    }
+  }, [showDropdown]);
+
+  // Click outside listener
+  useEffect(() => {
+    if (!showDropdown) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => window.removeEventListener("pointerdown", handlePointerDown);
+  }, [showDropdown]);
 
   // Live evaluation of current value
   const isFormulaValue = isFormula(value);
@@ -204,79 +272,92 @@ export const FormulaInput: React.FC<FormulaInputProps> = ({
         </div>
       )}
 
-      {/* Dropdown Variable Picker */}
-      {showDropdown && (
-        <div className="formula-autocomplete-dropdown" ref={dropdownRef}>
-          <div className="formula-autocomplete-header">
-            <span>Character Variables</span>
-            <span className="dropdown-hint">Click to insert</span>
-          </div>
+      {/* Dropdown Variable Picker via Portal */}
+      {showDropdown &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="formula-autocomplete-dropdown formula-portal-dropdown"
+            ref={dropdownRef}
+            style={{
+              position: "fixed",
+              left: `${dropdownPos.left}px`,
+              top: dropdownPos.top !== undefined ? `${dropdownPos.top}px` : undefined,
+              bottom: dropdownPos.bottom !== undefined ? `${dropdownPos.bottom}px` : undefined,
+              zIndex: 99999,
+            }}
+          >
+            <div className="formula-autocomplete-header">
+              <span>Character Variables</span>
+              <span className="dropdown-hint">Click to insert</span>
+            </div>
 
-          <div className="formula-search-bar">
-            <input
-              type="text"
-              placeholder="Search variables (e.g. STR, Prof)..."
-              value={searchQuery}
-              autoFocus
-              className="formula-dropdown-search"
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setSelectedIndex(0);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") setShowDropdown(false);
-                if (e.key === "Enter" && filteredVariables.length > 0) {
-                  e.preventDefault();
-                  handleSelectVariable(filteredVariables[selectedIndex].name);
-                }
-                if (e.key === "ArrowDown" && filteredVariables.length > 0) {
-                  e.preventDefault();
-                  setSelectedIndex((p) => (p + 1) % filteredVariables.length);
-                }
-                if (e.key === "ArrowUp" && filteredVariables.length > 0) {
-                  e.preventDefault();
-                  setSelectedIndex((p) => (p - 1 + filteredVariables.length) % filteredVariables.length);
-                }
-              }}
-            />
-          </div>
+            <div className="formula-search-bar">
+              <input
+                type="text"
+                placeholder="Search variables (e.g. STR, Prof)..."
+                value={searchQuery}
+                autoFocus
+                className="formula-dropdown-search"
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSelectedIndex(0);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setShowDropdown(false);
+                  if (e.key === "Enter" && filteredVariables.length > 0) {
+                    e.preventDefault();
+                    handleSelectVariable(filteredVariables[selectedIndex].name);
+                  }
+                  if (e.key === "ArrowDown" && filteredVariables.length > 0) {
+                    e.preventDefault();
+                    setSelectedIndex((p) => (p + 1) % filteredVariables.length);
+                  }
+                  if (e.key === "ArrowUp" && filteredVariables.length > 0) {
+                    e.preventDefault();
+                    setSelectedIndex((p) => (p - 1 + filteredVariables.length) % filteredVariables.length);
+                  }
+                }}
+              />
+            </div>
 
-          <div className="formula-autocomplete-scroll">
-            {filteredVariables.length === 0 ? (
-              <div className="formula-empty-hint">No variables match "{searchQuery}"</div>
-            ) : (
-              Object.entries(groupedVariables).map(([category, items]) => (
-                <div key={category} className="formula-var-category">
-                  <div className="category-title">{category}</div>
-                  <ul className="formula-autocomplete-list">
-                    {items.map((item) => {
-                      const globalIdx = filteredVariables.indexOf(item);
-                      const isSelected = globalIdx === selectedIndex;
-                      return (
-                        <li
-                          key={item.name}
-                          className={`formula-autocomplete-item ${isSelected ? "selected" : ""}`}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            handleSelectVariable(item.name);
-                          }}
-                          onMouseEnter={() => setSelectedIndex(globalIdx)}
-                        >
-                          <div className="var-info-left">
-                            <span className="var-name">{item.name}</span>
-                            {item.description && <span className="var-desc">{item.description}</span>}
-                          </div>
-                          <span className="var-val">{item.displayVal}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
+            <div className="formula-autocomplete-scroll">
+              {filteredVariables.length === 0 ? (
+                <div className="formula-empty-hint">No variables match "{searchQuery}"</div>
+              ) : (
+                Object.entries(groupedVariables).map(([category, items]) => (
+                  <div key={category} className="formula-var-category">
+                    <div className="category-title">{category}</div>
+                    <ul className="formula-autocomplete-list">
+                      {items.map((item) => {
+                        const globalIdx = filteredVariables.indexOf(item);
+                        const isSelected = globalIdx === selectedIndex;
+                        return (
+                          <li
+                            key={item.name}
+                            className={`formula-autocomplete-item ${isSelected ? "selected" : ""}`}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              handleSelectVariable(item.name);
+                            }}
+                            onMouseEnter={() => setSelectedIndex(globalIdx)}
+                          >
+                            <div className="var-info-left">
+                              <span className="var-name">{item.name}</span>
+                              {item.description && <span className="var-desc">{item.description}</span>}
+                            </div>
+                            <span className="var-val">{item.displayVal}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

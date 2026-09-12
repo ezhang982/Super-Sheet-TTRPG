@@ -14,10 +14,13 @@ export const TabBar: React.FC<TabBarProps> = ({ onOpenOmnisearch }) => {
   const addTab = useCharacterStore((state) => state.addTab);
   const renameTab = useCharacterStore((state) => state.renameTab);
   const removeTab = useCharacterStore((state) => state.removeTab);
+  const moveTab = useCharacterStore((state) => state.moveTab);
 
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState("");
   const [confirmDeleteTabId, setConfirmDeleteTabId] = useState<string | null>(null);
+  const [draggedTabIdx, setDraggedTabIdx] = useState<number | null>(null);
+  const [dragOverTabIdx, setDragOverTabIdx] = useState<number | null>(null);
 
   const handleStartRename = (tabId: string, currentLabel: string) => {
     if (mode !== "edit") return;
@@ -53,16 +56,48 @@ export const TabBar: React.FC<TabBarProps> = ({ onOpenOmnisearch }) => {
     <nav className="tab-bar">
       <div className="tab-bar-left">
         <div className="tab-list">
-          {character.tabs.map((tab) => {
+          {character.tabs.map((tab, idx) => {
             const isActive = tab.id === activeTabId;
             const isEditing = editingTabId === tab.id;
 
             return (
               <div
                 key={tab.id}
-                className={`tab-item ${isActive ? "active" : ""}`}
+                className={`tab-item ${isActive ? "active" : ""} ${draggedTabIdx === idx ? "dragging" : ""} ${dragOverTabIdx === idx ? "drag-over" : ""}`}
                 onClick={() => setActiveTab(tab.id)}
+                draggable={mode === "edit" && !isEditing}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("text/plain", `${idx}`);
+                  setDraggedTabIdx(idx);
+                }}
+                onDragOver={(e) => {
+                  if (mode !== "edit") return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverTabIdx !== idx) setDragOverTabIdx(idx);
+                }}
+                onDragLeave={() => {
+                  if (dragOverTabIdx === idx) setDragOverTabIdx(null);
+                }}
+                onDragEnd={() => {
+                  setDraggedTabIdx(null);
+                  setDragOverTabIdx(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedTabIdx !== null && draggedTabIdx !== idx) {
+                    moveTab(draggedTabIdx, idx);
+                  }
+                  setDraggedTabIdx(null);
+                  setDragOverTabIdx(null);
+                }}
               >
+                {mode === "edit" && (
+                  <span className="tab-drag-handle" title="Drag to reorder tab">
+                    ⋮⋮
+                  </span>
+                )}
+
                 {isEditing ? (
                   <input
                     type="text"
@@ -81,21 +116,43 @@ export const TabBar: React.FC<TabBarProps> = ({ onOpenOmnisearch }) => {
                   <span
                     className="tab-label"
                     onDoubleClick={() => handleStartRename(tab.id, tab.label)}
-                    title={mode === "edit" ? "Double-click to rename" : ""}
+                    title={mode === "edit" ? "Double-click to rename, or drag to reorder" : ""}
                   >
                     {tab.label}
                   </span>
                 )}
 
                 {mode === "edit" && character.tabs.length > 1 && (
-                  <button
-                    type="button"
-                    className="tab-delete-btn"
-                    title="Delete tab"
-                    onClick={(e) => handleDeleteClick(e, tab.id)}
-                  >
-                    ×
-                  </button>
+                  <div className="tab-action-group" onClick={(e) => e.stopPropagation()}>
+                    {idx > 0 && (
+                      <button
+                        type="button"
+                        className="tab-move-btn"
+                        title="Move tab left"
+                        onClick={() => moveTab(idx, idx - 1)}
+                      >
+                        ‹
+                      </button>
+                    )}
+                    {idx < character.tabs.length - 1 && (
+                      <button
+                        type="button"
+                        className="tab-move-btn"
+                        title="Move tab right"
+                        onClick={() => moveTab(idx, idx + 1)}
+                      >
+                        ›
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="tab-delete-btn"
+                      title="Delete tab"
+                      onClick={(e) => handleDeleteClick(e, tab.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
                 )}
               </div>
             );

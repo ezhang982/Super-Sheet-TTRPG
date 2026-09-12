@@ -9,6 +9,7 @@ import {
   type BlockStyle,
   type GlobalTheme,
   type LayoutItem,
+  type Tab,
 } from "../types/schema";
 import type { CharacterStore, Mode, RestAction } from "../types/store-contract";
 import {
@@ -173,6 +174,42 @@ export const useCharacterStore = create<CharacterStore>()(
             },
           });
         }
+      },
+
+      moveTab: (fromIndex: number, toIndex: number) => {
+        const { character } = get();
+        if (
+          fromIndex < 0 ||
+          fromIndex >= character.tabs.length ||
+          toIndex < 0 ||
+          toIndex >= character.tabs.length ||
+          fromIndex === toIndex
+        ) {
+          return;
+        }
+        const updatedTabs = [...character.tabs];
+        const [movedTab] = updatedTabs.splice(fromIndex, 1);
+        updatedTabs.splice(toIndex, 0, movedTab);
+
+        set({
+          character: {
+            ...character,
+            tabs: updatedTabs,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      reorderTabs: (newTabs: Tab[]) => {
+        const { character } = get();
+        if (newTabs.length !== character.tabs.length) return;
+        set({
+          character: {
+            ...character,
+            tabs: newTabs,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
       },
 
       // ---- Layout & Blocks ----
@@ -548,7 +585,7 @@ export const useCharacterStore = create<CharacterStore>()(
         set({ enableTagSuggestions: enabled });
       },
 
-      // ---- Theme ----
+      // ---- Theme & Tags ----
       setGlobalTheme: (patch: Partial<GlobalTheme>) => {
         const { character } = get();
         set({
@@ -561,6 +598,124 @@ export const useCharacterStore = create<CharacterStore>()(
             meta: { ...character.meta, updatedAt: Date.now() },
           },
         });
+      },
+
+      setTagColor: (tag: string, color: string) => {
+        const { character } = get();
+        const currentTagColors = character.theme.tagColors || {};
+        const formattedTag = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+        set({
+          character: {
+            ...character,
+            theme: {
+              ...character.theme,
+              tagColors: {
+                ...currentTagColors,
+                [formattedTag]: color,
+              },
+            },
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      removeTagColor: (tag: string) => {
+        const { character } = get();
+        if (!character.theme.tagColors) return;
+        const formattedTag = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+        const currentTagColors = { ...character.theme.tagColors };
+        delete currentTagColors[formattedTag];
+        set({
+          character: {
+            ...character,
+            theme: {
+              ...character.theme,
+              tagColors: currentTagColors,
+            },
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      renameTagGlobally: (oldTag: string, newTag: string) => {
+        const { character } = get();
+        const oldFormatted = oldTag.startsWith("#") ? oldTag.toLowerCase() : `#${oldTag.toLowerCase()}`;
+        const newFormatted = newTag.startsWith("#") ? newTag : `#${newTag}`;
+        let changed = false;
+
+        const updatedBlocks = { ...character.blocks };
+        for (const [id, block] of Object.entries(updatedBlocks)) {
+          const hasTag = block.tags.some((t) => t.toLowerCase() === oldFormatted);
+          if (hasTag) {
+            changed = true;
+            updatedBlocks[id] = {
+              ...block,
+              tags: block.tags.map((t) => (t.toLowerCase() === oldFormatted ? newFormatted : t)),
+            };
+          }
+        }
+
+        let updatedTagColors = character.theme.tagColors;
+        if (updatedTagColors && updatedTagColors[oldFormatted]) {
+          const color = updatedTagColors[oldFormatted];
+          updatedTagColors = { ...updatedTagColors };
+          delete updatedTagColors[oldFormatted];
+          updatedTagColors[newFormatted.toLowerCase()] = color;
+          changed = true;
+        }
+
+        if (changed) {
+          set({
+            character: {
+              ...character,
+              blocks: updatedBlocks,
+              theme: {
+                ...character.theme,
+                tagColors: updatedTagColors,
+              },
+              meta: { ...character.meta, updatedAt: Date.now() },
+            },
+          });
+        }
+      },
+
+      deleteTagGlobally: (tag: string) => {
+        const { character } = get();
+        const targetFormatted = tag.startsWith("#") ? tag.toLowerCase() : `#${tag.toLowerCase()}`;
+        let changed = false;
+
+        const updatedBlocks = { ...character.blocks };
+        for (const [id, block] of Object.entries(updatedBlocks)) {
+          const hasTag = block.tags.some((t) => t.toLowerCase() === targetFormatted);
+          if (hasTag) {
+            changed = true;
+            updatedBlocks[id] = {
+              ...block,
+              tags: block.tags.filter((t) => t.toLowerCase() !== targetFormatted),
+            };
+          }
+        }
+
+        let updatedTagColors = character.theme.tagColors;
+        if (updatedTagColors && updatedTagColors[targetFormatted]) {
+          updatedTagColors = { ...updatedTagColors };
+          delete updatedTagColors[targetFormatted];
+          changed = true;
+        }
+
+        if (changed) {
+          set({
+            character: {
+              ...character,
+              blocks: updatedBlocks,
+              theme: {
+                ...character.theme,
+                tagColors: updatedTagColors,
+              },
+              meta: { ...character.meta, updatedAt: Date.now() },
+            },
+          });
+        }
       },
 
       // ---- Rest Engine ----
@@ -661,7 +816,7 @@ export const useCharacterStore = create<CharacterStore>()(
 
       // ---- Persistence ----
       newCharacter: (template?: Character) => {
-        const base = template ?? blankTemplate;
+        const base = (template && typeof template === "object" && "meta" in template && "layouts" in template) ? template : blankTemplate;
         const newId = `char_${crypto.randomUUID()}`;
         const now = Date.now();
         const freshChar: Character = {
@@ -675,6 +830,7 @@ export const useCharacterStore = create<CharacterStore>()(
         };
         set({ character: freshChar, activeTagFilter: null, mode: "edit" });
         saveCharacterToStorage(freshChar);
+        get().clearHistory();
       },
 
       loadCharacterById: async (id: string) => {
@@ -685,6 +841,7 @@ export const useCharacterStore = create<CharacterStore>()(
         if (!found) return false;
         set({ character: found, activeTagFilter: null, saveStatus: "saved" });
         saveCharacterToStorage(found);
+        get().clearHistory();
         return true;
       },
 
@@ -717,6 +874,7 @@ export const useCharacterStore = create<CharacterStore>()(
         }
         set({ character: result.data });
         saveCharacterToStorage(result.data);
+        get().clearHistory();
         return { success: true };
       },
 
@@ -846,6 +1004,12 @@ export const useCharacterStore = create<CharacterStore>()(
         const temporalState = (useCharacterStore as unknown as { temporal?: { getState: () => { redo: () => void } } })
           .temporal?.getState();
         temporalState?.redo();
+      },
+
+      clearHistory: () => {
+        const temporalState = (useCharacterStore as unknown as { temporal?: { getState: () => { clear: () => void } } })
+          .temporal?.getState();
+        temporalState?.clear();
       },
     }),
     {

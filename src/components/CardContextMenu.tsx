@@ -34,6 +34,17 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
   const duplicateBlock = useCharacterStore((state) => state.duplicateBlock);
   const moveBlockToTab = useCharacterStore((state) => state.moveBlockToTab);
+  const updateTabLayout = useCharacterStore((state) => state.updateTabLayout);
+
+  const layout = character.layouts[tabId] ?? [];
+  const currentLayoutItem = layout.find((item) => item.i === block.id);
+
+  const handleSetWidthPreset = (w: number) => {
+    if (!currentLayoutItem) return;
+    const newLayout = layout.map((item) => (item.i === block.id ? { ...item, w } : item));
+    updateTabLayout(tabId, newLayout);
+    onClose();
+  };
 
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -169,6 +180,33 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
                   }}
                 >
                   ↳ {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Quick Width Presets */}
+        {currentLayoutItem && (
+          <div className="context-submenu-group">
+            <div className="context-menu-label">
+              <span className="context-item-icon">📐</span>
+              <span>Quick Width</span>
+            </div>
+            <div className="context-tab-options">
+              {[
+                { label: "Full (12)", w: 12 },
+                { label: "Half (6)", w: 6 },
+                { label: "1/3 (4)", w: 4 },
+                { label: "1/4 (3)", w: 3 },
+              ].map((p) => (
+                <button
+                  key={p.w}
+                  type="button"
+                  className={`context-tab-btn ${currentLayoutItem.w === p.w ? "active" : ""}`}
+                  onClick={() => handleSetWidthPreset(p.w)}
+                >
+                  {p.label}
                 </button>
               ))}
             </div>

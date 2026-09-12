@@ -3,9 +3,48 @@ import ReactMarkdown from "react-markdown";
 import type { Block } from "../../types/schema";
 import { evaluateQuickMath, interpolateTextFormulas } from "../../utils/mathEngine";
 import { useCharacterVariables } from "../../store/useCharacterVariables";
+import { useRevertToast } from "../../store/useRevertToast";
+import { DICE_REGEX, rollDice, copyDiceCommand } from "../../utils/diceRolls";
 import { VariableInsertButton } from "../VariableInsertButton";
 
 type CardBlockType = Extract<Block, { type: "card" }>;
+
+const DiceRollChip: React.FC<{ notation: string }> = ({ notation }) => {
+  const [copied, setCopied] = useState(false);
+  const [rolledVal, setRolledVal] = useState<number | null>(null);
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const res = rollDice(notation);
+    if (res) {
+      setRolledVal(res.total);
+    }
+    await copyDiceCommand(notation);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+      setRolledVal(null);
+    }, 2500);
+  };
+
+  return (
+    <button
+      type="button"
+      className="dice-roll-chip"
+      onClick={handleClick}
+      title="Click to roll and copy /roll command to clipboard"
+    >
+      🎲 {notation}
+      {rolledVal !== null && <span className="dice-rolled-val"> = {rolledVal}</span>}
+      {copied && <span className="dice-copied-badge">✓ Copied</span>}
+    </button>
+  );
+};
+
+function formatMarkdownWithDice(text: string): string {
+  return text.replace(DICE_REGEX, (match) => `[${match}](#dice:${match.replace(/\s+/g, "")})`);
+}
 
 interface FeatureCardBlockProps {
   block: CardBlockType;
@@ -21,6 +60,7 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
   const data = block.data;
   const tracker = data.tracker;
   const variables = useCharacterVariables();
+  const showToast = useRevertToast((state) => state.showToast);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [editTab, setEditTab] = useState<"edit" | "preview">("edit");
@@ -48,6 +88,7 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
 
   const handleAdjustTracker = (delta: number) => {
     if (!tracker || !tracker.enabled) return;
+    const prev = tracker.current;
     const newCurrent = Math.max(0, Math.min(tracker.max, tracker.current + delta));
     onUpdateData({
       tracker: {
@@ -55,10 +96,16 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
         current: newCurrent,
       },
     });
+    if (mode === "play" && prev !== newCurrent) {
+      showToast(`${block.title}: ${prev} → ${newCurrent}`, () => {
+        onUpdateData({ tracker: { ...tracker, current: prev } });
+      });
+    }
   };
 
   const handleCommitTrackerQuickMath = () => {
     if (!tracker || !tracker.enabled) return;
+    const prev = tracker.current;
     const nextVal = evaluateQuickMath(tracker.current, trackerInputVal, 0, tracker.max);
     onUpdateData({
       tracker: {
@@ -67,10 +114,16 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
       },
     });
     setIsEditingTracker(false);
+    if (mode === "play" && prev !== nextVal) {
+      showToast(`${block.title}: ${prev} → ${nextVal}`, () => {
+        onUpdateData({ tracker: { ...tracker, current: prev } });
+      });
+    }
   };
 
   const handleToggleTrackerPip = (index: number) => {
     if (!tracker || !tracker.enabled) return;
+    const prev = tracker.current;
     // Pips available count is tracker.current
     const isAvailable = index < tracker.current;
     let newCurrent: number;
@@ -79,12 +132,18 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
     } else {
       newCurrent = index + 1;
     }
+    const finalVal = Math.max(0, Math.min(tracker.max, newCurrent));
     onUpdateData({
       tracker: {
         ...tracker,
-        current: Math.max(0, Math.min(tracker.max, newCurrent)),
+        current: finalVal,
       },
     });
+    if (mode === "play" && prev !== finalVal) {
+      showToast(`${block.title}: ${prev} → ${finalVal}`, () => {
+        onUpdateData({ tracker: { ...tracker, current: prev } });
+      });
+    }
   };
 
   if (mode === "edit") {
@@ -287,8 +346,24 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
       {/* Markdown Content */}
       <div className={`card-body-content ${isExpanded ? "expanded" : "collapsed"}`}>
         <div className="prose-content">
-          <ReactMarkdown>
-            {interpolateTextFormulas(data.description || "_No description provided._", variables)}
+          <ReactMarkdown
+            components={{
+              a: ({ href, children, ...props }) => {
+                if (href?.startsWith("#dice:")) {
+                  const notation = href.replace("#dice:", "");
+                  return <DiceRollChip notation={notation} />;
+                }
+                return (
+                  <a href={href} target="_blank" rel="noreferrer" {...props}>
+                    {children}
+                  </a>
+                );
+              },
+            }}
+          >
+            {formatMarkdownWithDice(
+              interpolateTextFormulas(data.description || "_No description provided._", variables)
+            )}
           </ReactMarkdown>
         </div>
       </div>

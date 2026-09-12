@@ -5,6 +5,7 @@ import type {
   GlobalTheme,
   BlockStyle,
   LayoutItem,
+  Tab,
 } from "./schema";
 
 // =============================================================================
@@ -46,6 +47,8 @@ export interface CharacterStore {
   // (UI prompts confirmation if tab has blocks).
   removeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
+  moveTab: (fromIndex: number, toIndex: number) => void;
+  reorderTabs: (tabs: Tab[]) => void;
 
   // ---- Layout & blocks ----
   // updateTabLayout is committed ONCE per gesture from react-grid-layout's
@@ -66,8 +69,12 @@ export interface CharacterStore {
   enableTagSuggestions: boolean;
   setEnableTagSuggestions: (enabled: boolean) => void;
 
-  // ---- Theme ----
+  // ---- Theme & Tags ----
   setGlobalTheme: (patch: Partial<GlobalTheme>) => void;
+  setTagColor: (tag: string, color: string) => void;
+  removeTagColor: (tag: string) => void;
+  renameTagGlobally: (oldTag: string, newTag: string) => void;
+  deleteTagGlobally: (tag: string) => void;
 
   // ---- Rest engine ----
   // applyRest scans every block's tags[] for `tag`; matches reset per §6.1
@@ -94,4 +101,5 @@ export interface CharacterStore {
   // never touches persisted localStorage state. See CLAUDE.md §8.3.
   undo: () => void;
   redo: () => void;
+  clearHistory: () => void;
 }

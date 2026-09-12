@@ -25,9 +25,15 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
 }) => {
   const updateBlockStyle = useCharacterStore((state) => state.updateBlockStyle);
   const theme = useCharacterStore((state) => state.character.theme);
+  const activeTabId = useCharacterStore((state) => state.character.activeTabId);
+  const layouts = useCharacterStore((state) => state.character.layouts);
+  const updateTabLayout = useCharacterStore((state) => state.updateTabLayout);
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
+
+  const currentLayout = layouts[activeTabId] ?? [];
+  const currentLayoutItem = currentLayout.find((item) => item.i === block.id);
 
   const currentStyle = block.style || {};
   const currentOpacity =
@@ -35,6 +41,30 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
 
   const handleUpdate = (patch: Partial<BlockStyle>) => {
     updateBlockStyle(block.id, patch);
+  };
+
+  const handleUpdateLayout = (patch: { w?: number; h?: number }) => {
+    if (!currentLayoutItem) return;
+    const newLayout = currentLayout.map((item) =>
+      item.i === block.id
+        ? {
+            ...item,
+            w: patch.w !== undefined ? Math.max(1, Math.min(12, patch.w)) : item.w,
+            h: patch.h !== undefined ? Math.max(1, Math.min(30, patch.h)) : item.h,
+          }
+        : item
+    );
+    updateTabLayout(activeTabId, newLayout);
+  };
+
+  const handleAutoFitHeight = () => {
+    if (!currentLayoutItem) return;
+    const el = document.querySelector(`[data-block-id="${block.id}"]`) as HTMLElement | null;
+    if (!el) return;
+    const scrollH = el.scrollHeight;
+    // RGL rowHeight is 65px + 16px margin = 81px
+    const neededRows = Math.max(1, Math.ceil((scrollH + 16) / 81));
+    handleUpdateLayout({ h: neededRows });
   };
 
   const handleReset = () => {
@@ -213,6 +243,91 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
               )}
             </div>
           </div>
+
+          {/* Dimensions & Free Sizing */}
+          {currentLayoutItem && (
+            <div className="form-section dimensions-section">
+              <div className="section-title">📐 Dimensions & Grid Sizing</div>
+
+              <div className="form-row">
+                <div className="label-with-hint">
+                  <label>Width ({currentLayoutItem.w} / 12 columns)</label>
+                  <span className="field-hint">Horizontal width on the 12-column grid</span>
+                </div>
+                <div className="dimension-controls">
+                  <input
+                    type="range"
+                    min="1"
+                    max="12"
+                    value={currentLayoutItem.w}
+                    onChange={(e) => handleUpdateLayout({ w: Number(e.target.value) })}
+                    className="dimension-slider"
+                  />
+                  <div className="dimension-presets">
+                    {[
+                      { label: "1/4 (3)", w: 3 },
+                      { label: "1/3 (4)", w: 4 },
+                      { label: "1/2 (6)", w: 6 },
+                      { label: "2/3 (8)", w: 8 },
+                      { label: "Full (12)", w: 12 },
+                    ].map((p) => (
+                      <button
+                        key={p.w}
+                        type="button"
+                        className={`preset-btn ${currentLayoutItem.w === p.w ? "active" : ""}`}
+                        onClick={() => handleUpdateLayout({ w: p.w })}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="label-with-hint">
+                  <label>Height ({currentLayoutItem.h} rows)</label>
+                  <span className="field-hint">Vertical card height</span>
+                </div>
+                <div className="dimension-stepper-row">
+                  <button
+                    type="button"
+                    className="stepper-btn"
+                    disabled={currentLayoutItem.h <= 1}
+                    onClick={() => handleUpdateLayout({ h: currentLayoutItem.h - 1 })}
+                    title="Decrease height by 1 row"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={currentLayoutItem.h}
+                    onChange={(e) => handleUpdateLayout({ h: Number(e.target.value) })}
+                    className="dimension-num-input"
+                  />
+                  <button
+                    type="button"
+                    className="stepper-btn"
+                    disabled={currentLayoutItem.h >= 30}
+                    onClick={() => handleUpdateLayout({ h: currentLayoutItem.h + 1 })}
+                    title="Increase height by 1 row"
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary auto-fit-btn"
+                    onClick={handleAutoFitHeight}
+                    title="Calculate height to cleanly fit all card contents without scrollbars"
+                  >
+                    Auto-Fit Height
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">

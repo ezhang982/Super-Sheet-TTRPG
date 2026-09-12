@@ -7,6 +7,9 @@ import { FloatingToolsMenu } from "./components/FloatingToolsMenu";
 import { BottomHistoryBar } from "./components/BottomHistoryBar";
 import { OmnisearchModal } from "./components/OmnisearchModal";
 import { ShortcutsModal } from "./components/ShortcutsModal";
+import { SessionScratchpadModal } from "./components/SessionScratchpadModal";
+import { TagManagerModal } from "./components/TagManagerModal";
+import { PlayModeRevertToast } from "./components/PlayModeRevertToast";
 import "./App.css";
 
 export const App: React.FC = () => {
@@ -21,6 +24,8 @@ export const App: React.FC = () => {
 
   const [isOmnisearchOpen, setIsOmnisearchOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
+  const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
 
   // Dynamically inject theme properties into CSS custom variables on root element
   useEffect(() => {
@@ -122,6 +127,8 @@ export const App: React.FC = () => {
       <FloatingToolsMenu
         onOpenOmnisearch={() => setIsOmnisearchOpen(true)}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenScratchpad={() => setIsScratchpadOpen(true)}
+        onOpenTagManager={() => setIsTagManagerOpen(true)}
       />
 
       {/* Minimal Bottom Undo/Redo Bar */}
@@ -132,6 +139,8 @@ export const App: React.FC = () => {
         isOpen={isOmnisearchOpen}
         onClose={() => setIsOmnisearchOpen(false)}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenScratchpad={() => setIsScratchpadOpen(true)}
+        onOpenTagManager={() => setIsTagManagerOpen(true)}
       />
 
       {/* Keyboard Shortcuts Cheatsheet Modal (?) */}
@@ -139,6 +148,21 @@ export const App: React.FC = () => {
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
       />
+
+      {/* Ephemeral Session Scratchpad & Combat Log */}
+      <SessionScratchpadModal
+        isOpen={isScratchpadOpen}
+        onClose={() => setIsScratchpadOpen(false)}
+      />
+
+      {/* Visual Tag Manager & Color Palette */}
+      <TagManagerModal
+        isOpen={isTagManagerOpen}
+        onClose={() => setIsTagManagerOpen(false)}
+      />
+
+      {/* Play Mode Counter Revert Toast */}
+      <PlayModeRevertToast />
     </div>
   );
 };
