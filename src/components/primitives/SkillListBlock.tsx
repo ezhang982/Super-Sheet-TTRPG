@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from "react";
 import type { SkillListBlock as SkillListBlockType, SkillEntry, SkillListData } from "../../types/schema";
 import type { Mode } from "../../types/store-contract";
+import { FormulaInput } from "../FormulaInput";
+import { useCharacterVariables } from "../../store/useCharacterVariables";
+import { isFormula, evaluateFormula } from "../../utils/mathEngine";
 
 interface SkillListBlockProps {
   block: SkillListBlockType;
@@ -34,6 +37,7 @@ export const SkillListBlock: React.FC<SkillListBlockProps> = ({
   mode,
   onUpdateData,
 }) => {
+  const variables = useCharacterVariables();
   const [searchTerm, setSearchTerm] = useState("");
   const skills = block.data.skills ?? [];
   const sortMode = block.data.sortMode ?? "alpha";
@@ -214,18 +218,39 @@ export const SkillListBlock: React.FC<SkillListBlockProps> = ({
                   </div>
 
                   {/* Modifier / Value */}
-                  <div className="skill-val-col">
+                  <div className={`skill-val-col ${mode === "edit" ? "skill-val-edit-col" : ""}`}>
                     {mode === "edit" ? (
-                      <input
-                        type="text"
+                      <FormulaInput
                         className="skill-val-input"
                         value={skill.value}
-                        onChange={(e) => handleUpdateSkill(skill.id, { value: e.target.value })}
-                        placeholder="+0"
+                        onChange={(val) => handleUpdateSkill(skill.id, { value: val })}
+                        placeholder="+0 or = @DEX.mod + @Prof"
                       />
-                    ) : (
-                      <span className="skill-val-display">{skill.value || "+0"}</span>
-                    )}
+                    ) : (() => {
+                      if (isFormula(skill.value)) {
+                        const evalRes = evaluateFormula(skill.value, variables);
+                        if (evalRes.error) {
+                          return (
+                            <span
+                              className="skill-val-display formula-error"
+                              title={evalRes.explanation}
+                            >
+                              {evalRes.formatted}
+                            </span>
+                          );
+                        }
+                        return (
+                          <span
+                            className="skill-val-display formula-val"
+                            title={`fx: ${evalRes.explanation}`}
+                          >
+                            {evalRes.formatted}
+                            <span className="formula-fx-pill" title={`Formula: ${skill.value}`}>ƒx</span>
+                          </span>
+                        );
+                      }
+                      return <span className="skill-val-display">{skill.value || "+0"}</span>;
+                    })()}
                   </div>
 
                   {/* Delete Action (Edit Mode) */}

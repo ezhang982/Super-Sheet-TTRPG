@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Block, InventoryItem } from "../../types/schema";
+import { evaluateQuickMath, interpolateTextFormulas } from "../../utils/mathEngine";
+import { useCharacterVariables } from "../../store/useCharacterVariables";
 
 type InventoryBlockType = Extract<Block, { type: "inventory" }>;
 
@@ -16,12 +18,15 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
   onUpdateData,
 }) => {
   const data = block.data;
+  const variables = useCharacterVariables();
   const items = data.items || [];
   const currency = data.currency || { GP: "0", SP: "0", CP: "0" };
   const capacity = data.capacity || { enabled: false, maxWeight: 100 };
 
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingQtyItemId, setEditingQtyItemId] = useState<string | null>(null);
+  const [qtyInputVal, setQtyInputVal] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [newCurrencyKey, setNewCurrencyKey] = useState("");
   const [showCurrencyConfig, setShowCurrencyConfig] = useState(false);
@@ -648,9 +653,43 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
                     >
                       −
                     </button>
-                    <span className="qty-number" title="Quantity">
-                      {item.quantity}
-                    </span>
+                    {editingQtyItemId === item.id ? (
+                      <input
+                        type="text"
+                        className="direct-counter-input qty-counter-input"
+                        value={qtyInputVal}
+                        autoFocus
+                        placeholder="±N"
+                        style={{ width: "42px", textAlign: "center", padding: "1px 3px", fontSize: "0.85rem" }}
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => setQtyInputVal(e.target.value)}
+                        onBlur={() => {
+                          const nextVal = evaluateQuickMath(item.quantity, qtyInputVal, 0);
+                          updateItem(item.id, { quantity: nextVal });
+                          setEditingQtyItemId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const nextVal = evaluateQuickMath(item.quantity, qtyInputVal, 0);
+                            updateItem(item.id, { quantity: nextVal });
+                            setEditingQtyItemId(null);
+                          }
+                          if (e.key === "Escape") setEditingQtyItemId(null);
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="qty-number"
+                        title="Click to input relative math (e.g. +50, -5) or exact quantity"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          setQtyInputVal(item.quantity.toString());
+                          setEditingQtyItemId(item.id);
+                        }}
+                      >
+                        {item.quantity}
+                      </span>
+                    )}
                     <button
                       type="button"
                       className="qty-step-btn"
@@ -677,7 +716,7 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
                 {/* Expanded Details Drawer */}
                 {isExpanded && item.description && (
                   <div className="play-item-details-drawer prose-content">
-                    <ReactMarkdown>{item.description}</ReactMarkdown>
+                    <ReactMarkdown>{interpolateTextFormulas(item.description, variables)}</ReactMarkdown>
                   </div>
                 )}
               </div>
