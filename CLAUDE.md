@@ -221,6 +221,25 @@ keep multi-session AI-assisted work from drifting.
 - [x] Full regression verification suite `verify-phase7.ts` passing 100%.
 - **Gate:** Multi-character management and robust IndexedDB persistence verified end-to-end.
 
+### ✅ Phase 8 — Formula Engine & Dynamic Math Calculations
+- [x] Math Engine (`src/utils/mathEngine.ts`):
+      - Dynamic quick-math evaluator (`evaluateQuickMath`) parsing relative arithmetic (`+10`, `-14`, `*2`, `/2`) and direct expressions (`20 - 4`) with clamping.
+      - Character variable extractor (`extractCharacterVariables`): harvesting `@STR`, `@STR.mod`, `@HP.current`, `@HP.max`, `@Level`, `@XP`, and custom tagged values (`#prof:3`, `@PB:2`).
+      - Safe, zero-dependency formula evaluator (`evaluateFormula`) with recursive descent parser supporting arithmetic, parentheses, functions (`floor`, `ceil`, `round`, `min`, `max`, `abs`), and error states (`#REF!`, `#CIRCULAR!`, `#SYNTAX!`, `#DIV/0!`).
+      - 2-pass variable extraction allowing Stat Group modifiers to be derived from scores via formulas (e.g. `sub: "= floor((@STR - 10) / 2)"`).
+- [x] Dynamic Quick Math on Counter Elements:
+      - `TrackerBlock.tsx`: Hit points and temp counters allow single-click text entry with relative math (`+10`, `-15`, `/2`) and bounds clamping.
+      - `FeatureCardBlock.tsx`: Embedded tracker stepper supports click-to-edit quick math.
+      - `InventoryBlock.tsx`: Item quantity supports click-to-edit quick math (`+50`, `-5`).
+- [x] Formula UI & Autocomplete (`FormulaInput.tsx`):
+      - Live `@` autocomplete dropdown popup with keyboard navigation (`↑`/`↓`/`Enter`/`Tab`) showing available variables and current numeric values.
+      - Integrated into `SkillListBlock.tsx` and `StatGroupBlock.tsx`.
+- [x] Play Mode Formula Presentation:
+      - Clean display of evaluated results with subtle hover badge preview (`fx: = @DEX.mod + @Prof [3 + 2 = 5]`) and `ƒx` indicator pill.
+      - Graceful error indicator (`⚠️ #REF!`) when referencing undefined variables.
+- [x] Full regression test suite (`verify-phase8.ts` and all phases 1-7) passing 100%.
+- **Gate:** Quick math and system-agnostic formula evaluation verified with zero regressions.
+
 ---
 
 ## 5.1 Template Scrubbing Contract

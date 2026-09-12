@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import type { Block } from "../../types/schema";
+import { evaluateQuickMath, evaluateFormula, isFormula } from "../../utils/mathEngine";
+import { FormulaInput } from "../FormulaInput";
+import { useCharacterVariables } from "../../store/useCharacterVariables";
 
 type TrackerBlockType = Extract<Block, { type: "tracker" }>;
 
@@ -14,32 +17,31 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
   mode,
   onUpdateData,
 }) => {
+  const variables = useCharacterVariables();
   const data = block.data;
   const step = data.step || 1;
   const temp = data.temp || 0;
 
+  const [editCurrentStr, setEditCurrentStr] = useState(data.current.toString());
+  const [editMaxStr, setEditMaxStr] = useState(data.max.toString());
   const [isEditingCurrent, setIsEditingCurrent] = useState(false);
   const [currentInputVal, setCurrentInputVal] = useState(data.current.toString());
   const [isEditingTemp, setIsEditingTemp] = useState(false);
   const [tempInputVal, setTempInputVal] = useState(temp.toString());
 
   const handleAdjustCurrent = (delta: number) => {
-    onUpdateData({ current: data.current + delta });
+    onUpdateData({ current: Math.max(0, data.current + delta) });
   };
 
   const handleCommitCurrent = () => {
-    const num = parseInt(currentInputVal, 10);
-    if (!isNaN(num)) {
-      onUpdateData({ current: num });
-    }
+    const nextVal = evaluateQuickMath(data.current, currentInputVal, 0, data.max);
+    onUpdateData({ current: nextVal });
     setIsEditingCurrent(false);
   };
 
   const handleCommitTemp = () => {
-    const num = parseInt(tempInputVal, 10);
-    if (!isNaN(num)) {
-      onUpdateData({ temp: Math.max(0, num) });
-    }
+    const nextVal = evaluateQuickMath(temp, tempInputVal, 0);
+    onUpdateData({ temp: nextVal });
     setIsEditingTemp(false);
   };
 
@@ -48,19 +50,41 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
       <div className="tracker-edit-panel">
         <div className="config-row">
           <label>Current Value:</label>
-          <input
-            type="number"
-            value={data.current}
-            onChange={(e) => onUpdateData({ current: parseInt(e.target.value, 10) || 0 })}
-          />
+          <div style={{ flex: 1, maxWidth: "160px" }}>
+            <FormulaInput
+              value={editCurrentStr}
+              placeholder="e.g. 12 or = @HP.max"
+              onChange={(val) => {
+                setEditCurrentStr(val);
+                if (isFormula(val)) {
+                  const res = evaluateFormula(val, variables);
+                  if (res.value !== null) onUpdateData({ current: res.value });
+                } else {
+                  const num = parseInt(val, 10);
+                  if (!isNaN(num)) onUpdateData({ current: num });
+                }
+              }}
+            />
+          </div>
         </div>
         <div className="config-row">
           <label>Max Value:</label>
-          <input
-            type="number"
-            value={data.max}
-            onChange={(e) => onUpdateData({ max: parseInt(e.target.value, 10) || 0 })}
-          />
+          <div style={{ flex: 1, maxWidth: "160px" }}>
+            <FormulaInput
+              value={editMaxStr}
+              placeholder="e.g. 12 or = 10 + (@CON.mod * 2)"
+              onChange={(val) => {
+                setEditMaxStr(val);
+                if (isFormula(val)) {
+                  const res = evaluateFormula(val, variables);
+                  if (res.value !== null) onUpdateData({ max: Math.max(1, res.value) });
+                } else {
+                  const num = parseInt(val, 10);
+                  if (!isNaN(num)) onUpdateData({ max: Math.max(1, num) });
+                }
+              }}
+            />
+          </div>
         </div>
         <div className="config-row">
           <label>Step Size:</label>
@@ -100,10 +124,12 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
         <div className="tracker-numeric-group">
           {isEditingCurrent ? (
             <input
-              type="number"
+              type="text"
               className="direct-counter-input"
               value={currentInputVal}
               autoFocus
+              placeholder="±N or N"
+              onFocus={(e) => e.target.select()}
               onChange={(e) => setCurrentInputVal(e.target.value)}
               onBlur={handleCommitCurrent}
               onKeyDown={(e) => {
@@ -114,11 +140,11 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
           ) : (
             <span
               className="current-number"
-              onDoubleClick={() => {
+              onClick={() => {
                 setCurrentInputVal(data.current.toString());
                 setIsEditingCurrent(true);
               }}
-              title="Double-click to enter exact number"
+              title="Click to input relative math (e.g. -10, +5, /2) or exact number"
             >
               {data.current}
             </span>
@@ -130,11 +156,11 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
           {temp > 0 && !isEditingTemp && (
             <span
               className="temp-indicator"
-              onDoubleClick={() => {
+              onClick={() => {
                 setTempInputVal(temp.toString());
                 setIsEditingTemp(true);
               }}
-              title="Temporary value. Double-click to edit."
+              title="Temporary value. Click to edit (e.g. +5 or -3)."
             >
               +{temp}
             </span>
@@ -142,10 +168,12 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
 
           {isEditingTemp && (
             <input
-              type="number"
+              type="text"
               className="direct-temp-input"
               value={tempInputVal}
               autoFocus
+              placeholder="±N"
+              onFocus={(e) => e.target.select()}
               onChange={(e) => setTempInputVal(e.target.value)}
               onBlur={handleCommitTemp}
               onKeyDown={(e) => {

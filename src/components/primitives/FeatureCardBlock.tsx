@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Block } from "../../types/schema";
+import { evaluateQuickMath, interpolateTextFormulas } from "../../utils/mathEngine";
+import { useCharacterVariables } from "../../store/useCharacterVariables";
+import { VariableInsertButton } from "../VariableInsertButton";
 
 type CardBlockType = Extract<Block, { type: "card" }>;
 
@@ -17,8 +20,31 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
 }) => {
   const data = block.data;
   const tracker = data.tracker;
+  const variables = useCharacterVariables();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isExpanded, setIsExpanded] = useState(true);
   const [editTab, setEditTab] = useState<"edit" | "preview">("edit");
+  const [isEditingTracker, setIsEditingTracker] = useState(false);
+  const [trackerInputVal, setTrackerInputVal] = useState(tracker?.current?.toString() ?? "0");
+
+  const handleInsertVariable = (token: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      onUpdateData({ description: data.description ? `${data.description} ${token}` : token });
+      return;
+    }
+    const start = textarea.selectionStart ?? data.description.length;
+    const end = textarea.selectionEnd ?? data.description.length;
+    const before = data.description.substring(0, start);
+    const after = data.description.substring(end);
+    const nextVal = `${before}${token}${after}`;
+    onUpdateData({ description: nextVal });
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + token.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 0);
+  };
 
   const handleAdjustTracker = (delta: number) => {
     if (!tracker || !tracker.enabled) return;
@@ -29,6 +55,18 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
         current: newCurrent,
       },
     });
+  };
+
+  const handleCommitTrackerQuickMath = () => {
+    if (!tracker || !tracker.enabled) return;
+    const nextVal = evaluateQuickMath(tracker.current, trackerInputVal, 0, tracker.max);
+    onUpdateData({
+      tracker: {
+        ...tracker,
+        current: nextVal,
+      },
+    });
+    setIsEditingTracker(false);
   };
 
   const handleToggleTrackerPip = (index: number) => {
@@ -123,34 +161,40 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
         {/* Description Editor with Edit / Preview Toggle */}
         <div className="card-description-editor">
           <div className="editor-tab-bar">
-            <button
-              type="button"
-              className={`editor-tab ${editTab === "edit" ? "active" : ""}`}
-              onClick={() => setEditTab("edit")}
-            >
-              Markdown
-            </button>
-            <button
-              type="button"
-              className={`editor-tab ${editTab === "preview" ? "active" : ""}`}
-              onClick={() => setEditTab("preview")}
-            >
-              Preview
-            </button>
+            <div className="editor-tab-group">
+              <button
+                type="button"
+                className={`editor-tab ${editTab === "edit" ? "active" : ""}`}
+                onClick={() => setEditTab("edit")}
+              >
+                Markdown
+              </button>
+              <button
+                type="button"
+                className={`editor-tab ${editTab === "preview" ? "active" : ""}`}
+                onClick={() => setEditTab("preview")}
+              >
+                Preview
+              </button>
+            </div>
+            {editTab === "edit" && (
+              <VariableInsertButton onInsert={handleInsertVariable} />
+            )}
           </div>
 
           {editTab === "edit" ? (
             <textarea
+              ref={textareaRef}
               className="card-textarea"
               rows={5}
               value={data.description}
-              placeholder="Card description (supports Markdown)..."
+              placeholder="Card description (supports Markdown & {@formulas})..."
               onChange={(e) => onUpdateData({ description: e.target.value })}
             />
           ) : (
             <div className="card-markdown-preview prose-content">
               {data.description ? (
-                <ReactMarkdown>{data.description}</ReactMarkdown>
+                <ReactMarkdown>{interpolateTextFormulas(data.description, variables)}</ReactMarkdown>
               ) : (
                 <em>No description</em>
               )}
@@ -197,9 +241,35 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
                 >
                   −
                 </button>
-                <span className="card-step-val">
-                  {tracker.current} / {tracker.max}
-                </span>
+                {isEditingTracker ? (
+                  <input
+                    type="text"
+                    className="direct-counter-input card-counter-input"
+                    value={trackerInputVal}
+                    autoFocus
+                    placeholder="±N"
+                    style={{ width: "45px", textAlign: "center", padding: "2px 4px", fontSize: "0.85rem" }}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => setTrackerInputVal(e.target.value)}
+                    onBlur={handleCommitTrackerQuickMath}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCommitTrackerQuickMath();
+                      if (e.key === "Escape") setIsEditingTracker(false);
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="card-step-val"
+                    onClick={() => {
+                      setTrackerInputVal(tracker.current.toString());
+                      setIsEditingTracker(true);
+                    }}
+                    title="Click to input relative math (e.g. -1, +2) or exact number"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {tracker.current} / {tracker.max}
+                  </span>
+                )}
                 <button
                   type="button"
                   className="card-step-btn"
@@ -217,7 +287,9 @@ export const FeatureCardBlock: React.FC<FeatureCardBlockProps> = ({
       {/* Markdown Content */}
       <div className={`card-body-content ${isExpanded ? "expanded" : "collapsed"}`}>
         <div className="prose-content">
-          <ReactMarkdown>{data.description || "_No description provided._"}</ReactMarkdown>
+          <ReactMarkdown>
+            {interpolateTextFormulas(data.description || "_No description provided._", variables)}
+          </ReactMarkdown>
         </div>
       </div>
 

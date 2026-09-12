@@ -1039,6 +1039,13 @@
 
 .editor-tab-bar {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-tab-group {
+  display: flex;
   gap: 4px;
 }
 
@@ -1378,6 +1385,59 @@
 
 .prose-content em {
   color: var(--text-muted);
+}
+
+/* Inline Formula Pills in Markdown Content */
+.prose-content a[href="#"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(97, 175, 239, 0.15);
+  border: 1px solid rgba(97, 175, 239, 0.35);
+  color: #61afef;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 700;
+  font-size: 0.85em;
+  text-decoration: none;
+  cursor: help;
+  vertical-align: baseline;
+  line-height: 1.35;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.prose-content a[href="#"]:hover {
+  background: rgba(97, 175, 239, 0.28);
+  border-color: #61afef;
+  color: #ffffff;
+}
+
+.prose-content a[href="#"]::before {
+  content: "ƒx";
+  font-size: 0.7em;
+  opacity: 0.75;
+  font-style: italic;
+  margin-right: 1px;
+}
+
+/* Error pills in prose content (e.g. #REF!, #SYNTAX!) */
+.prose-content a[href="#"][title*="REF"],
+.prose-content a[href="#"][title*="SYNTAX"],
+.prose-content a[href="#"][title*="CIRCULAR"],
+.prose-content a[href="#"][title*="DIV_ZERO"],
+.prose-content a[href="#"][title*="Unresolved"] {
+  background: rgba(229, 192, 123, 0.18);
+  border-color: #e5c07b;
+  color: #e5c07b;
+}
+
+.prose-content a[href="#"][title*="REF"]:hover,
+.prose-content a[href="#"][title*="SYNTAX"]:hover,
+.prose-content a[href="#"][title*="CIRCULAR"]:hover,
+.prose-content a[href="#"][title*="DIV_ZERO"]:hover {
+  background: rgba(229, 192, 123, 0.3);
+  color: #fff;
 }
 
 /* =============================================================================
@@ -3273,4 +3333,370 @@
   color: var(--text-main);
   border-color: var(--accent-color);
 }
+
+/* =============================================================================
+   PHASE 8: FORMULA ENGINE, AUTOCOMPLETE & QUICK-MATH
+   ============================================================================= */
+.formula-input-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formula-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formula-fx-toggle-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(97, 175, 239, 0.15);
+  color: #61afef;
+  border: 1px solid rgba(97, 175, 239, 0.35);
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-style: italic;
+  padding: 1px 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.1;
+  user-select: none;
+  z-index: 2;
+}
+
+.formula-fx-toggle-btn:hover,
+.formula-fx-toggle-btn.active {
+  background: rgba(97, 175, 239, 0.35);
+  border-color: #61afef;
+  color: #ffffff;
+}
+
+.formula-live-preview {
+  margin-top: 3px;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.3;
+  animation: fadeInPreview 0.15s ease;
+}
+
+@keyframes fadeInPreview {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.formula-live-preview.is-valid {
+  background: rgba(152, 195, 121, 0.12);
+  border: 1px solid rgba(152, 195, 121, 0.3);
+  color: #98c379;
+}
+
+.formula-live-preview.has-error {
+  background: rgba(229, 192, 123, 0.12);
+  border: 1px solid rgba(229, 192, 123, 0.3);
+  color: #e5c07b;
+}
+
+.preview-tag {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+}
+
+.preview-math {
+  opacity: 0.85;
+  font-family: monospace;
+}
+
+.formula-autocomplete-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 250px;
+  max-width: 310px;
+  max-height: 260px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, #1c1e24);
+  border: 1px solid var(--accent-color, #e06c75);
+  border-radius: var(--radius-sm, 4px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85);
+  z-index: 2500;
+  font-size: 0.8rem;
+}
+
+.formula-autocomplete-header {
+  padding: 5px 8px;
+  font-size: 0.68rem;
+  color: var(--text-muted, #8b92a0);
+  background: rgba(0, 0, 0, 0.45);
+  border-bottom: 1px solid var(--border-color, #2f333d);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dropdown-hint {
+  font-size: 0.62rem;
+  color: var(--text-dim, #5c6370);
+  text-transform: none;
+}
+
+.formula-search-bar {
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border-color, #2f333d);
+}
+
+.formula-dropdown-search {
+  width: 100%;
+  font-size: 0.76rem;
+  padding: 3px 6px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color, #2f333d);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+}
+
+.formula-dropdown-search:focus {
+  border-color: var(--accent-color);
+}
+
+.formula-autocomplete-scroll {
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.formula-empty-hint {
+  padding: 12px 8px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.formula-var-category {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.category-title {
+  font-size: 0.63rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.06em;
+}
+
+.formula-autocomplete-list {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0;
+}
+
+.formula-autocomplete-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--text-main, #f0f2f5);
+  gap: 8px;
+  transition: background 0.1s ease;
+}
+
+.formula-autocomplete-item.selected,
+.formula-autocomplete-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--accent-color, #e06c75);
+}
+
+.var-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.formula-autocomplete-item .var-name {
+  font-family: monospace;
+  font-weight: 600;
+  color: #61afef;
+}
+
+.var-desc {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.formula-autocomplete-item .var-val {
+  font-family: monospace;
+  color: #98c379;
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.formula-fx-pill {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-style: italic;
+  font-weight: 700;
+  background: rgba(97, 175, 239, 0.18);
+  color: #61afef;
+  border: 1px solid rgba(97, 175, 239, 0.35);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-left: 4px;
+  line-height: 1.1;
+  vertical-align: middle;
+}
+
+.formula-val {
+  cursor: help;
+}
+
+.formula-error {
+  color: #e5c07b !important;
+  border-color: #e5c07b !important;
+  cursor: help;
+}
+
+.current-number, .temp-indicator, .card-step-val, .qty-number {
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.current-number:hover, .temp-indicator:hover, .card-step-val:hover, .qty-number:hover {
+  color: var(--accent-color, #e06c75);
+}
+
+.direct-counter-input {
+  text-align: center;
+  font-weight: 700;
+}
+
+/* Edit Mode column expansion for skill formula values */
+.skill-val-col.skill-val-edit-col {
+  min-width: 140px;
+  max-width: 260px;
+  flex: 1;
+  text-align: left;
+}
+
+/* Ensure all inputs and popouts are properly box-sized and never overflow */
+.stat-edit-field input,
+.stat-pill-edit-card input,
+.profile-edit-field input,
+.card-config-row input,
+.config-row input {
+  box-sizing: border-box;
+}
+
+.is-popout-view {
+  overflow-y: auto;
+}
+
+/* Variable Inserter Dropdown in Markdown Editor */
+.var-insert-btn-container {
+  position: relative;
+  display: inline-block;
+}
+
+.var-insert-trigger-btn {
+  background: rgba(97, 175, 239, 0.12);
+  border: 1px solid rgba(97, 175, 239, 0.3);
+  color: #61afef;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.4;
+}
+
+.var-insert-trigger-btn:hover {
+  background: rgba(97, 175, 239, 0.25);
+  border-color: #61afef;
+  color: #ffffff;
+}
+
+.var-insert-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 270px;
+  max-height: 280px;
+  background: var(--card-bg, #1a1b22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: left;
+}
+
+.var-insert-search-box {
+  padding: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.var-insert-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: var(--text-main, #f0f2f5);
+  font-size: 0.75rem;
+  outline: none;
+}
+
+.var-insert-search-input:focus {
+  border-color: #61afef;
+}
+
+.var-insert-list {
+  overflow-y: auto;
+  max-height: 180px;
+}
+
+.var-insert-footer-hint {
+  padding: 5px 8px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.var-insert-footer-hint code {
+  color: #61afef;
+}
+
+
 
