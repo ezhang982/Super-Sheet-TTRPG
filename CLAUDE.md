@@ -240,6 +240,30 @@ keep multi-session AI-assisted work from drifting.
 - [x] Full regression test suite (`verify-phase8.ts` and all phases 1-7) passing 100%.
 - **Gate:** Quick math and system-agnostic formula evaluation verified with zero regressions.
 
+### Phase 9 — Workflow Intelligence, Shortcuts & Omnisearch (Delivered)
+- [x] Global Omnisearch / Command Palette (`src/components/OmnisearchModal.tsx`):
+      - Hotkey `Ctrl+K` / `Cmd+K` or quick search button in `TabBar` and `FloatingToolsMenu`.
+      - Deep indexing across block titles, inventory items, skills, tags, and app actions.
+      - Instant navigation across tabs with smooth scrolling and accent glow highlight (`@keyframes searchGlow`).
+- [x] Universal Keyboard Shortcuts Suite:
+      - `Ctrl+K` / `Cmd+K`: Omnisearch modal.
+      - `E` or `Ctrl+E`: Toggle Edit Mode / Play Mode.
+      - `Ctrl+B`: Add new block (opens block catalog).
+      - `Ctrl+T`: Add new tab.
+      - `Ctrl+Z` / `Ctrl+Shift+Z` / `Ctrl+Y`: Undo / Redo in Edit Mode.
+      - `?`: Open Shortcuts Cheatsheet modal (`src/components/ShortcutsModal.tsx`).
+      - Unobtrusive: strictly ignores keystrokes when typing inside inputs, textareas, or contenteditables.
+- [x] Block Duplication (`useCharacterStore.duplicateBlock`):
+      - Right-click context menu "Duplicate Block" with `Ctrl+D` hint badge.
+      - Deep clones block styling, tags, and data with fresh `block_<uuid>` ID and appends `(Copy)` to title.
+      - Automatically positions duplicate adjacent or directly below the original in the 12-column grid layout.
+- [x] "Suggested Tags" Chip Tray (`src/utils/tagKeywords.ts` & `BlockContainer.tsx`):
+      - Keyword dictionary mapping rest mechanics, action economy, spellcasting, and tabletop terms to tags.
+      - Non-intrusive suggested chips tray in Edit Mode (`+ #short-rest`, `+ #bonus-action`).
+      - Toggleable in Floating Tools Menu settings (`enableTagSuggestions`).
+- [x] Full verification and regression test suite (`verify-phase9.ts` and Phases 1-8) passing 100% with 0 build errors.
+- **Gate:** Workflow intelligence, keyboard navigation, and omnisearch fully verified.
+
 ---
 
 ## 5.1 Template Scrubbing Contract

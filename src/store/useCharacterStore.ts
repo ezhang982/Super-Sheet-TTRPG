@@ -68,6 +68,7 @@ export const useCharacterStore = create<CharacterStore>()(
       mode: "edit",
       activeTagFilter: null,
       saveStatus: "saved",
+      enableTagSuggestions: true,
 
       // ---- Mode & Tag Filter ----
       setMode: (mode: Mode) => {
@@ -309,6 +310,81 @@ export const useCharacterStore = create<CharacterStore>()(
         });
       },
 
+      duplicateBlock: (blockId: string): string | null => {
+        const { character } = get();
+        const originalBlock = character.blocks[blockId];
+        if (!originalBlock) return null;
+
+        const newBlockId = `block_${crypto.randomUUID()}`;
+        // Deep clone data, style, and tags
+        const clonedData = JSON.parse(JSON.stringify(originalBlock.data));
+        const clonedStyle = JSON.parse(JSON.stringify(originalBlock.style || {}));
+        const clonedTags = [...originalBlock.tags];
+
+        const newBlock: Block = {
+          ...originalBlock,
+          id: newBlockId,
+          title: `${originalBlock.title} (Copy)`,
+          tags: clonedTags,
+          style: clonedStyle,
+          data: clonedData,
+        } as Block;
+
+        // Find which tab this block belongs to and its layout item
+        let targetTabId = character.activeTabId;
+        let originalLayoutItem: LayoutItem | undefined;
+
+        for (const [tId, layout] of Object.entries(character.layouts)) {
+          const found = layout.find((item) => item.i === blockId);
+          if (found) {
+            targetTabId = tId;
+            originalLayoutItem = found;
+            break;
+          }
+        }
+
+        const tabLayout = character.layouts[targetTabId] ?? [];
+        let newLayoutItem: LayoutItem;
+
+        if (originalLayoutItem) {
+          // Attempt to position beside original if width permits, else directly beneath
+          const canFitBeside = originalLayoutItem.x + originalLayoutItem.w * 2 <= 12;
+          newLayoutItem = {
+            i: newBlockId,
+            x: canFitBeside ? originalLayoutItem.x + originalLayoutItem.w : originalLayoutItem.x,
+            y: canFitBeside ? originalLayoutItem.y : originalLayoutItem.y + originalLayoutItem.h,
+            w: originalLayoutItem.w,
+            h: originalLayoutItem.h,
+          };
+        } else {
+          const maxY = tabLayout.reduce((max, item) => Math.max(max, item.y + item.h), 0);
+          newLayoutItem = {
+            i: newBlockId,
+            x: 0,
+            y: maxY,
+            w: originalBlock.type === "notes" ? 12 : originalBlock.type === "tracker" ? 4 : 6,
+            h: originalBlock.type === "inventory" || originalBlock.type === "skill_list" ? 5 : 3,
+          };
+        }
+
+        set({
+          character: {
+            ...character,
+            blocks: {
+              ...character.blocks,
+              [newBlockId]: newBlock,
+            },
+            layouts: {
+              ...character.layouts,
+              [targetTabId]: [...tabLayout, newLayoutItem],
+            },
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+
+        return newBlockId;
+      },
+
       deleteBlock: (blockId: string) => {
         const { character } = get();
         const newBlocks = { ...character.blocks };
@@ -466,6 +542,10 @@ export const useCharacterStore = create<CharacterStore>()(
             meta: { ...character.meta, updatedAt: Date.now() },
           },
         });
+      },
+
+      setEnableTagSuggestions: (enabled: boolean) => {
+        set({ enableTagSuggestions: enabled });
       },
 
       // ---- Theme ----

@@ -7,13 +7,23 @@ import { RestActionModal } from "./RestActionModal";
 import { NewCharacterModal } from "./NewCharacterModal";
 import { CharacterSwitcherModal } from "./CharacterSwitcherModal";
 
-export const FloatingToolsMenu: React.FC = () => {
+interface FloatingToolsMenuProps {
+  onOpenOmnisearch?: () => void;
+  onOpenShortcuts?: () => void;
+}
+
+export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
+  onOpenOmnisearch,
+  onOpenShortcuts,
+}) => {
   const mode = useCharacterStore((state) => state.mode);
   const character = useCharacterStore((state) => state.character);
   const addBlock = useCharacterStore((state) => state.addBlock);
   const exportCharacter = useCharacterStore((state) => state.exportCharacter);
   const exportTemplate = useCharacterStore((state) => state.exportTemplate);
   const importCharacter = useCharacterStore((state) => state.importCharacter);
+  const enableTagSuggestions = useCharacterStore((state) => state.enableTagSuggestions);
+  const setEnableTagSuggestions = useCharacterStore((state) => state.setEnableTagSuggestions);
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -192,6 +202,29 @@ export const FloatingToolsMenu: React.FC = () => {
           </div>
 
           <div className="tools-menu-items">
+            {onOpenOmnisearch && (
+              <button
+                type="button"
+                className="tools-btn"
+                style={{
+                  background: "rgba(97, 175, 239, 0.12)",
+                  borderColor: "rgba(97, 175, 239, 0.4)",
+                  color: "#61afef",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+                onClick={() => {
+                  onOpenOmnisearch();
+                  setIsOpen(false);
+                }}
+              >
+                <span>🔍 Omnisearch</span>
+                <kbd style={{ fontSize: "0.65rem", padding: "1px 5px", background: "rgba(0,0,0,0.3)", borderRadius: "3px" }}>Ctrl+K</kbd>
+              </button>
+            )}
+
             <button
               type="button"
               className="tools-btn"
@@ -281,6 +314,32 @@ export const FloatingToolsMenu: React.FC = () => {
             >
               ⏳ Rest Actions
             </button>
+
+            {onOpenShortcuts && (
+              <button
+                type="button"
+                className="tools-btn"
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                onClick={() => {
+                  onOpenShortcuts();
+                  setIsOpen(false);
+                }}
+              >
+                <span>⌨️ Shortcuts</span>
+                <kbd style={{ fontSize: "0.65rem", padding: "1px 5px", background: "rgba(0,0,0,0.3)", borderRadius: "3px" }}>?</kbd>
+              </button>
+            )}
+
+            <div className="tools-setting-row" style={{ padding: "4px 8px", background: "rgba(0,0,0,0.2)", borderRadius: "4px", margin: "2px 0" }}>
+              <label className="checkbox-label" style={{ fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", color: "var(--text-muted)" }}>
+                <input
+                  type="checkbox"
+                  checked={enableTagSuggestions}
+                  onChange={(e) => setEnableTagSuggestions(e.target.checked)}
+                />
+                <span>💡 Auto Tag Suggestions</span>
+              </label>
+            </div>
 
             <button
               type="button"

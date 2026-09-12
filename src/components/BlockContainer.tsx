@@ -1,4 +1,4 @@
-import React, { useState, useEffect, type CSSProperties } from "react";
+import React, { useState, useEffect, useMemo, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { Block } from "../types/schema";
@@ -12,6 +12,7 @@ import { InventoryBlock } from "./primitives/InventoryBlock";
 import { SkillListBlock } from "./primitives/SkillListBlock";
 import { BlockStyleModal } from "./BlockStyleModal";
 import { CardContextMenu } from "./CardContextMenu";
+import { getSuggestedTags } from "../utils/tagKeywords";
 
 interface BlockContainerProps {
   block: Block;
@@ -22,9 +23,13 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const mode = useCharacterStore((state) => state.mode);
   const activeTagFilter = useCharacterStore((state) => state.activeTagFilter);
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
+  const duplicateBlock = useCharacterStore((state) => state.duplicateBlock);
+  const enableTagSuggestions = useCharacterStore((state) => state.enableTagSuggestions);
   const updateBlockData = useCharacterStore((state) => state.updateBlockData);
   const updateBlockTags = useCharacterStore((state) => state.updateBlockTags);
   const updateBlockTitle = useCharacterStore((state) => state.updateBlockTitle);
+
+  const suggestedTags = useMemo(() => getSuggestedTags(block), [block]);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(block.title);
@@ -169,6 +174,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
 
   return (
     <div
+      id={`block-${block.id}`}
+      data-block-id={block.id}
       className={`block-container ${block.type} ${isOrnate ? "border-ornate" : ""} ${
         isDimmed ? "dimmed-by-filter" : ""
       }`}
@@ -286,6 +293,24 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
         </div>
       </div>
 
+      {/* Non-intrusive Suggested Tags Tray (Edit Mode) */}
+      {mode === "edit" && enableTagSuggestions && suggestedTags.length > 0 && (
+        <div className="block-suggested-tags-tray">
+          <span className="suggested-tag-label">💡 Suggested:</span>
+          {suggestedTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              className="suggested-tag-chip"
+              onClick={() => updateBlockTags(block.id, [...block.tags, tag])}
+              title={`Click to add ${tag}`}
+            >
+              + {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="block-body">{renderPrimitive()}</div>
 
       {/* Block Style Customization Modal */}
@@ -310,6 +335,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
           onStartRename={() => setIsEditingTitle(true)}
           onStartAddTag={() => setIsAddingTag(true)}
           onPopout={() => setIsPopout(true)}
+          onDuplicate={() => duplicateBlock(block.id)}
         />
       )}
 
