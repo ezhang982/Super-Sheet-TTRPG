@@ -53,6 +53,7 @@ export interface CharacterStore {
   // collision, so committing the full tab layout array ensures all shifted blocks
   // stay in sync, preserves one undo step per gesture, and avoids per-frame store re-renders.
   addBlock: (tabId: string, type: BlockType, initialData?: Block["data"]) => void;
+  duplicateBlock: (blockId: string) => string | null;
   deleteBlock: (blockId: string) => void;
   updateTabLayout: (tabId: string, layout: LayoutItem[]) => void;
   moveBlockToTab: (blockId: string, fromTabId: string, toTabId: string) => void;
@@ -62,6 +63,8 @@ export interface CharacterStore {
   updateBlockStyle: (blockId: string, patch: Partial<BlockStyle>) => void;
   updateBlockTags: (blockId: string, tags: string[]) => void;
   updateBlockTitle: (blockId: string, title: string) => void;
+  enableTagSuggestions: boolean;
+  setEnableTagSuggestions: (enabled: boolean) => void;
 
   // ---- Theme ----
   setGlobalTheme: (patch: Partial<GlobalTheme>) => void;

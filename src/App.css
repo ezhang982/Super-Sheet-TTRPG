@@ -3698,5 +3698,461 @@
   color: #61afef;
 }
 
+/* =============================================================================
+   15. PHASE 9: OMNISEARCH, SHORTCUTS & WORKFLOW INTELLIGENCE
+   ============================================================================= */
+
+/* Tab Search Trigger Button */
+.tab-search-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm, 4px);
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.tab-search-trigger-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent-color);
+  color: var(--text-main);
+}
+
+.tab-search-trigger-btn .search-kbd {
+  font-size: 0.65rem;
+  padding: 1px 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  color: var(--text-dim);
+}
+
+.mode-kbd-hint {
+  font-size: 0.62rem;
+  opacity: 0.6;
+  margin-left: 3px;
+  font-weight: 400;
+}
+
+/* Suggested Tags Tray in BlockContainer */
+.block-suggested-tags-tray {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 10px 6px 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.7rem;
+}
+
+.suggested-tag-label {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  margin-right: 2px;
+}
+
+.suggested-tag-chip {
+  background: rgba(97, 175, 239, 0.12);
+  border: 1px dashed rgba(97, 175, 239, 0.35);
+  color: #61afef;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.suggested-tag-chip:hover {
+  background: rgba(97, 175, 239, 0.25);
+  border-style: solid;
+  border-color: #61afef;
+  color: #ffffff;
+}
+
+/* Block Highlight Pulse Animation after Omnisearch Navigation */
+@keyframes searchGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(97, 175, 239, 0.8), 0 0 25px rgba(97, 175, 239, 0.6);
+    border-color: #61afef !important;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(97, 175, 239, 0.4), 0 0 35px rgba(97, 175, 239, 0.5);
+    border-color: #61afef !important;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.block-search-highlight {
+  animation: searchGlow 2.5s ease-out;
+  border-color: #61afef !important;
+}
+
+/* =============================================================================
+   OMNISEARCH MODAL / COMMAND PALETTE
+   ============================================================================= */
+.omnisearch-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 11, 15, 0.75);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  z-index: 10000;
+  animation: fadeIn 0.12s ease-out;
+}
+
+.omnisearch-dialog {
+  width: 100%;
+  max-width: 600px;
+  background: var(--card-bg, #1a1b22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.omnisearch-search-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.omnisearch-icon {
+  font-size: 1.15rem;
+  opacity: 0.75;
+}
+
+.omnisearch-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-main, #f0f2f5);
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.omnisearch-input::placeholder {
+  color: var(--text-muted);
+}
+
+.omnisearch-close-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.omnisearch-close-badge:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text-main);
+}
+
+.omnisearch-results-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.omnisearch-empty-state {
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.omnisearch-empty-state .empty-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+
+.omnisearch-category-group {
+  margin-bottom: 8px;
+}
+
+.omnisearch-category-title {
+  padding: 6px 16px 4px 16px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.omnisearch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-left: 3px solid transparent;
+}
+
+.omnisearch-item:hover,
+.omnisearch-item.selected {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: var(--accent-color, #e06c75);
+}
+
+.omnisearch-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.omnisearch-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.omnisearch-item-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-main, #f0f2f5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.omnisearch-badge {
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.omnisearch-item-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.omnisearch-hotkey kbd {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  color: var(--accent-color, #e06c75);
+  font-family: inherit;
+}
+
+.omnisearch-footer-hints {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.hint-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hint-pill kbd {
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  font-size: 0.65rem;
+}
+
+/* =============================================================================
+   SHORTCUTS CHEATSHEET MODAL
+   ============================================================================= */
+.shortcuts-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 11, 15, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.shortcuts-modal-dialog {
+  width: 100%;
+  max-width: 650px;
+  max-height: 85vh;
+  background: var(--card-bg, #1a1b22);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.shortcuts-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.shortcuts-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortcuts-title-icon {
+  font-size: 1.25rem;
+}
+
+.shortcuts-header-title h2 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--text-main, #f0f2f5);
+}
+
+.shortcuts-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.shortcuts-close-btn:hover {
+  color: var(--text-main);
+}
+
+.shortcuts-modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shortcuts-category-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcuts-category-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-color, #e06c75);
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.1s ease;
+}
+
+.shortcut-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.shortcut-desc {
+  font-size: 0.82rem;
+  color: var(--text-main, #f0f2f5);
+}
+
+.shortcut-context {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.shortcut-keys kbd {
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: var(--text-main);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.key-plus {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.shortcuts-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.footer-tip {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.footer-tip kbd {
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
 
 

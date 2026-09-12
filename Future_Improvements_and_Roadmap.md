@@ -98,38 +98,38 @@ Blocks automatically publish variables to a sheet-wide in-memory symbol table:
 
 ---
 
-### Phase 9 — Workflow Intelligence, Shortcuts & Omnisearch
+### Phase 9 — Workflow Intelligence, Shortcuts & Omnisearch *(Completed)*
 
 #### 1. Global Omnisearch / Command Palette (`Ctrl+K` / `Cmd+K`)
-* **Trigger:** Keyboard shortcut `Ctrl+K` / `Cmd+K`, or clicking the **Search** button in the Header / Floating Tools Menu.
-* **Search Scope:** Instant fuzzy search across:
+* [x] **Trigger:** Keyboard shortcut `Ctrl+K` / `Cmd+K`, or clicking the **Search** button in the TabBar / Floating Tools Menu.
+* [x] **Search Scope:** Instant fuzzy search across:
   * Block titles across all tabs (e.g. "Action Surge", "Spell Slots")
   * Inventory items and weapons (e.g. "Longsword +1", "Potion of Healing")
   * Skill names (e.g. "Stealth", "Perception")
   * Tags (e.g. `#short-rest`, `#spell`)
-* **Action:** Selecting a result instantly navigates to the corresponding tab, scrolls smoothly to the target block, highlights it with an accent glow, or opens it directly in the Pop-out modal.
+* [x] **Action:** Selecting a result instantly navigates to the corresponding tab, scrolls smoothly to the target block, highlights it with an accent glow (`@keyframes searchGlow`).
 
 #### 2. Universal Keyboard Shortcuts
-A unified shortcut listener (disabled inside active text inputs) supporting:
-* `Ctrl/Cmd + K`: Open Omnisearch.
-* `E` or `Ctrl/Cmd + E`: Toggle Edit Mode / Play Mode.
-* `Ctrl/Cmd + B`: Create new Block.
-* `Ctrl/Cmd + T`: Add new Tab.
-* `Ctrl/Cmd + Z` / `Ctrl/Cmd + Shift + Z`: Undo / Redo (in Edit Mode).
-* `Ctrl/Cmd + D`: Duplicate selected/hovered block.
-* `?`: Open Shortcut Cheatsheet modal.
-* **Point-and-Click Discovery:** All shortcuts displayed as subtle badge hints on menu items (e.g. `New Block [Ctrl+B]`) and listed in a dedicated "Keyboard Shortcuts" dialog in the Floating Tools Menu.
+* [x] Unified shortcut listener (disabled inside active text inputs) supporting:
+  * `Ctrl/Cmd + K`: Open Omnisearch.
+  * `E` or `Ctrl/Cmd + E`: Toggle Edit Mode / Play Mode.
+  * `Ctrl/Cmd + B`: Create new Block.
+  * `Ctrl/Cmd + T`: Add new Tab.
+  * `Ctrl/Cmd + Z` / `Ctrl/Cmd + Shift + Z`: Undo / Redo (in Edit Mode).
+  * `Ctrl/Cmd + D`: Duplicate block (via context menu or action).
+  * `?`: Open Shortcut Cheatsheet modal.
+* [x] **Point-and-Click Discovery:** All shortcuts displayed as subtle badge hints on menu items (e.g. `New Block [Ctrl+B]`, `Play [E]`, `[🔍 Search Ctrl+K]`) and listed in a dedicated "Keyboard Shortcuts" dialog in the Floating Tools Menu.
 
 #### 3. Block Duplication
-* Context menu action **"Duplicate Block"** in `CardContextMenu.tsx`.
-* Deep copies block configuration, styling, tags, and data with a new unique ID (`block_<uuid>`).
-* Places the duplicate immediately adjacent or below the parent in the active tab layout.
+* [x] Context menu action **"Duplicate Block"** in `CardContextMenu.tsx`.
+* [x] Deep copies block configuration, styling, tags, and data with a new unique ID (`block_<uuid>`).
+* [x] Places the duplicate immediately adjacent or below the parent in the active tab layout.
 
 #### 4. "Suggested Tags" Chip Tray
-* Non-intrusive keyword assistant located directly beneath card tag inputs in Edit Mode.
-* Scans card text against `src/utils/tagKeywords.ts`.
-* Renders suggested chips: `💡 Suggested: [+ #short-rest] [+ #bonus-action]`. Clicking adds the tag immediately.
-* Global toggle in Sheet Settings: **Enable Tag Suggestions** (default: On).
+* [x] Non-intrusive keyword assistant located directly beneath card tag inputs in Edit Mode.
+* [x] Scans card text against `src/utils/tagKeywords.ts`.
+* [x] Renders suggested chips: `💡 Suggested: [+ #short-rest] [+ #bonus-action]`. Clicking adds the tag immediately.
+* [x] Global toggle in Floating Tools Menu: **Enable Tag Suggestions** (default: On).
 
 ---
 

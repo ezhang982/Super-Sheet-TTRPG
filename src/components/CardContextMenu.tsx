@@ -14,6 +14,7 @@ export interface CardContextMenuProps {
   onStartRename: () => void;
   onStartAddTag: () => void;
   onPopout: () => void;
+  onDuplicate?: () => void;
 }
 
 export const CardContextMenu: React.FC<CardContextMenuProps> = ({
@@ -27,9 +28,11 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
   onStartRename,
   onStartAddTag,
   onPopout,
+  onDuplicate,
 }) => {
   const character = useCharacterStore((state) => state.character);
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
+  const duplicateBlock = useCharacterStore((state) => state.duplicateBlock);
   const moveBlockToTab = useCharacterStore((state) => state.moveBlockToTab);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -104,6 +107,23 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
         >
           <span className="context-item-icon">🎨</span>
           <span>Customize Style & Borders</span>
+        </button>
+
+        <button
+          type="button"
+          className="context-menu-item"
+          onClick={() => {
+            if (onDuplicate) {
+              onDuplicate();
+            } else {
+              duplicateBlock(block.id);
+            }
+            onClose();
+          }}
+        >
+          <span className="context-item-icon">📑</span>
+          <span>Duplicate Block</span>
+          <kbd style={{ marginLeft: "auto", fontSize: "0.65rem", opacity: 0.7 }}>Ctrl+D</kbd>
         </button>
 
         <button

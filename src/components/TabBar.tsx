@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { useCharacterStore } from "../store/useCharacterStore";
 
-export const TabBar: React.FC = () => {
+interface TabBarProps {
+  onOpenOmnisearch?: () => void;
+}
+
+export const TabBar: React.FC<TabBarProps> = ({ onOpenOmnisearch }) => {
   const character = useCharacterStore((state) => state.character);
   const mode = useCharacterStore((state) => state.mode);
   const setMode = useCharacterStore((state) => state.setMode);
@@ -110,22 +114,35 @@ export const TabBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Tiny Unobtrusive Edit/Play Mode Toggle (Matching Wireframe Top-Right) */}
+      {/* Top-Right Tools: Omnisearch & Edit/Play Mode Toggle */}
       <div className="tab-bar-right">
-        <div className="tiny-mode-toggle" title="Toggle Edit / Play mode">
+        {onOpenOmnisearch && (
+          <button
+            type="button"
+            className="tab-search-trigger-btn"
+            onClick={onOpenOmnisearch}
+            title="Search blocks, items, skills, tags, or commands (Ctrl+K)"
+          >
+            <span className="search-icon">🔍</span>
+            <span className="search-text">Search</span>
+            <kbd className="search-kbd">Ctrl+K</kbd>
+          </button>
+        )}
+
+        <div className="tiny-mode-toggle" title="Toggle Edit / Play mode (E)">
           <button
             type="button"
             className={`tiny-mode-btn ${mode === "edit" ? "active edit" : ""}`}
             onClick={() => setMode("edit")}
           >
-            Edit
+            Edit <span className="mode-kbd-hint">[E]</span>
           </button>
           <button
             type="button"
             className={`tiny-mode-btn ${mode === "play" ? "active play" : ""}`}
             onClick={() => setMode("play")}
           >
-            Play
+            Play <span className="mode-kbd-hint">[E]</span>
           </button>
         </div>
       </div>
