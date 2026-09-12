@@ -10,11 +10,15 @@ import { CharacterSwitcherModal } from "./CharacterSwitcherModal";
 interface FloatingToolsMenuProps {
   onOpenOmnisearch?: () => void;
   onOpenShortcuts?: () => void;
+  onOpenScratchpad?: () => void;
+  onOpenTagManager?: () => void;
 }
 
 export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
   onOpenOmnisearch,
   onOpenShortcuts,
+  onOpenScratchpad,
+  onOpenTagManager,
 }) => {
   const mode = useCharacterStore((state) => state.mode);
   const character = useCharacterStore((state) => state.character);
@@ -313,6 +317,45 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
               }}
             >
               ⏳ Rest Actions
+            </button>
+
+            {onOpenScratchpad && (
+              <button
+                type="button"
+                className="tools-btn"
+                onClick={() => {
+                  onOpenScratchpad();
+                  setIsOpen(false);
+                }}
+              >
+                📜 Session Scratchpad
+              </button>
+            )}
+
+            {onOpenTagManager && (
+              <button
+                type="button"
+                className="tools-btn"
+                onClick={() => {
+                  onOpenTagManager();
+                  setIsOpen(false);
+                }}
+              >
+                🏷️ Tag Manager & Colors
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="tools-btn"
+              onClick={() => {
+                setIsOpen(false);
+                setTimeout(() => {
+                  window.print();
+                }, 150);
+              }}
+            >
+              🖨️ Print Sheet / PDF
             </button>
 
             {onOpenShortcuts && (

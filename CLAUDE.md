@@ -264,6 +264,45 @@ keep multi-session AI-assisted work from drifting.
 - [x] Full verification and regression test suite (`verify-phase9.ts` and Phases 1-8) passing 100% with 0 build errors.
 - **Gate:** Workflow intelligence, keyboard navigation, and omnisearch fully verified.
 
+### Phase 10 — Tabletop Utility, Session State, UX Polish & Printability (Delivered)
+- [x] Undo/Redo Sheet Isolation Fix:
+      - `clearHistory` method flushes `zundo` `pastStates` stack when switching characters (`loadCharacterById`), creating new sheets (`newCharacter`), or importing JSON (`importCharacter`).
+      - Prevents `Ctrl+Z` on a new sheet from resurrecting or reverting back to past character sheets.
+- [x] Tab Movement & Reordering:
+      - Added HTML5 drag-and-drop support on tabs in Edit Mode with live visual drop indicator.
+      - Added one-click `‹` / `›` nudge buttons on hover in Edit Mode.
+      - Backed by canonical store actions `moveTab(fromIndex, toIndex)` and `reorderTabs(tabs)`.
+- [x] Free & Precise Card Sizing:
+      - `minW: 1` in grid configuration allows fine-grained single-column cards (down from former 2-column min).
+      - Multi-directional resize handles (`"s"`, `"e"`, `"se"`) with edge glow in Edit mode.
+      - Added "📐 Dimensions & Grid Sizing" in `BlockStyleModal` (Width slider 1–12, Quick Width presets 1/4, 1/3, 1/2, 2/3, Full, Height stepper, and Auto-Fit Height).
+      - Added "Quick Width" presets in right-click `CardContextMenu`.
+- [x] Tab Bar Layout Stability & Float Fix:
+      - Fixed vertical floating and multi-line wrapping during tab addition and inline renaming.
+      - Configured flex alignment `align-items: flex-end`, `white-space: nowrap`, and horizontal scrolling container.
+- [x] Equation Variable Autocomplete Clipping Fix:
+      - Replaced `position: absolute` dropdown in `FormulaInput` with React Portal rendered to `document.body`.
+      - Viewport boundary clamping ensures the popup never gets clipped by parent `overflow: auto` (e.g. stat group edit drawer) and flips upward when near the viewport bottom.
+- [x] Dedicated Print / PDF Export Stylesheet:
+      - Comprehensive `@media print` CSS rules saving ink: forced crisp black-and-white, hidden floating UI / FABs / tab bars / buttons, unrolled tab content.
+      - Clean `.print-sheet-header` showing character name, system, and active tab label when printed (`Ctrl+P` or via menus).
+- [x] Floating Session Scratchpad & Combat Log (`src/components/SessionScratchpadModal.tsx`):
+      - Quick in-game scratchpad notes persisting in `localStorage`.
+      - Initiative & HP tracker for monsters, NPCs, and party members with turn advance and +/- HP quick adjusters.
+      - "➕ Promote to Notes Block" creates a permanent card on the active canvas tab from session notes.
+- [x] Visual Tag Management & Custom Color Palette (`src/components/TagManagerModal.tsx`):
+      - Colorize tags across the sheet using custom hex codes or built-in palette swatches.
+      - Renaming a tag updates every card across all tabs globally.
+      - Deleting a tag removes it from all cards sheet-wide and flushes custom color mapping.
+- [x] Play Mode Value Revert Toast (`src/components/PlayModeRevertToast.tsx`):
+      - Ephemeral, non-intrusive toast on counter changes in Play Mode with 4.5s auto-dismiss.
+      - `[↺ Revert]` button instantly restores prior counter value.
+- [x] Interactive Dice Roll Notations (`src/utils/diceRolls.ts`):
+      - Automatic regex detection of dice patterns (e.g. `2d6`, `1d20+5`, `d12`, `8d6`) in Markdown feature cards and notes.
+      - Clickable dice chips offering instant rolling with roll breakdown or `/roll` command copying.
+- [x] Full regression test suite (`verify-phase10.ts` and Phases 1–9) passing 100% with 0 TypeScript or Vite build errors.
+- **Gate:** Tabletop utility, session state, UX polish, and printability verified.
+
 ---
 
 ## 5.1 Template Scrubbing Contract

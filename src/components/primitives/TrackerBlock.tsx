@@ -3,6 +3,7 @@ import type { Block } from "../../types/schema";
 import { evaluateQuickMath, evaluateFormula, isFormula } from "../../utils/mathEngine";
 import { FormulaInput } from "../FormulaInput";
 import { useCharacterVariables } from "../../store/useCharacterVariables";
+import { useRevertToast } from "../../store/useRevertToast";
 
 type TrackerBlockType = Extract<Block, { type: "tracker" }>;
 
@@ -18,6 +19,7 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
   onUpdateData,
 }) => {
   const variables = useCharacterVariables();
+  const showToast = useRevertToast((state) => state.showToast);
   const data = block.data;
   const step = data.step || 1;
   const temp = data.temp || 0;
@@ -30,19 +32,32 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
   const [tempInputVal, setTempInputVal] = useState(temp.toString());
 
   const handleAdjustCurrent = (delta: number) => {
-    onUpdateData({ current: Math.max(0, data.current + delta) });
+    const prev = data.current;
+    const next = Math.max(0, data.current + delta);
+    onUpdateData({ current: next });
+    if (mode === "play" && prev !== next) {
+      showToast(`${block.title}: ${prev} → ${next}`, () => onUpdateData({ current: prev }));
+    }
   };
 
   const handleCommitCurrent = () => {
+    const prev = data.current;
     const nextVal = evaluateQuickMath(data.current, currentInputVal, 0, data.max);
     onUpdateData({ current: nextVal });
     setIsEditingCurrent(false);
+    if (mode === "play" && prev !== nextVal) {
+      showToast(`${block.title}: ${prev} → ${nextVal}`, () => onUpdateData({ current: prev }));
+    }
   };
 
   const handleCommitTemp = () => {
+    const prev = temp;
     const nextVal = evaluateQuickMath(temp, tempInputVal, 0);
     onUpdateData({ temp: nextVal });
     setIsEditingTemp(false);
+    if (mode === "play" && prev !== nextVal) {
+      showToast(`${block.title} Temp: ${prev} → ${nextVal}`, () => onUpdateData({ temp: prev }));
+    }
   };
 
   if (mode === "edit") {

@@ -19,6 +19,8 @@ interface BlockContainerProps {
   tabId: string;
 }
 
+const EMPTY_TAG_COLORS: Record<string, string> = {};
+
 export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) => {
   const mode = useCharacterStore((state) => state.mode);
   const activeTagFilter = useCharacterStore((state) => state.activeTagFilter);
@@ -28,6 +30,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const updateBlockData = useCharacterStore((state) => state.updateBlockData);
   const updateBlockTags = useCharacterStore((state) => state.updateBlockTags);
   const updateBlockTitle = useCharacterStore((state) => state.updateBlockTitle);
+  const rawTagColors = useCharacterStore((state) => state.character.theme.tagColors);
+  const tagColors = rawTagColors || EMPTY_TAG_COLORS;
 
   const suggestedTags = useMemo(() => getSuggestedTags(block), [block]);
 
@@ -224,21 +228,36 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
         <div className="block-header-right">
           {/* Block Tags Strip */}
           <div className="block-tags">
-            {block.tags.map((t) => (
-              <span key={t} className="tag-badge">
-                {t}
-                {mode === "edit" && (
-                  <button
-                    type="button"
-                    className="tag-remove-btn"
-                    onClick={() => handleRemoveTag(t)}
-                    title={`Remove ${t}`}
-                  >
-                    ×
-                  </button>
-                )}
-              </span>
-            ))}
+            {block.tags.map((t) => {
+              const customColor = tagColors[t.toLowerCase()];
+              return (
+                <span
+                  key={t}
+                  className="tag-badge"
+                  style={
+                    customColor
+                      ? {
+                          borderColor: customColor,
+                          backgroundColor: `${customColor}22`,
+                          color: customColor,
+                        }
+                      : undefined
+                  }
+                >
+                  {t}
+                  {mode === "edit" && (
+                    <button
+                      type="button"
+                      className="tag-remove-btn"
+                      onClick={() => handleRemoveTag(t)}
+                      title={`Remove ${t}`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </span>
+              );
+            })}
 
             {mode === "edit" && !isAddingTag && (
               <button
@@ -297,17 +316,21 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
       {mode === "edit" && enableTagSuggestions && suggestedTags.length > 0 && (
         <div className="block-suggested-tags-tray">
           <span className="suggested-tag-label">💡 Suggested:</span>
-          {suggestedTags.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              className="suggested-tag-chip"
-              onClick={() => updateBlockTags(block.id, [...block.tags, tag])}
-              title={`Click to add ${tag}`}
-            >
-              + {tag}
-            </button>
-          ))}
+          {suggestedTags.map((tag) => {
+            const customColor = tagColors[tag.toLowerCase()];
+            return (
+              <button
+                key={tag}
+                type="button"
+                className="suggested-tag-chip"
+                style={customColor ? { borderColor: customColor, color: customColor } : undefined}
+                onClick={() => updateBlockTags(block.id, [...block.tags, tag])}
+                title={`Click to add ${tag}`}
+              >
+                + {tag}
+              </button>
+            );
+          })}
         </div>
       )}
 

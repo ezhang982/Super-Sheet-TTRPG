@@ -10,6 +10,8 @@ export interface OmnisearchModalProps {
   onOpenRest?: () => void;
   onOpenNewChar?: () => void;
   onOpenSwitcher?: () => void;
+  onOpenScratchpad?: () => void;
+  onOpenTagManager?: () => void;
 }
 
 interface SearchResultItem {
@@ -30,6 +32,8 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
   onOpenRest,
   onOpenNewChar,
   onOpenSwitcher,
+  onOpenScratchpad,
+  onOpenTagManager,
 }) => {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -178,6 +182,42 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
           onOpenShortcuts?.();
         },
       },
+      {
+        id: "cmd_scratchpad",
+        category: "Commands",
+        title: "Session Scratchpad & Combat Log",
+        subtitle: "Open ephemeral scratchpad notes and initiative tracker",
+        badge: "Tabletop",
+        action: () => {
+          onClose();
+          onOpenScratchpad?.();
+        },
+      },
+      {
+        id: "cmd_tag_manager",
+        category: "Commands",
+        title: "Visual Tag Manager & Color Palette",
+        subtitle: "Manage tag accent colors and rename/delete tags globally",
+        badge: "Tags",
+        action: () => {
+          onClose();
+          onOpenTagManager?.();
+        },
+      },
+      {
+        id: "cmd_print",
+        category: "Commands",
+        title: "Print Character Sheet / Export PDF",
+        subtitle: "Open print view styled cleanly for paper and PDF export",
+        badge: "Export",
+        hotkey: "Ctrl+P",
+        action: () => {
+          onClose();
+          setTimeout(() => {
+            window.print();
+          }, 150);
+        },
+      },
     ];
 
     if (mode === "edit") {
@@ -322,7 +362,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
     }
 
     return items;
-  }, [query, character, mode, onOpenShortcuts, onOpenTheme, onOpenRest, onOpenNewChar, onOpenSwitcher]);
+  }, [query, character, mode, onOpenShortcuts, onOpenTheme, onOpenRest, onOpenNewChar, onOpenSwitcher, onOpenScratchpad, onOpenTagManager]);
 
   // Reset selected index when query changes
   useEffect(() => {

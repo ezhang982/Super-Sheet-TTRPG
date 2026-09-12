@@ -133,27 +133,42 @@ Blocks automatically publish variables to a sheet-wide in-memory symbol table:
 
 ---
 
-### Phase 10 — Tabletop Utility, Session State & Printability
+### Phase 10 — Tabletop Utility, Session State, UX Polish & Printability *(Completed)*
 
-#### 1. Dedicated Print / Clean PDF Export
-* High-fidelity `@media print` stylesheet.
-* Automatically strips dark canvas backgrounds, floating buttons, tab bars, and history indicators.
-* Clean black-and-white borders with crisp serif/sans typography optimized for physical paper or PDF archival.
-* Option to print active tab or reflow all tabs sequentially into standard page breaks.
+#### 1. Core Ergonomics & Bug Fixes (User Testing Feedback)
+* [x] **Undo/Redo Sheet Isolation:** Clear temporal undo history when changing characters (`loadCharacterById`), creating new characters (`newCharacter`), or importing characters (`importCharacter`). Resolves bug where pressing `Ctrl+Z` to undo edits on a new sheet reverts the user back to the previous character sheet.
+* [x] **Move & Reorder Tabs:** Add ability to move/reorder tabs via drag-and-drop and left/right controls in Edit Mode (`reorderTabs` and `moveTab` store actions).
+* [x] **Free & Precise Card Sizing:**
+  * Multi-directional resize handles: allow resizing from the right edge, bottom edge, and corner (`handles: ['s', 'e', 'se']`).
+  * Allow 1-column minimum width (`minW: 1`).
+  * Direct dimension controls in `BlockStyleModal.tsx` and `CardContextMenu.tsx` allowing users to type or click exact width (1–12 cols) and height (rows), plus quick width presets (`Full 12`, `Half 6`, `Third 4`, `Quarter 3`) and "Fit Height to Content".
+* [x] **Tab Bar Layout Stability & Float Fix:**
+  * Prevent tab text from wrapping onto multiple lines (`white-space: nowrap;`).
+  * Align tab items to the bottom border (`align-items: flex-end`) with consistent height so single-line tabs never "float" in mid-air when neighboring tabs expand.
+  * Maintain clean minimum/maximum sizing during tab rename and enable smooth horizontal scrolling when many tabs exist.
+* [x] **Equation Variable Autocomplete Portal & Boundary Safety:**
+  * Upgrade `FormulaInput.tsx` dropdown to render via a React Portal with screen-edge boundary detection.
+  * Prevent equation/variable popups from clipping or overflowing off the screen/card when opened close to the left or right edges in stat cards, popouts, or modals.
 
-#### 2. Floating Session Scratchpad & Combat Log
-* Slide-out drawer or floating modal for transient in-session notes:
+#### 2. Dedicated Print / Clean PDF Export
+* [x] High-fidelity `@media print` stylesheet.
+* [x] Automatically strips dark canvas backgrounds, floating buttons, tab bars, and history indicators.
+* [x] Clean black-and-white borders with crisp serif/sans typography optimized for physical paper or PDF archival.
+* [x] Print action accessible via Omnisearch (`Ctrl+K`), Floating Tools Menu, and browser print (`Ctrl+P`).
+
+#### 3. Floating Session Scratchpad & Combat Log
+* [x] Slide-out drawer or floating modal for transient in-session notes:
   * Quick monster HP tallies
   * Initiative tracker order
   * Ephemeral room clues, NPC names, and shopkeeper prices
-* Does not clutter character canvas layouts or persist as formal blocks.
-* Includes "Clear Session Notes" and "Promote to Permanent Notes Block" options.
+* [x] Does not clutter character canvas layouts or persist as formal blocks.
+* [x] Includes "Clear Session Notes" and "Promote to Permanent Notes Block" options.
 
-#### 3. Visual Tag Management & Color Palette
-* Assign custom accent colors or border styles to specific tags (e.g. `#action` = amber, `#bonus-action` = cyan, `#short-rest` = emerald, `#magic` = amethyst).
-* Cards and filters reflect these colors across the canvas.
-* Tag manager modal to rename or purge tags globally across all blocks in one click.
+#### 4. Visual Tag Management & Color Palette
+* [x] Assign custom accent colors or border styles to specific tags (e.g. `#action` = amber, `#bonus-action` = cyan, `#short-rest` = emerald, `#magic` = amethyst).
+* [x] Cards and filters reflect these colors across the canvas.
+* [x] Tag manager modal to view all tags, rename or purge tags globally across all blocks in one click.
 
-#### 4. Play Mode Value Revert & Roll Notations
-* Ephemeral "Revert" toast after counter changes in Play Mode to catch accidental clicks.
-* Click-to-copy roll notations (e.g. clicking `1d8 + 3` copies `/roll 1d8+3` to clipboard for Discord/Foundry/Roll20).
+#### 5. Play Mode Value Revert & Roll Notations
+* [x] Ephemeral "Revert" toast after counter changes in Play Mode to catch accidental clicks.
+* [x] Click-to-copy or click-to-roll dice notations (e.g. clicking `1d8 + 3` rolls live or copies `/roll 1d8+3` to clipboard for Discord/Foundry/Roll20).

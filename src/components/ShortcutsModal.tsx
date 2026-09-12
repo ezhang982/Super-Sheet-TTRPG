@@ -37,6 +37,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       icon: "🧭",
       items: [
         { keys: ["Ctrl", "K"], desc: "Open Omnisearch & Command Palette" },
+        { keys: ["Ctrl", "P"], desc: "Print Character Sheet / Export PDF" },
         { keys: ["E"], desc: "Toggle Edit Mode / Play Mode", context: "when not typing" },
         { keys: ["Ctrl", "E"], desc: "Toggle Edit Mode / Play Mode", context: "universal" },
         { keys: ["?"], desc: "Open Keyboard Shortcuts Cheatsheet", context: "when not typing" },
@@ -49,6 +50,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       items: [
         { keys: ["Ctrl", "B"], desc: "Add new Feature Card to active tab" },
         { keys: ["Ctrl", "T"], desc: "Create a new tab" },
+        { keys: ["Drag Tabs"], desc: "Reorder tabs left or right in Edit mode" },
+        { keys: ["Resize Edges"], desc: "Drag bottom or right handles for custom width/height" },
         { keys: ["Ctrl", "D"], desc: "Duplicate hovered block in context menu" },
         { keys: ["Ctrl", "Z"], desc: "Undo last layout or block modification" },
         { keys: ["Ctrl", "Shift", "Z"], desc: "Redo last layout modification" },
@@ -61,6 +64,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       icon: "🎲",
       items: [
         { keys: ["Click Counter"], desc: "Enter rapid math: +10, -5, *2, /2, or exact number" },
+        { keys: ["↺ Revert Toast"], desc: "One-click undo for ephemeral counter changes in Play mode" },
+        { keys: ["Click Dice (e.g. 2d6)"], desc: "Roll dice notation or copy command to clipboard" },
         { keys: ["↵ Enter"], desc: "Commit quick math or formula edit" },
         { keys: ["@"], desc: "Summon live variable autocomplete popup in formula inputs" },
         { keys: ["{ @var }"], desc: "Interpolate dynamic variables in Markdown descriptions" },
