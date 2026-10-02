@@ -149,6 +149,130 @@ export async function initStorageAndMigrate(): Promise<void> {
   }
 }
 
+export interface ReconciliationResult {
+  reconciled: boolean;
+  source: "idb" | "localStorage" | "none";
+  character: Character | null;
+}
+
+/**
+ * Merge manifests across IndexedDB and localStorage by highest updatedAt
+ */
+export async function reconcileManifests(): Promise<CharacterManifestEntry[]> {
+  const localManifest = loadManifest();
+  const idbManifest = (await idbGetMeta<CharacterManifestEntry[]>("manifest")) || [];
+
+  const map = new Map<string, CharacterManifestEntry>();
+  for (const entry of localManifest) {
+    map.set(entry.id, entry);
+  }
+  for (const entry of idbManifest) {
+    const existing = map.get(entry.id);
+    if (!existing || (entry.updatedAt || 0) > (existing.updatedAt || 0)) {
+      map.set(entry.id, entry);
+    }
+  }
+
+  // Also check all characters stored in IndexedDB to catch any unindexed sheets
+  try {
+    const allIdbSheets = await idbGetAllCharacters();
+    for (const sheet of allIdbSheets) {
+      const existing = map.get(sheet.meta.id);
+      const sheetTime = sheet.meta.updatedAt || 0;
+      if (!existing || sheetTime > (existing.updatedAt || 0)) {
+        map.set(sheet.meta.id, {
+          id: sheet.meta.id,
+          name: sheet.meta.name || "Untitled Character",
+          system: sheet.meta.system || "Custom",
+          updatedAt: sheetTime,
+        });
+      }
+    }
+  } catch {}
+
+  const merged = Array.from(map.values());
+  saveManifest(merged);
+  return merged;
+}
+
+/**
+ * Reconcile character documents and manifests between IndexedDB and localStorage.
+ * If IndexedDB holds a newer timestamp than the currently loaded/localStorage character,
+ * returns the authoritative character from IndexedDB and syncs the localStorage cache.
+ */
+export async function reconcileStorage(currentCharacter?: Character): Promise<ReconciliationResult> {
+  try {
+    // 1. Get active ID from IDB, fallback to localStorage or current character
+    const idbActiveId = await idbGetMeta<string>("active_char_id");
+    const localActiveId = typeof localStorage !== "undefined" ? localStorage.getItem(ACTIVE_CHAR_KEY) : null;
+    const activeId = idbActiveId || localActiveId || currentCharacter?.meta.id;
+
+    if (!activeId) {
+      return { reconciled: false, source: "none", character: null };
+    }
+
+    // 2. Fetch from IndexedDB
+    const idbChar = await idbGetCharacter(activeId);
+    let localChar: Character | null = currentCharacter || null;
+
+    if (!localChar && typeof localStorage !== "undefined") {
+      const raw = localStorage.getItem(`${STORAGE_PREFIX}${activeId}`);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          const valid = CharacterSchema.safeParse(parsed);
+          if (valid.success) localChar = valid.data;
+        } catch {}
+      }
+    }
+
+    // 3. Manifest reconciliation: merge IDB and localStorage entries, keeping newer timestamps
+    await reconcileManifests();
+
+    // 4. Compare timestamps between IndexedDB and localStorage
+    const idbTime = idbChar?.meta.updatedAt ?? 0;
+    const localTime = localChar?.meta.updatedAt ?? 0;
+
+    if (idbChar && idbTime > localTime) {
+      // IndexedDB is newer! Authoritative IDB wins over stale/truncated localStorage
+      if (typeof localStorage !== "undefined") {
+        try {
+          localStorage.setItem(`${STORAGE_PREFIX}${idbChar.meta.id}`, JSON.stringify(idbChar));
+          localStorage.setItem(ACTIVE_CHAR_KEY, idbChar.meta.id);
+        } catch (err) {
+          console.warn("Could not cache reconciled IDB sheet to localStorage (quota exceeded):", err);
+        }
+      }
+      return { reconciled: true, source: "idb", character: idbChar };
+    } else if (localChar && localTime > idbTime) {
+      // localStorage is newer! Catch up IndexedDB
+      await idbSaveCharacter(localChar);
+      await idbSetMeta("active_char_id", localChar.meta.id);
+      return { reconciled: true, source: "localStorage", character: localChar };
+    }
+
+    return { reconciled: false, source: "none", character: idbChar || localChar || null };
+  } catch (err) {
+    console.warn("reconcileStorage warning:", err);
+    return { reconciled: false, source: "none", character: null };
+  }
+}
+
+/**
+ * Combined startup initialization, legacy migration, and dual-storage reconciliation
+ */
+export async function initAndReconcileStorage(currentCharacter?: Character): Promise<ReconciliationResult> {
+  // 1. Setup lifecycle save flush listeners
+  setupStorageLifecycleListeners();
+
+  // 2. Perform legacy migration if IDB is empty
+  await initStorageAndMigrate();
+
+  // 3. Reconcile dual storage
+  return reconcileStorage(currentCharacter);
+}
+
+
 /**
  * Load a character from IndexedDB by ID (falls back to localStorage)
  */
@@ -224,11 +348,92 @@ export async function duplicateCharacterById(id: string): Promise<Character | nu
   return clone;
 }
 
+let inFlightIdbWrites = 0;
+let pendingCharacterToSave: Character | null = null;
+let pendingStatusChangeCb: ((status: "saving" | "saved") => void) | null = null;
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let lifecycleListenersAttached = false;
+
+/**
+ * Check if there are active in-flight writes or pending debounced saves
+ */
+export function hasInFlightWrites(): boolean {
+  return pendingCharacterToSave !== null || inFlightIdbWrites > 0;
+}
+
+/**
+ * Wait for all pending and in-flight writes to finish settling
+ */
+export async function waitForInFlightWrites(timeoutMs = 1000): Promise<boolean> {
+  const start = Date.now();
+  while (hasInFlightWrites()) {
+    if (Date.now() - start > timeoutMs) return false;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  return true;
+}
+
+
+/**
+ * Flush any pending debounced save immediately to localStorage and IndexedDB
+ */
+export function flushPendingSave(): void {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+  if (pendingCharacterToSave) {
+    const char = pendingCharacterToSave;
+    const cb = pendingStatusChangeCb;
+    pendingCharacterToSave = null;
+    pendingStatusChangeCb = null;
+    saveCharacterToStorage(char);
+    if (cb) cb("saved");
+  }
+}
+
+/**
+ * Register Page Lifecycle API listeners to prevent tab-close data loss
+ */
+export function setupStorageLifecycleListeners(): void {
+  if (lifecycleListenersAttached) return;
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  lifecycleListenersAttached = true;
+
+  // 1. Page Visibility API: visibilitychange (document.visibilityState === 'hidden')
+  // Guaranteed by browsers when switching tabs, minimizing, locking screen, or closing tab
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      flushPendingSave();
+    }
+  });
+
+  // 2. pagehide: Fires reliably on mobile Safari and Chromium during navigation/unload
+  window.addEventListener("pagehide", () => {
+    flushPendingSave();
+  });
+
+  // 3. beforeunload: Synchronously flushes and alerts user if async IDB write is in-flight
+  window.addEventListener("beforeunload", (event) => {
+    flushPendingSave();
+    if (hasInFlightWrites()) {
+      event.preventDefault();
+      event.returnValue = "";
+    }
+  });
+}
+
 /**
  * Save character to both IndexedDB and localStorage (with manifest update)
  */
 export function saveCharacterToStorage(char: Character): void {
-  // Update localStorage (sync backup)
+  // If this exact character was pending debounce save, clear pending reference
+  if (pendingCharacterToSave?.meta.id === char.meta.id) {
+    pendingCharacterToSave = null;
+  }
+
+  // 1. Update localStorage (sync backup for instant frame-0 paint)
   if (typeof localStorage !== "undefined") {
     try {
       localStorage.setItem(`${STORAGE_PREFIX}${char.meta.id}`, JSON.stringify(char));
@@ -239,27 +444,34 @@ export function saveCharacterToStorage(char: Character): void {
     }
   }
 
-  // Asynchronous IndexedDB write
-  idbSaveCharacter(char).catch((err) =>
-    console.error("Failed to save character to IndexedDB:", err)
-  );
+  // 2. Asynchronous IndexedDB write with in-flight tracking
+  inFlightIdbWrites++;
+  idbSaveCharacter(char)
+    .catch((err) =>
+      console.error("Failed to save character to IndexedDB:", err)
+    )
+    .finally(() => {
+      inFlightIdbWrites = Math.max(0, inFlightIdbWrites - 1);
+    });
+
   idbSetMeta("active_char_id", char.meta.id).catch(() => {});
 
   updateManifestEntry(char);
 }
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 export function debouncedSaveCharacter(
   char: Character,
   delayMs = 300,
   onStatusChange?: (status: "saving" | "saved") => void
 ): void {
+  pendingCharacterToSave = char;
+  pendingStatusChangeCb = onStatusChange || null;
   if (onStatusChange) onStatusChange("saving");
   if (debounceTimer) clearTimeout(debounceTimer);
 
   debounceTimer = setTimeout(() => {
-    saveCharacterToStorage(char);
-    if (onStatusChange) onStatusChange("saved");
+    debounceTimer = null;
+    flushPendingSave();
   }, delayMs);
 }
 

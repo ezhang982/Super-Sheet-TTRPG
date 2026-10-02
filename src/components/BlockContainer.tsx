@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
-import type { Block } from "../types/schema";
 import { TrackerBlock } from "./primitives/TrackerBlock";
 import { PipMatrixBlock } from "./primitives/PipMatrixBlock";
 import { StatGroupBlock } from "./primitives/StatGroupBlock";
@@ -15,13 +14,14 @@ import { CardContextMenu } from "./CardContextMenu";
 import { getSuggestedTags } from "../utils/tagKeywords";
 
 interface BlockContainerProps {
-  block: Block;
+  blockId: string;
   tabId: string;
 }
 
 const EMPTY_TAG_COLORS: Record<string, string> = {};
 
-export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) => {
+export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ blockId, tabId }) => {
+  const block = useCharacterStore((state) => state.character.blocks[blockId]);
   const mode = useCharacterStore((state) => state.mode);
   const activeTagFilter = useCharacterStore((state) => state.activeTagFilter);
   const deleteBlock = useCharacterStore((state) => state.deleteBlock);
@@ -33,15 +33,21 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
   const rawTagColors = useCharacterStore((state) => state.character.theme.tagColors);
   const tagColors = rawTagColors || EMPTY_TAG_COLORS;
 
-  const suggestedTags = useMemo(() => getSuggestedTags(block), [block]);
+  const suggestedTags = useMemo(() => (block ? getSuggestedTags(block) : []), [block]);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [titleInput, setTitleInput] = useState(block.title);
+  const [titleInput, setTitleInput] = useState(block?.title || "");
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [isStylingOpen, setIsStylingOpen] = useState(false);
   const [isPopout, setIsPopout] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (block?.title !== undefined) {
+      setTitleInput(block.title);
+    }
+  }, [block?.title]);
 
   // Close popout on Escape
   useEffect(() => {
@@ -52,6 +58,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isPopout]);
+
+  if (!block) return null;
+
 
   const handleContextMenu = (e: React.MouseEvent) => {
     if (mode !== "edit") return;
@@ -418,4 +427,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = ({ block, tabId }) 
         )}
     </div>
   );
-};
+});
+
+BlockContainer.displayName = "BlockContainer";
+

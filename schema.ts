@@ -25,6 +25,7 @@ const GlobalThemeSchema = z.object({
   cardBackground: z.string(),
   borderColor: z.string(),
   accentColor: z.string(),
+  tagColors: z.record(z.string(), z.string()).optional(),
 });
 
 const BlockStyleSchema = z

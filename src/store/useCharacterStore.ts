@@ -11,7 +11,7 @@ import {
   type LayoutItem,
   type Tab,
 } from "../types/schema";
-import type { CharacterStore, Mode, RestAction } from "../types/store-contract";
+import type { CharacterStore, Mode, RestAction, PlayModeHistoryEntry } from "../types/store-contract";
 import {
   loadInitialCharacter,
   debouncedSaveCharacter,
@@ -20,16 +20,24 @@ import {
   loadCharacterById as loadCharFromStorage,
   duplicateCharacterById as duplicateCharInStorage,
   deleteCharacterById as deleteCharFromStorage,
-  initStorageAndMigrate,
+  initAndReconcileStorage,
 } from "./storage";
+
 import { blankTemplate } from "../templates/blank";
 
-// Initialize IndexedDB and migrate legacy localStorage data
+// Initialize IndexedDB, migrate legacy data, and reconcile dual-storage consistency
 if (typeof window !== "undefined") {
-  initStorageAndMigrate().catch((err) =>
-    console.warn("Storage initialization/migration warning:", err)
+  initAndReconcileStorage().then((res) => {
+    if (res.reconciled && res.character) {
+      useCharacterStore.setState({ character: res.character, saveStatus: "saved" });
+      useCharacterStore.getState().clearHistory();
+      useCharacterStore.getState().clearPlayHistory();
+    }
+  }).catch((err) =>
+    console.warn("Storage initialization/reconciliation warning:", err)
   );
 }
+
 
 function deepMerge<T extends Record<string, unknown>>(target: T, patch: Record<string, unknown>): T {
   const output = { ...target };
@@ -70,20 +78,25 @@ export const useCharacterStore = create<CharacterStore>()(
       activeTagFilter: null,
       saveStatus: "saved",
       enableTagSuggestions: true,
+      playHistory: {
+        past: [],
+        future: [],
+      },
+
 
       // ---- Mode & Tag Filter ----
       setMode: (mode: Mode) => {
-        set({ mode });
         const temporalState = (useCharacterStore as unknown as { temporal?: { getState: () => { pause: () => void; resume: () => void } } })
           .temporal?.getState();
-        if (temporalState) {
-          if (mode === "play") {
-            temporalState.pause();
-          } else {
-            temporalState.resume();
-          }
+        if (temporalState && mode === "play") {
+          temporalState.pause();
+        }
+        set({ mode });
+        if (temporalState && mode !== "play") {
+          temporalState.resume();
         }
       },
+
 
       setActiveTagFilter: (tag: string | null) => {
         set({ activeTagFilter: tag });
@@ -486,7 +499,7 @@ export const useCharacterStore = create<CharacterStore>()(
       },
 
       updateBlockData: (blockId: string, patch: Partial<Block["data"]> | Record<string, unknown>) => {
-        const { character } = get();
+        const { character, mode, playHistory } = get();
         const block = character.blocks[blockId];
         if (!block) return;
 
@@ -500,6 +513,23 @@ export const useCharacterStore = create<CharacterStore>()(
           data: mergedData,
         } as Block;
 
+        let newPlayHistory = playHistory;
+        if (mode === "play") {
+          const entry: PlayModeHistoryEntry = {
+            type: "single",
+            id: `play_act_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            timestamp: Date.now(),
+            description: `Updated ${block.title || "counter"}`,
+            blockId,
+            prevData: JSON.parse(JSON.stringify(block.data)),
+            nextData: JSON.parse(JSON.stringify(mergedData)),
+          };
+          newPlayHistory = {
+            past: [...playHistory.past.slice(-49), entry],
+            future: [],
+          };
+        }
+
         set({
           character: {
             ...character,
@@ -509,8 +539,10 @@ export const useCharacterStore = create<CharacterStore>()(
             },
             meta: { ...character.meta, updatedAt: Date.now() },
           },
+          playHistory: newPlayHistory,
         });
       },
+
 
       updateBlockStyle: (blockId: string, patch: Partial<BlockStyle>) => {
         const { character } = get();
@@ -720,7 +752,7 @@ export const useCharacterStore = create<CharacterStore>()(
 
       // ---- Rest Engine ----
       applyRest: (tag: string) => {
-        const { character } = get();
+        const { character, mode, playHistory } = get();
         let changed = false;
         const newBlocks = { ...character.blocks };
 
@@ -789,15 +821,50 @@ export const useCharacterStore = create<CharacterStore>()(
         }
 
         if (changed) {
+          let newPlayHistory = playHistory;
+          if (mode === "play") {
+            const batchUpdates: Array<{
+              blockId: string;
+              prevData: Record<string, unknown>;
+              nextData: Record<string, unknown>;
+            }> = [];
+
+            for (const [id, originalBlock] of Object.entries(character.blocks)) {
+              if (newBlocks[id] && newBlocks[id].data !== originalBlock.data) {
+                batchUpdates.push({
+                  blockId: id,
+                  prevData: JSON.parse(JSON.stringify(originalBlock.data)),
+                  nextData: JSON.parse(JSON.stringify(newBlocks[id].data)),
+                });
+              }
+            }
+
+            if (batchUpdates.length > 0) {
+              const entry: PlayModeHistoryEntry = {
+                type: "batch",
+                id: `play_rest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                timestamp: Date.now(),
+                description: `Applied ${tag} rest`,
+                updates: batchUpdates,
+              };
+              newPlayHistory = {
+                past: [...playHistory.past.slice(-49), entry],
+                future: [],
+              };
+            }
+          }
+
           set({
             character: {
               ...character,
               blocks: newBlocks,
               meta: { ...character.meta, updatedAt: Date.now() },
             },
+            playHistory: newPlayHistory,
           });
         }
       },
+
 
       addRestAction: (label: string, tag: string) => {
         const { restActions } = get();
@@ -831,6 +898,7 @@ export const useCharacterStore = create<CharacterStore>()(
         set({ character: freshChar, activeTagFilter: null, mode: "edit" });
         saveCharacterToStorage(freshChar);
         get().clearHistory();
+        get().clearPlayHistory();
       },
 
       loadCharacterById: async (id: string) => {
@@ -842,6 +910,7 @@ export const useCharacterStore = create<CharacterStore>()(
         set({ character: found, activeTagFilter: null, saveStatus: "saved" });
         saveCharacterToStorage(found);
         get().clearHistory();
+        get().clearPlayHistory();
         return true;
       },
 
@@ -875,8 +944,10 @@ export const useCharacterStore = create<CharacterStore>()(
         set({ character: result.data });
         saveCharacterToStorage(result.data);
         get().clearHistory();
+        get().clearPlayHistory();
         return { success: true };
       },
+
 
       exportCharacter: () => {
         const { character } = get();
@@ -1011,16 +1082,116 @@ export const useCharacterStore = create<CharacterStore>()(
           .temporal?.getState();
         temporalState?.clear();
       },
+
+      // ---- Play Mode Scoped History ----
+      undoPlayMode: () => {
+        const { character, playHistory } = get();
+        if (playHistory.past.length === 0) return;
+
+        const lastEntry = playHistory.past[playHistory.past.length - 1];
+        const newPast = playHistory.past.slice(0, -1);
+        const updatedBlocks = { ...character.blocks };
+
+        if (lastEntry.type === "single") {
+          const block = updatedBlocks[lastEntry.blockId];
+          if (block) {
+            updatedBlocks[lastEntry.blockId] = {
+              ...block,
+              data: lastEntry.prevData as Block["data"],
+            } as Block;
+          }
+        } else if (lastEntry.type === "batch") {
+          for (const u of lastEntry.updates) {
+            const block = updatedBlocks[u.blockId];
+            if (block) {
+              updatedBlocks[u.blockId] = {
+                ...block,
+                data: u.prevData as Block["data"],
+              } as Block;
+            }
+          }
+        }
+
+        set({
+          character: {
+            ...character,
+            blocks: updatedBlocks,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+          playHistory: {
+            past: newPast,
+            future: [lastEntry, ...playHistory.future.slice(0, 49)],
+          },
+        });
+      },
+
+      redoPlayMode: () => {
+        const { character, playHistory } = get();
+        if (playHistory.future.length === 0) return;
+
+        const nextEntry = playHistory.future[0];
+        const newFuture = playHistory.future.slice(1);
+        const updatedBlocks = { ...character.blocks };
+
+        if (nextEntry.type === "single") {
+          const block = updatedBlocks[nextEntry.blockId];
+          if (block) {
+            updatedBlocks[nextEntry.blockId] = {
+              ...block,
+              data: nextEntry.nextData as Block["data"],
+            } as Block;
+          }
+        } else if (nextEntry.type === "batch") {
+          for (const u of nextEntry.updates) {
+            const block = updatedBlocks[u.blockId];
+            if (block) {
+              updatedBlocks[u.blockId] = {
+                ...block,
+                data: u.nextData as Block["data"],
+              } as Block;
+            }
+          }
+        }
+
+        set({
+          character: {
+            ...character,
+            blocks: updatedBlocks,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+          playHistory: {
+            past: [...playHistory.past.slice(-49), nextEntry],
+            future: newFuture,
+          },
+        });
+      },
+
+      canUndoPlayMode: () => {
+        return get().playHistory.past.length > 0;
+      },
+
+      canRedoPlayMode: () => {
+        return get().playHistory.future.length > 0;
+      },
+
+      clearPlayHistory: () => {
+        set({ playHistory: { past: [], future: [] } });
+      },
+
     }),
     {
       partialize: (state) => ({
         character: state.character,
         restActions: state.restActions,
       }),
+      equality: (pastState, currentState) =>
+        pastState.character === currentState.character &&
+        pastState.restActions === currentState.restActions,
       limit: 50,
     }
   )
 );
+
 
 // Subscribe to automatically debounce-save character changes to IndexedDB & localStorage
 let prevCharacter = useCharacterStore.getState().character;

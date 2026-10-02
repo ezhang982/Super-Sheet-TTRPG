@@ -4,18 +4,25 @@ import { useCharacterStore } from "../store/useCharacterStore";
 import { BlockContainer } from "./BlockContainer";
 import type { LayoutItem } from "../types/schema";
 
+const EMPTY_LAYOUT: LayoutItem[] = [];
+
 export const Canvas: React.FC = () => {
-  const character = useCharacterStore((state) => state.character);
   const mode = useCharacterStore((state) => state.mode);
   const updateTabLayout = useCharacterStore((state) => state.updateTabLayout);
-  const activeTabId = character.activeTabId;
+  const activeTabId = useCharacterStore((state) => state.character.activeTabId);
+  const activeTabLabel = useCharacterStore((state) => {
+    const tab = state.character.tabs.find((t) => t.id === state.character.activeTabId);
+    return tab?.label || "Sheet";
+  });
+  const charName = useCharacterStore((state) => state.character.meta.name || "Character Sheet");
+  const charSystem = useCharacterStore((state) => state.character.meta.system);
+
+  // Subscribe strictly to the active tab's layout array reference
+  const currentLayout = useCharacterStore(
+    (state) => state.character.layouts[state.character.activeTabId] ?? EMPTY_LAYOUT
+  );
 
   const { width, containerRef, mounted } = useContainerWidth();
-
-  // Active tab's layout items
-  const currentLayout = useMemo(() => {
-    return character.layouts[activeTabId] ?? [];
-  }, [character.layouts, activeTabId]);
 
   // Convert schema layout items to RGL Layout format
   const rglLayout: Layout = useMemo(() => {
@@ -49,18 +56,14 @@ export const Canvas: React.FC = () => {
     return [...currentLayout].sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
   }, [currentLayout]);
 
-  const activeTab = character.tabs.find((t) => t.id === activeTabId);
-
   return (
     <main className={`canvas-wrapper ${mode === "play" ? "play-mode" : "edit-mode"}`} ref={containerRef}>
       {/* Printable Sheet Header Banner (visible only in @media print) */}
       <div className="print-sheet-header">
-        <div className="print-sheet-title">
-          {character.meta.name || "Character Sheet"}
-        </div>
+        <div className="print-sheet-title">{charName}</div>
         <div className="print-sheet-meta">
-          {character.meta.system && <span>{character.meta.system} • </span>}
-          <span>Tab: {activeTab?.label || "Sheet"}</span>
+          {charSystem && <span>{charSystem} • </span>}
+          <span>Tab: {activeTabLabel}</span>
         </div>
       </div>
       {currentLayout.length === 0 ? (
@@ -74,11 +77,9 @@ export const Canvas: React.FC = () => {
         </div>
       ) : isNarrowPlayMode ? (
         <div className="mobile-single-column-flow">
-          {sortedMobileItems.map((item) => {
-            const block = character.blocks[item.i];
-            if (!block) return null;
-            return <BlockContainer key={item.i} block={block} tabId={activeTabId} />;
-          })}
+          {sortedMobileItems.map((item) => (
+            <BlockContainer key={item.i} blockId={item.i} tabId={activeTabId} />
+          ))}
         </div>
       ) : (
         mounted && width > 0 && (
@@ -102,18 +103,15 @@ export const Canvas: React.FC = () => {
             onDragStop={(layout) => handleCommitLayout(layout)}
             onResizeStop={(layout) => handleCommitLayout(layout)}
           >
-            {currentLayout.map((item) => {
-              const block = character.blocks[item.i];
-              if (!block) return null;
-              return (
-                <div key={item.i} className="canvas-grid-item">
-                  <BlockContainer block={block} tabId={activeTabId} />
-                </div>
-              );
-            })}
+            {currentLayout.map((item) => (
+              <div key={item.i} className="canvas-grid-item">
+                <BlockContainer blockId={item.i} tabId={activeTabId} />
+              </div>
+            ))}
           </GridLayout>
         )
       )}
     </main>
   );
 };
+
