@@ -102,4 +102,40 @@ export interface CharacterStore {
   undo: () => void;
   redo: () => void;
   clearHistory: () => void;
+
+  // ---- Play Mode Scoped History (Phase 11) ----
+  // Lightweight command log isolated to gameplay/counter adjustments
+  // (trackers, pips, inventory charges, rest resets) without layout risk.
+  playHistory: {
+    past: PlayModeHistoryEntry[];
+    future: PlayModeHistoryEntry[];
+  };
+  undoPlayMode: () => void;
+  redoPlayMode: () => void;
+  canUndoPlayMode: () => boolean;
+  canRedoPlayMode: () => boolean;
+  clearPlayHistory: () => void;
 }
+
+export type PlayModeHistoryEntry =
+  | {
+      type: "single";
+      id: string;
+      timestamp: number;
+      description: string;
+      blockId: string;
+      prevData: Record<string, unknown>;
+      nextData: Record<string, unknown>;
+    }
+  | {
+      type: "batch";
+      id: string;
+      timestamp: number;
+      description: string;
+      updates: Array<{
+        blockId: string;
+        prevData: Record<string, unknown>;
+        nextData: Record<string, unknown>;
+      }>;
+    };
+

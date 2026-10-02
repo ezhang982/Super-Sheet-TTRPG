@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCharacterStore } from "./store/useCharacterStore";
+import { setupStorageLifecycleListeners } from "./store/storage";
 import { TabBar } from "./components/TabBar";
 import { TagFilterAndRestBar } from "./components/TagFilterAndRestBar";
 import { Canvas } from "./components/Canvas";
@@ -21,11 +22,18 @@ export const App: React.FC = () => {
   const addTab = useCharacterStore((state) => state.addTab);
   const undo = useCharacterStore((state) => state.undo);
   const redo = useCharacterStore((state) => state.redo);
+  const undoPlayMode = useCharacterStore((state) => state.undoPlayMode);
+  const redoPlayMode = useCharacterStore((state) => state.redoPlayMode);
 
   const [isOmnisearchOpen, setIsOmnisearchOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+
+  // Setup storage lifecycle listeners (visibilitychange, pagehide, beforeunload)
+  useEffect(() => {
+    setupStorageLifecycleListeners();
+  }, []);
 
   // Dynamically inject theme properties into CSS custom variables on root element
   useEffect(() => {
@@ -96,21 +104,30 @@ export const App: React.FC = () => {
         return;
       }
 
-      // 7. Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y: Undo & Redo (Edit Mode only)
-      if (mode === "edit" && isModifier) {
+      // 7. Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y: Undo & Redo (Edit Mode: Layout, Play Mode: Counters)
+      if (isModifier) {
         if (e.key === "z" && !e.shiftKey) {
           e.preventDefault();
-          undo();
+          if (mode === "edit") {
+            undo();
+          } else {
+            undoPlayMode();
+          }
         } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
           e.preventDefault();
-          redo();
+          if (mode === "edit") {
+            redo();
+          } else {
+            redoPlayMode();
+          }
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mode, setMode, addBlock, addTab, character.activeTabId, character.tabs.length, undo, redo]);
+  }, [mode, setMode, addBlock, addTab, character.activeTabId, character.tabs.length, undo, redo, undoPlayMode, redoPlayMode]);
+
 
   return (
     <div className="app-root">

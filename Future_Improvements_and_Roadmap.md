@@ -47,7 +47,17 @@ Theme: The bridge between digital dashboards and the physical tabletop.
 - Visual Tag Management & Palette (custom tag colors, badge styling, bulk rename).
 - Play Mode quick stat revert ("HP changed 48 -> 38. [Undo misclick]").
 - Decoupled roll notation click-to-copy / VTT webhook integration.
+
 ================================================================================
+Phase 11: Resilience, Storage Hardening & Performance Optimization (Completed)
+--------------------------------------------------------------------------------
+Theme: Eliminating persistence race conditions, hardening dual-storage consistency, and optimizing reactive render loops.
+- [x] Lifecycle save flush (visibilitychange / pagehide / beforeunload) preventing tab-close data loss.
+- [x] Storage split-brain reconciliation (timestamp/version checks between IDB and localStorage).
+- [x] Granular Zustand selectors and "Pass IDs, Not Objects" pattern in Canvas / BlockContainer.
+- [x] Scoped history / command-based undo for Play Mode counters without layout risk.
+================================================================================
+
 ```
 
 ---
@@ -172,3 +182,29 @@ Blocks automatically publish variables to a sheet-wide in-memory symbol table:
 #### 5. Play Mode Value Revert & Roll Notations
 * [x] Ephemeral "Revert" toast after counter changes in Play Mode to catch accidental clicks.
 * [x] Click-to-copy or click-to-roll dice notations (e.g. clicking `1d8 + 3` rolls live or copies `/roll 1d8+3` to clipboard for Discord/Foundry/Roll20).
+
+---
+
+### Phase 11 — Resilience, Storage Hardening & Performance Optimization *(Completed)*
+
+#### 1. Lifecycle Save Flush & Tab-Close Data Loss Prevention
+* [x] **Page Lifecycle Listeners:** Registered `visibilitychange` (`document.visibilityState === 'hidden'`), `pagehide`, and `beforeunload` listeners in the root application lifecycle (`setupStorageLifecycleListeners`).
+* [x] **Synchronous Flush:** Synchronously flushes pending debounced saves (`flushPendingSave()`) directly to `localStorage` and IndexedDB before tab close or navigation occurs.
+* [x] **In-Flight Write Safeguards:** Tracks active in-flight IndexedDB writes and presents a standard `beforeunload` unsaved-state confirmation dialog if writes are currently resolving.
+
+#### 2. Dual-Storage Reconciliation & Split-Brain Cache Prevention
+* [x] **Startup Reconciliation:** Implemented timestamp / version reconciliation (`meta.updatedAt`) between `localStorage` and `IndexedDB` on application startup (`initAndReconcileStorage`).
+* [x] **Authoritative IDB Hydration:** If `IndexedDB` holds a newer timestamp than `localStorage` (e.g. after ~5MB localStorage `QuotaExceededError`), Zustand is hydrated from the authoritative `IndexedDB` document and the `localStorage` cache is refreshed.
+* [x] **Bidirectional Sync & Manifest Merge:** If `localStorage` is newer, catches up IndexedDB. Manifests across both layers are automatically reconciled by highest `updatedAt`.
+
+#### 3. Granular State Subscriptions & Re-render Isolation ("Pass IDs, Not Objects")
+* [x] **Canvas Selector Refactoring:** `Canvas.tsx` subscribes strictly to the active tab layout array and individual scalar properties (`charName`, `activeTabLabel`) instead of the root `character` document.
+* [x] **Pass IDs, Not Objects:** Passes only `blockId` and `tabId` to `BlockContainer.tsx`.
+* [x] **Direct Block Slices:** `BlockContainer.tsx` is wrapped in `React.memo` and subscribes directly to its own block slice (`character.blocks[blockId]`). Block value updates convert from $O(N)$ canvas-wide re-renders to $O(1)$ isolated component re-renders.
+
+#### 4. Scoped Play Mode History / Counter Undo
+* [x] **Dedicated Play Mode History Stack:** Implemented a lightweight command log (`playHistory: { past, future }`) tracking counter changes and batch rest resets during tabletop play.
+* [x] **Layout-Safe Ergonomics:** Play Mode undo/redo (`undoPlayMode` / `redoPlayMode`) exclusively restores counter data (`block.data`) without touching canvas layouts or unpausing Zundo Edit Mode temporal tracking.
+* [x] **Unified Shortcuts & Bottom Bar:** `Ctrl+Z` / `Ctrl+Shift+Z` / `Ctrl+Y` and bottom history buttons dynamically adapt between Edit Mode (canvas layout changes) and Play Mode (gameplay counters) with contextual tooltips.
+
+
