@@ -335,7 +335,7 @@
   flex-direction: column;
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--card-fx, 0 0 0 0 transparent), 0 4px 14px rgba(0, 0, 0, 0.4);
   position: relative;
   transition: opacity 0.25s ease, filter 0.25s ease, border-color var(--transition-fast);
 }
@@ -1555,7 +1555,7 @@
 .block-container.border-ornate {
   border-style: double !important;
   border-width: 4px !important;
-  box-shadow: 0 0 0 1px var(--border-color), 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 0 16px rgba(224, 108, 117, 0.08);
+  box-shadow: var(--card-fx, 0 0 0 0 transparent), 0 0 0 1px var(--border-color), 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 0 16px rgba(224, 108, 117, 0.08);
 }
 
 /* Floating Toast */
@@ -3232,7 +3232,7 @@
 }
 
 .block-container:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--card-fx, 0 0 0 0 transparent), 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 /* --- Skill List Primitive --- */
@@ -5079,3 +5079,139 @@
 
 
 
+
+/* =============================================================================
+   STYLE SYSTEM (Phase 1): frames, shapes, pickers
+   Designs are chosen in src/styles/registry.ts and applied by resolveStyle.ts.
+   ============================================================================= */
+
+/* Gradient "metal" frame: a ring drawn over the card's outer edge. The mask
+   cuts out the middle so only the border-width ring remains; it follows rounded
+   corners and works with translucent card backgrounds. */
+.frame-ring {
+  position: relative;
+}
+
+.frame-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: var(--frame-width, 3px);
+  background: var(--frame-gradient);
+  border-radius: inherit;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Chamfered (cut-corner) shape. clip-path removes the corners; the ::after
+   overlay redraws the diagonal edges in --shape-line (set per frame). Outer
+   shadows are clipped by clip-path, so glow is drawn inside for this shape. */
+.shape-chamfer {
+  --ch: 14px;
+  border-radius: 0;
+  clip-path: polygon(
+    var(--ch) 0,
+    calc(100% - var(--ch)) 0,
+    100% var(--ch),
+    100% calc(100% - var(--ch)),
+    calc(100% - var(--ch)) 100%,
+    var(--ch) 100%,
+    0 calc(100% - var(--ch)),
+    0 var(--ch)
+  );
+}
+
+.shape-chamfer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(135deg, transparent 43%, var(--shape-line, var(--border-color)) 43% 57%, transparent 57%) top left / var(--ch) var(--ch) no-repeat,
+    linear-gradient(225deg, transparent 43%, var(--shape-line, var(--border-color)) 43% 57%, transparent 57%) top right / var(--ch) var(--ch) no-repeat,
+    linear-gradient(315deg, transparent 43%, var(--shape-line, var(--border-color)) 43% 57%, transparent 57%) bottom right / var(--ch) var(--ch) no-repeat,
+    linear-gradient(45deg, transparent 43%, var(--shape-line, var(--border-color)) 43% 57%, transparent 57%) bottom left / var(--ch) var(--ch) no-repeat;
+}
+
+/* Preview-thumbnail picker */
+.style-option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 8px;
+}
+
+.style-option {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-main);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.style-option:hover {
+  border-color: var(--accent-color);
+  background: var(--bg-hover);
+}
+
+.style-option.selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px var(--accent-color);
+  background: rgba(224, 108, 117, 0.08);
+}
+
+.style-thumb {
+  position: relative;
+  height: 36px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background-color: var(--card-bg);
+  border: 1px dashed var(--border-color);
+  box-sizing: border-box;
+}
+
+.style-thumb.shape-chamfer {
+  --ch: 8px;
+}
+
+.style-option-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.style-option-sub {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawer-hint {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.theme-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  margin: 4px 0 8px;
+  cursor: pointer;
+}

@@ -2,21 +2,20 @@ import React from "react";
 import { createPortal } from "react-dom";
 import type { Block, BlockStyle } from "../types/schema";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { getShading, listShadings } from "../styles/registry";
+import { StyleOptionGrid } from "./StyleOptionGrid";
+import {
+  buildFrameOptions,
+  buildShapeOptions,
+  frameDefaultPreview,
+  shapeDefaultPreview,
+} from "./styleOptions";
 
 interface BlockStyleModalProps {
   isOpen: boolean;
   onClose: () => void;
   block: Block;
 }
-
-const BORDER_STYLES: Array<{ label: string; value: NonNullable<BlockStyle["borderStyle"]> }> = [
-  { label: "Theme Default (Solid)", value: "solid" },
-  { label: "None", value: "none" },
-  { label: "Double", value: "double" },
-  { label: "Dashed", value: "dashed" },
-  { label: "Groove", value: "groove" },
-  { label: "Ornate Fantasy", value: "ornate" },
-];
 
 export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
   isOpen,
@@ -74,8 +73,19 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
       backgroundOpacity: undefined,
       backgroundUrl: undefined,
       headerBannerUrl: undefined,
+      frame: undefined,
+      shape: undefined,
+      shading: undefined,
+      glow: undefined,
+      accentTint: undefined,
     });
   };
+
+  // Legacy borderStyle "solid" meant "theme default" in the old picker.
+  const legacyFrame = currentStyle.borderStyle === "solid" ? undefined : currentStyle.borderStyle;
+  const selectedFrame = currentStyle.frame ?? legacyFrame;
+  const frameOptions = buildFrameOptions(theme);
+  const shapeOptions = buildShapeOptions(theme);
 
   const toValidHex = (val?: string): string => {
     if (val && /^#[0-9A-Fa-f]{6}$/.test(val)) return val;
@@ -107,23 +117,102 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
         </div>
 
         <div className="modal-body">
-          {/* Border Style */}
+          {/* Frame (sheet default or per-card override) */}
           <div className="form-row">
-            <label>Border Style</label>
+            <div className="label-with-hint">
+              <label>Frame</label>
+              <span className="field-hint">
+                {selectedFrame ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Frame"
+              options={frameOptions}
+              value={selectedFrame}
+              // Writing a frame also clears the legacy borderStyle so it can't linger.
+              onChange={(id) => handleUpdate({ frame: id, borderStyle: undefined })}
+              defaultOption={frameDefaultPreview(theme)}
+            />
+          </div>
+
+          {/* Shape */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Shape</label>
+              <span className="field-hint">
+                {currentStyle.shape ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Shape"
+              options={shapeOptions}
+              value={currentStyle.shape}
+              onChange={(id) => handleUpdate({ shape: id })}
+              defaultOption={shapeDefaultPreview(theme)}
+            />
+          </div>
+
+          {/* Inner Shading */}
+          <div className="form-row">
+            <label>Inner Shading</label>
             <select
-              value={currentStyle.borderStyle || "solid"}
-              onChange={(e) =>
-                handleUpdate({
-                  borderStyle: e.target.value as NonNullable<BlockStyle["borderStyle"]>,
-                })
-              }
+              value={currentStyle.shading ?? ""}
+              onChange={(e) => handleUpdate({ shading: e.target.value || undefined })}
             >
-              {BORDER_STYLES.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
+              <option value="">Sheet default ({getShading(theme.defaultShading).label})</option>
+              {listShadings().map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Glow */}
+          <div className="form-row">
+            <label>Glow</label>
+            <select
+              value={currentStyle.glow === undefined ? "" : currentStyle.glow ? "on" : "off"}
+              onChange={(e) =>
+                handleUpdate({ glow: e.target.value === "" ? undefined : e.target.value === "on" })
+              }
+            >
+              <option value="">Sheet default ({theme.defaultGlow ? "On" : "Off"})</option>
+              <option value="on">On</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+
+          {/* Accent Tint */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Accent Tint</label>
+              <span className="field-hint">Tints border, glow and background wash</span>
+            </div>
+            <div className="color-picker-wrapper">
+              <input
+                type="color"
+                value={toValidHex(currentStyle.accentTint)}
+                onChange={(e) => handleUpdate({ accentTint: e.target.value })}
+              />
+              <input
+                type="text"
+                className="color-hex-input"
+                placeholder="None"
+                value={currentStyle.accentTint || ""}
+                onChange={(e) => handleUpdate({ accentTint: e.target.value || undefined })}
+              />
+              {currentStyle.accentTint && (
+                <button
+                  type="button"
+                  className="clear-field-btn"
+                  onClick={() => handleUpdate({ accentTint: undefined })}
+                  title="Remove tint"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Border Color Override */}
