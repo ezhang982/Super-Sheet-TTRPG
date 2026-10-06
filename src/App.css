@@ -3,6 +3,9 @@
   display: flex;
   flex-direction: column;
   background-color: var(--canvas-bg);
+  background-image: var(--canvas-pattern-image, none);
+  background-size: var(--canvas-pattern-size, auto);
+  background-repeat: repeat;
   color: var(--text-main);
   position: relative;
 }
@@ -362,7 +365,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: calc(8px + var(--frame-pad-y, 0px)) calc(12px + var(--frame-pad-x, 0px));
   background: rgba(0, 0, 0, 0.28);
   border-bottom: 1px solid var(--border-color);
   gap: 8px;
@@ -511,7 +514,7 @@
 
 .block-body {
   flex: 1;
-  padding: 12px;
+  padding: calc(12px + var(--frame-pad-y, 0px)) calc(12px + var(--frame-pad-x, 0px));
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -5215,3 +5218,65 @@
   margin: 4px 0 8px;
   cursor: pointer;
 }
+
+/* =============================================================================
+   STYLE SYSTEM (Phase 2): surface textures & patterns
+   ============================================================================= */
+
+/* Frosted glass texture */
+.texture-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* =============================================================================
+   STYLE SYSTEM (Phase 3): SVG 9-slice frames & modular corner accents
+   ============================================================================= */
+
+/* SVG 9-slice frame card container */
+.frame-svg {
+  box-sizing: border-box;
+}
+
+/* Modular corner accents overlay (Layer 8) */
+.card-corner-accents {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.card-corner {
+  position: absolute;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.card-corner.corner-tl {
+  top: 0;
+  left: 0;
+}
+
+.card-corner.corner-tr {
+  top: 0;
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.card-corner.corner-bl {
+  bottom: 0;
+  left: 0;
+  transform: scaleY(-1);
+}
+
+.card-corner.corner-br {
+  bottom: 0;
+  right: 0;
+  transform: scale(-1, -1);
+}
+
+

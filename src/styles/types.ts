@@ -55,8 +55,68 @@ export interface ShadingDefinition {
   shadow?: string;
 }
 
+/** One CSS background layer (comma-separated lists are allowed for multi-image). */
+export interface BackgroundLayer {
+  image: string;
+  size: string;
+  repeat?: string;
+  position?: string;
+}
+
+export interface PatternContext {
+  /** A literal color (SVG data URIs cannot read CSS variables). */
+  color: string;
+  /** 0..1 multiplier on the pattern's designed maximum strength. */
+  opacity: number;
+  /** Tile size multiplier. */
+  scale: number;
+}
+
+/** Tileable pattern, usable on the canvas and on cards. */
+export interface PatternDefinition {
+  id: string;
+  label: string;
+  /** Returns undefined for the "none" pattern. */
+  render: (ctx: PatternContext) => BackgroundLayer | undefined;
+}
+
+/** Card surface texture (grain, carbon, glass...). */
+export interface TextureDefinition {
+  id: string;
+  label: string;
+  layer?: BackgroundLayer;
+  /** Extra class on the card (e.g. for backdrop-filter, which is not an image). */
+  className?: string;
+  /** Extra box-shadow layer (e.g. a glass highlight). */
+  shadow?: string;
+  /**
+   * Card background opacity to use when the card has no explicit
+   * backgroundOpacity, so see-through textures (glass) actually show through.
+   */
+  translucentBg?: number;
+}
+
+/** Corner accent definition (modular decorative overlay on the 4 card corners). */
+export interface CornerDefinition {
+  id: string;
+  label: string;
+  category: StyleCategory;
+  /** SVG content of the top-left corner, e.g. viewBox="0 0 32 32". */
+  svgTemplate: string;
+  /** Render size in pixels (default: 32). */
+  size?: number;
+}
+
+/** Resolved corner accent ready for rendering on the card. */
+export interface ResolvedCorner {
+  id: string;
+  svg: string;
+  size: number;
+}
+
 /** Final result handed to the card container component. */
 export interface ResolvedBlockStyle {
   className: string;
   style: CSSProperties;
+  corner?: ResolvedCorner;
 }

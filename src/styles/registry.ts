@@ -1,5 +1,13 @@
 import type { CSSProperties } from "react";
 import type { FrameDefinition, ShadingDefinition, ShapeDefinition } from "./types";
+import { SVG_FRAMES } from "./svgFrames";
+export {
+  FALLBACK_CORNER_ID,
+  getCorner,
+  isKnownCorner,
+  listCorners,
+  renderCornerSvg,
+} from "./corners";
 
 // =============================================================================
 // STYLE REGISTRY
@@ -115,6 +123,7 @@ const FRAME_LIST: FrameDefinition[] = [
     "linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 55%, black), var(--accent-color) 30%, color-mix(in srgb, var(--accent-color) 55%, white) 55%, var(--accent-color) 80%, color-mix(in srgb, var(--accent-color) 55%, black))",
     "var(--accent-color)"
   ),
+  ...SVG_FRAMES,
 ];
 
 const FRAMES: Record<string, FrameDefinition> = Object.fromEntries(

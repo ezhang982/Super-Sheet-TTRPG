@@ -2,9 +2,23 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { GlobalTheme } from "../types/schema";
-import { isKnownFrame, isKnownShading, isKnownShape, listShadings } from "../styles/registry";
+import {
+  isKnownCorner,
+  isKnownFrame,
+  isKnownShading,
+  isKnownShape,
+  listShadings,
+} from "../styles/registry";
+import { isKnownPattern, isKnownTexture } from "../styles/patterns";
+import { DEFAULT_PATTERN_OPACITY } from "../styles/resolveStyle";
 import { StyleOptionGrid } from "./StyleOptionGrid";
-import { buildFrameOptions, buildShapeOptions } from "./styleOptions";
+import {
+  buildCornerOptions,
+  buildFrameOptions,
+  buildPatternOptions,
+  buildShapeOptions,
+  buildTextureOptions,
+} from "./styleOptions";
 
 export interface ThemePreset {
   id: string;
@@ -109,17 +123,36 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
     setGlobalTheme({
       ...THEME_PRESETS[0].theme,
       defaultFrame: undefined,
+      defaultCorners: undefined,
       defaultShape: undefined,
       defaultShading: undefined,
       defaultGlow: undefined,
+      defaultTexture: undefined,
+      defaultPattern: undefined,
+      cardPatternOpacity: undefined,
+      defaultScrim: undefined,
+      canvasPattern: undefined,
+      canvasPatternOpacity: undefined,
+      canvasPatternScale: undefined,
     });
   };
 
   const handleApplyToAllCards = () => {
     const ok = window.confirm(
-      "Remove every card's own frame, shape, shading and glow so all cards follow these defaults?\n\nYou can undo this."
+      "Remove every card's own frame, corners, shape, shading, texture, pattern, and glow so all cards follow these defaults?\n\nYou can undo this."
     );
-    if (ok) clearBlockStyleOverrides(["frame", "borderStyle", "shape", "shading", "glow"]);
+    if (ok)
+      clearBlockStyleOverrides([
+        "frame",
+        "borderStyle",
+        "corners",
+        "shape",
+        "shading",
+        "glow",
+        "texture",
+        "pattern",
+        "scrim",
+      ]);
   };
 
   // Helper to ensure valid 6-character hex for native color pickers
@@ -305,6 +338,52 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
             </div>
           </section>
 
+          {/* Canvas Pattern */}
+          <section className="drawer-section">
+            <h3 className="drawer-section-title">Canvas Pattern</h3>
+            <p className="drawer-hint">
+              Tileable background pattern rendered across the application canvas.
+            </p>
+
+            <div className="theme-form-group">
+              <label>Pattern Style</label>
+              <StyleOptionGrid
+                label="Canvas pattern"
+                options={buildPatternOptions(theme)}
+                value={isKnownPattern(theme.canvasPattern) ? theme.canvasPattern : "none"}
+                onChange={(id) => setGlobalTheme({ canvasPattern: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>
+                Pattern Opacity ({Math.round((theme.canvasPatternOpacity ?? DEFAULT_PATTERN_OPACITY) * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={theme.canvasPatternOpacity ?? DEFAULT_PATTERN_OPACITY}
+                onChange={(e) => setGlobalTheme({ canvasPatternOpacity: parseFloat(e.target.value) })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>
+                Pattern Scale ({Math.round((theme.canvasPatternScale ?? 1) * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2.5"
+                step="0.25"
+                value={theme.canvasPatternScale ?? 1}
+                onChange={(e) => setGlobalTheme({ canvasPatternScale: parseFloat(e.target.value) })}
+              />
+            </div>
+          </section>
+
           {/* Card Style: sheet-wide defaults (cards can override individually) */}
           <section className="drawer-section">
             <h3 className="drawer-section-title">Card Style (Sheet Default)</h3>
@@ -333,6 +412,16 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
             </div>
 
             <div className="theme-form-group">
+              <label>Corner Accents</label>
+              <StyleOptionGrid
+                label="Default corner accents"
+                options={buildCornerOptions(theme)}
+                value={isKnownCorner(theme.defaultCorners) ? theme.defaultCorners : "none"}
+                onChange={(id) => setGlobalTheme({ defaultCorners: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
               <label>Inner Shading</label>
               <select
                 value={isKnownShading(theme.defaultShading) ? theme.defaultShading : "none"}
@@ -346,6 +435,41 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
               </select>
             </div>
 
+            <div className="theme-form-group">
+              <label>Surface Texture</label>
+              <StyleOptionGrid
+                label="Default surface texture"
+                options={buildTextureOptions(theme)}
+                value={isKnownTexture(theme.defaultTexture) ? theme.defaultTexture : "none"}
+                onChange={(id) => setGlobalTheme({ defaultTexture: id })}
+              />
+              <span className="color-hint">Frosted Glass is the heaviest effect; use it sparingly.</span>
+            </div>
+
+            <div className="theme-form-group">
+              <label>Pattern</label>
+              <StyleOptionGrid
+                label="Default card pattern"
+                options={buildPatternOptions(theme)}
+                value={isKnownPattern(theme.defaultPattern) ? theme.defaultPattern : "none"}
+                onChange={(id) => setGlobalTheme({ defaultPattern: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>
+                Pattern Strength ({Math.round((theme.cardPatternOpacity ?? DEFAULT_PATTERN_OPACITY) * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={theme.cardPatternOpacity ?? DEFAULT_PATTERN_OPACITY}
+                onChange={(e) => setGlobalTheme({ cardPatternOpacity: parseFloat(e.target.value) })}
+              />
+            </div>
+
             <label className="theme-checkbox-row">
               <input
                 type="checkbox"
@@ -353,6 +477,15 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
                 onChange={(e) => setGlobalTheme({ defaultGlow: e.target.checked })}
               />
               <span>Glow around cards (uses accent color)</span>
+            </label>
+
+            <label className="theme-checkbox-row">
+              <input
+                type="checkbox"
+                checked={theme.defaultScrim ?? false}
+                onChange={(e) => setGlobalTheme({ defaultScrim: e.target.checked })}
+              />
+              <span>Readability scrim (darkens behind text over art and patterns)</span>
             </label>
 
             <button type="button" className="btn-secondary" onClick={handleApplyToAllCards}>
