@@ -78,11 +78,15 @@ You get a clean `.json` file that you can send to your friends or post online so
 
 ---
 
-## Theming & Styling
+## Theming & Aesthetic Customization
 
 Everyone's character has a different vibe, so your sheet should too:
-- **Global Themes**: Pick from built-in presets (*High Fantasy*, *Cyberpunk / Sci-Fi*, *Antique Parchment*, *Eldritch Arcane*, *Clean Obsidian*) or dial in your own colors, fonts, and background textures.
-- **Per-Card Customization**: Right-click any card in Edit Mode to give it a custom border color, choose an ornate frame style, or add a custom banner image across the header.
+- **Global Themes & Canvas Patterns**: Pick from built-in presets (*High Fantasy*, *Cyberpunk / Sci-Fi*, *Antique Parchment*, *Eldritch Arcane*, *Clean Obsidian*) or dial in your own colors, font pairings, and canvas background patterns (cyber grid, blueprint, hex mesh, constellation, dots) with live scale and opacity controls.
+- **Rich Card Frames & 9-Slice SVG Borders**: Choose from over 20 frame styles including metallic gradient foils (*Polished Gold*, *Brushed Silver*, *Aged Bronze*, *Accent Foil*) and ornate 9-slice SVG frames across 4 aesthetic families (*Fantasy Filigree*, *Royal Scroll*, *Ancient Runic*, *Tech Brackets*, *Circuit Edge*, *Gothic Thorn Vine*, *Art Deco*, *Celtic Knotwork*, and more).
+- **Modular Corner Accents**: Independently toggle decorative corner overlays (*Filigree Curls*, *Tech HUD Brackets*, *Industrial Rivets*, *Botanical Flourish*, *Arcane Runes*, *Gothic Spikes*, *Diamond Gem Mounts*).
+- **Surface Textures & Readability Scrim**: Add tactile card surface textures (*Grain*, *Carbon Fiber*, *Scanlines*, or frosted *Glass* with backdrop blur) and toggle the protective readability scrim to keep text crisp over busy background art.
+- **Shapes & Shading**: Switch card outlines between standard, rounded, sharp, or sci-fi chamfers, and dial in inner recess shading or outer glow effects.
+
 
 ---
 

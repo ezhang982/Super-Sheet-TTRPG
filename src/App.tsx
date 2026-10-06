@@ -11,6 +11,7 @@ import { ShortcutsModal } from "./components/ShortcutsModal";
 import { SessionScratchpadModal } from "./components/SessionScratchpadModal";
 import { TagManagerModal } from "./components/TagManagerModal";
 import { PlayModeRevertToast } from "./components/PlayModeRevertToast";
+import { resolveCanvasPattern } from "./styles/resolveStyle";
 import "./App.css";
 
 export const App: React.FC = () => {
@@ -44,6 +45,15 @@ export const App: React.FC = () => {
     root.style.setProperty("--accent-color", theme.accentColor);
     root.style.setProperty("--font-heading", theme.fontHeading);
     root.style.setProperty("--font-body", theme.fontBody);
+
+    const canvasPattern = resolveCanvasPattern(theme);
+    if (canvasPattern) {
+      root.style.setProperty("--canvas-pattern-image", canvasPattern.image);
+      root.style.setProperty("--canvas-pattern-size", canvasPattern.size);
+    } else {
+      root.style.removeProperty("--canvas-pattern-image");
+      root.style.removeProperty("--canvas-pattern-size");
+    }
   }, [theme]);
 
   // Unified Universal Keyboard Shortcuts Listener

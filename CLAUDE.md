@@ -303,6 +303,63 @@ keep multi-session AI-assisted work from drifting.
 - [x] Full regression test suite (`verify-phase10.ts` and Phases 1–9) passing 100% with 0 TypeScript or Vite build errors.
 - **Gate:** Tabletop utility, session state, UX polish, and printability verified.
 
+### ✅ Phase 11 — Resilience, Storage Hardening & Performance Optimization (Delivered)
+- [x] Lifecycle save flush (`visibilitychange`, `pagehide`, `beforeunload`) preventing tab-close data loss.
+- [x] Dual-storage reconciliation (`meta.updatedAt`) between `localStorage` and `IndexedDB`.
+- [x] Granular state subscriptions and "Pass IDs, Not Objects" pattern in `Canvas.tsx` and `BlockContainer.tsx`.
+- [x] Scoped Play Mode history stack (`playHistory`) for layout-safe counter and rest resets with undo/redo support.
+- [x] Full regression test suite (`verify-phase11.ts`) passing 100%.
+- **Gate:** Persistence hardened against quota errors and race conditions; re-render performance verified.
+
+### ✅ Phase 12 (Style System Phase 0) — Style Foundation & Preset Token Model (Delivered)
+- [x] Style token schema in `schema.ts` and `src/types/schema.ts` (free-string tokens falling back gracefully at runtime).
+- [x] Style architecture in `src/styles/` (`types.ts`, `registry.ts`, `resolveStyle.ts`).
+- [x] Layer model established (bottom to top: bg color -> texture -> pattern -> custom image -> watermark -> content -> frame -> corner accents -> glow/shadow).
+- [x] Backward-compatible mapping for legacy `borderStyle` values.
+- [x] Stubbed secure interfaces for `svgSanitizer.ts` (fail-closed) and `assetLibrary.ts` (IndexedDB contract).
+- [x] Full regression test suite (`verify-phase12.ts`) passing 100%.
+- **Gate:** Zero visual change; all legacy saves load identically; unknown tokens fall back safely.
+
+### ✅ Phase 13 (Style System Phase 1) — CSS Effects & Cascade UI (Delivered)
+- [x] Metallic gradient frames (`gold`, `silver`, `bronze`, `foil`) via composite mask overlay rings (`.frame-ring`).
+- [x] Outline shapes (`rect`, `rounded`, `sharp`, `chamfer` with diagonal edge reconstruction via CSS gradients).
+- [x] Inner shading presets (`none`, `soft`, `deep`, `vignette`).
+- [x] Dynamic outer/inset glow via `--card-fx` and accent tint washes (`accentTint`).
+- [x] Visual thumbnail grid picker component (`StyleOptionGrid.tsx`).
+- [x] Sheet default vs card override cascade UI in `BlockStyleModal.tsx` and `ThemeDrawer.tsx`.
+- [x] Store action `clearBlockStyleOverrides` with single-step undo support.
+- [x] Full regression test suite (`verify-phase13.ts`) passing 100%.
+- **Gate:** CSS effects and cascade UI verified with live thumbnails and full undo support.
+
+### ✅ Phase 14 (Style System Phase 2) — Canvas Patterns & Surface Textures (Delivered)
+- [x] Tileable patterns registry (`dots`, `grid`, `blueprint`, `hatch`, `hex-mesh`, `constellation`, `speckle`).
+- [x] Card surface textures (`grain`, `carbon`, `scanlines`, `glass` with frosted `backdrop-filter: blur(12px)`).
+- [x] Canvas pattern resolution (`resolveCanvasPattern`) wired into `:root` CSS variables and `.app-root`.
+- [x] Card and canvas pattern opacity sliders, pattern scale slider.
+- [x] Protective readability scrim (`scrim` boolean) darkened beneath text content.
+- [x] Full regression test suite (`verify-phase14.ts`) passing 100%.
+- **Gate:** Canvas and card patterns tile seamlessly without layout shifts; frosted glass renders cleanly.
+
+### ✅ Phase 15 (Style System Phase 3) — SVG Frame Engine & Corner Accents (Delivered)
+- [x] 9-slice SVG frame engine (`src/styles/svgFrames.ts`) using CSS `border-image` with 96x96 standardized geometry.
+- [x] Dynamic tint pipeline (`resolveLiteralColor`, `{{COLOR}}`, `{{ACCENT}}`) replacing placeholders with literal theme colors.
+- [x] 13 starter SVG frames across 4 aesthetic families:
+      - **Fantasy:** `filigree`, `scroll-royal`, `runic`, `celestial` (legacy `ornate` preserved for backward compatibility).
+      - **Sci-Fi:** `tech-brackets`, `circuit-edge`, `holo-terminal`.
+      - **Gothic:** `thorn-vine`, `iron-spikes`, `bone-crypt`.
+      - **Classic:** `art-deco`, `victorian`, `celtic`.
+- [x] Modular corner accents engine (`src/styles/corners.ts`, `src/components/CornerAccents.tsx`) at Layer 8.
+- [x] 8 starter corner designs (`none`, `filigree`, `tech`, `rivets`, `flourish`, `runes`, `spikes`, `gem`).
+- [x] Dynamic content clearance offsets (`--frame-pad-x`, `--frame-pad-y`) preventing frame overlap on card headers and bodies.
+- [x] Full regression test suite (`verify-phase15.ts` and all 15 previous test suites) passing 100%.
+- **Gate:** 9-slice frames and corner accents render at arbitrary card sizes; zero regressions across the codebase.
+
+### 🚀 Upcoming Style Phases
+- **Phase 3b — Watermarks & Decals:** Card/canvas watermark layer (d20, crest, rune circle, biohazard) and header divider decals.
+- **Phase 4 — Style Packs:** 1-click theme presets with non-destructive color preservation prompts.
+- **Phase 5 — Custom User SVGs, "My Designs" & Motion:** Local SVG upload/paste, IndexedDB design library, sanitize-on-import, and reduced-motion compliant animated border effects.
+
+
 ---
 
 ## 5.1 Template Scrubbing Contract

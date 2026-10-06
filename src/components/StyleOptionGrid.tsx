@@ -7,6 +7,7 @@ export interface StyleOption {
   /** Classes/inline style to render the thumbnail. Omit for no thumbnail art. */
   previewClassName?: string;
   previewStyle?: CSSProperties;
+  previewContent?: React.ReactNode;
 }
 
 interface StyleOptionGridProps {
@@ -20,7 +21,12 @@ interface StyleOptionGridProps {
    * When provided, a first "Sheet default" tile is shown; picking it calls
    * onChange(undefined). Used for per-card overrides.
    */
-  defaultOption?: { subLabel: string; previewClassName?: string; previewStyle?: CSSProperties };
+  defaultOption?: {
+    subLabel: string;
+    previewClassName?: string;
+    previewStyle?: CSSProperties;
+    previewContent?: React.ReactNode;
+  };
 }
 
 /** A grid of selectable tiles with a live miniature preview of each design. */
@@ -45,7 +51,9 @@ export const StyleOptionGrid: React.FC<StyleOptionGridProps> = ({
           <div
             className={`style-thumb ${defaultOption.previewClassName ?? ""}`}
             style={defaultOption.previewStyle}
-          />
+          >
+            {defaultOption.previewContent}
+          </div>
           <span className="style-option-label">Sheet default</span>
           <span className="style-option-sub">{defaultOption.subLabel}</span>
         </button>
@@ -60,7 +68,9 @@ export const StyleOptionGrid: React.FC<StyleOptionGridProps> = ({
           onClick={() => onChange(opt.id)}
           title={opt.label}
         >
-          <div className={`style-thumb ${opt.previewClassName ?? ""}`} style={opt.previewStyle} />
+          <div className={`style-thumb ${opt.previewClassName ?? ""}`} style={opt.previewStyle}>
+            {opt.previewContent}
+          </div>
           <span className="style-option-label">{opt.label}</span>
         </button>
       ))}

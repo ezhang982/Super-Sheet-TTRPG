@@ -13,6 +13,7 @@ import { BlockStyleModal } from "./BlockStyleModal";
 import { CardContextMenu } from "./CardContextMenu";
 import { getSuggestedTags } from "../utils/tagKeywords";
 import { resolveBlockStyle } from "../styles/resolveStyle";
+import { CornerAccents } from "./CornerAccents";
 
 interface BlockContainerProps {
   blockId: string;
@@ -71,8 +72,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Compute block-level styles (frame, background) via the style registry.
-  const { className: frameClassName, style: blockStyle } = resolveBlockStyle(block.style, theme);
+  // Compute block-level styles (frame, background, corners) via the style registry.
+  const { className: frameClassName, style: blockStyle, corner } = resolveBlockStyle(block.style, theme);
 
   const handleCommitTitle = () => {
     if (titleInput.trim()) {
@@ -332,6 +333,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
       )}
 
       <div className="block-body">{renderPrimitive()}</div>
+      {corner && <CornerAccents corner={corner} />}
 
       {/* Block Style Customization Modal */}
       {isStylingOpen && (
@@ -409,6 +411,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
                 </div>
               </div>
               <div className="block-body">{renderPrimitive()}</div>
+              {corner && <CornerAccents corner={corner} />}
             </div>
           </div>,
           document.body

@@ -381,17 +381,30 @@ Configured via the Theme Drawer in Edit Mode:
 * **Default Accent Colors:** Global border colors, card background tones, and active pip colors.
 * **Implementation:** Global theme values are written to CSS custom properties on the root element (`--canvas-bg`, `--accent-color`, etc.); components consume them directly in their stylesheets.
 
-### 7.2 Block-Level Overrides
-Each block features an **Appearance** panel in Edit Mode:
-* **Borders:**
-  * Styles: `None`, `Solid`, `Double`, `Dashed`, `Groove`, `Ornate Corner Brackets`.
-  * Custom border color and width picker.
-* **Background Surface:**
-  * Solid fill with opacity slider (enables frosted-glass effects over textured canvas backgrounds).
-  * Custom block background image URL (e.g., individual card art) — URL-only, never an upload, to keep character JSON and localStorage lightweight.
-* **Header Banner:**
-  * Optional URL for a decorative header illustration that clips across the top of the card.
-* **Implementation:** Block-level overrides are written as scoped CSS custom properties on that block's container, falling back to the global theme values where unset.
+### 7.2 Block-Level Overrides & Cascade
+Each block features a **Card Style Customization** panel in Edit Mode:
+* **Frames:** Legacy borders (`solid`, `double`, `dashed`, `groove`), metallic gradient rings (`gold`, `silver`, `bronze`, `foil`), and ornate 9-slice SVG frames (`filigree`, `scroll-royal`, `runic`, `tech-brackets`, `circuit-edge`, `holo-terminal`, `thorn-vine`, `iron-spikes`, `bone-crypt`, `art-deco`, `victorian`, `celtic`).
+* **Modular Corner Accents:** Independent corner overlays (`filigree`, `tech`, `rivets`, `flourish`, `runes`, `spikes`, `gem`).
+* **Card Outline Shapes:** `rect`, `rounded`, `sharp`, and `chamfer` (with diagonal corner edge reconstruction).
+* **Inner Shading & Glow:** `soft`, `deep`, `vignette` inner shading and outer/inset glow with accent tinting.
+* **Surface Textures & Patterns:** `grain`, `carbon`, `scanlines`, `glass` (frosted glass with backdrop blur), and tileable SVG patterns with opacity/scale controls.
+* **Readability Scrim:** Darkened protection layer ensuring text readability over busy background patterns and art.
+* **Background & Banner:** Dynamic background opacity (`color-mix` with `--card-bg`), background image URL, and header banner URL.
+
+### 7.3 Preset Token Architecture & Layer Model
+To ensure complete zero-bloat portability across JSON exports, styling follows the **Preset Token Architecture**:
+* **Tokens, Not Assets in Characters:** Characters store only token strings (`frame: "filigree"`, `corners: "tech"`). Designs live in the app codebase (`src/styles/registry.ts`).
+* **Non-Breaking Free Strings:** All token schemas use open strings with safe fallback cascades (`card token` -> `sheet default token` -> `built-in fallback`).
+* **Fixed Bottom-to-Top Layer Model:**
+  1. Card background color (with opacity)
+  2. Card texture (grain / carbon / glass)
+  3. Card pattern
+  4. `backgroundUrl` image
+  5. Watermark (Phase 3b)
+  6. Content (text, stats, buttons)
+  7. Frame (border-image or metallic overlay ring)
+  8. Corner accents (`CornerAccents.tsx`, pointer-events: none)
+  9. Glow / outer shadow (outside the card box)
 
 ---
 

@@ -52,6 +52,9 @@ const GlobalThemeSchema = z.object({
   defaultFrame: StyleIdSchema.optional(),
   defaultCorners: StyleIdSchema.optional(),
   defaultTexture: StyleIdSchema.optional(),
+  defaultPattern: StyleIdSchema.optional(),
+  cardPatternOpacity: z.number().min(0).max(1).optional(), // strength of card patterns
+  defaultScrim: z.boolean().optional(), // readability scrim behind card content
   defaultGlow: z.boolean().optional(),
   defaultShape: StyleIdSchema.optional(),
   defaultShading: StyleIdSchema.optional(),
@@ -73,6 +76,7 @@ const BlockStyleSchema = z
     corners: StyleIdSchema,
     texture: StyleIdSchema,
     pattern: StyleIdSchema,
+    scrim: z.boolean(), // darken behind content so text stays readable over art/patterns
     glow: z.boolean(),
     shading: StyleIdSchema, // inner shading: none / soft / deep / vignette
     accentTint: z.string(),

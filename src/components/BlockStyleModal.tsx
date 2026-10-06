@@ -5,10 +5,16 @@ import { useCharacterStore } from "../store/useCharacterStore";
 import { getShading, listShadings } from "../styles/registry";
 import { StyleOptionGrid } from "./StyleOptionGrid";
 import {
+  buildCornerOptions,
   buildFrameOptions,
+  buildPatternOptions,
   buildShapeOptions,
+  buildTextureOptions,
+  cornerDefaultPreview,
   frameDefaultPreview,
+  patternDefaultPreview,
   shapeDefaultPreview,
+  textureDefaultPreview,
 } from "./styleOptions";
 
 interface BlockStyleModalProps {
@@ -77,6 +83,10 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
       shape: undefined,
       shading: undefined,
       glow: undefined,
+      corners: undefined,
+      texture: undefined,
+      pattern: undefined,
+      scrim: undefined,
       accentTint: undefined,
     });
   };
@@ -152,6 +162,23 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
             />
           </div>
 
+          {/* Corner Accents */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Corner Accents</label>
+              <span className="field-hint">
+                {currentStyle.corners ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Corner Accents"
+              options={buildCornerOptions(theme)}
+              value={currentStyle.corners}
+              onChange={(id) => handleUpdate({ corners: id })}
+              defaultOption={cornerDefaultPreview(theme)}
+            />
+          </div>
+
           {/* Inner Shading */}
           <div className="form-row">
             <label>Inner Shading</label>
@@ -165,6 +192,58 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
                   {s.label}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Texture */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Surface Texture</label>
+              <span className="field-hint">
+                {currentStyle.texture ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Surface texture"
+              options={buildTextureOptions(theme)}
+              value={currentStyle.texture}
+              onChange={(id) => handleUpdate({ texture: id })}
+              defaultOption={textureDefaultPreview(theme)}
+            />
+          </div>
+
+          {/* Pattern */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Pattern</label>
+              <span className="field-hint">
+                {currentStyle.pattern ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Pattern"
+              options={buildPatternOptions(theme)}
+              value={currentStyle.pattern}
+              onChange={(id) => handleUpdate({ pattern: id })}
+              defaultOption={patternDefaultPreview(theme)}
+            />
+          </div>
+
+          {/* Readability scrim */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Readability Scrim</label>
+              <span className="field-hint">Darkens behind text over busy art</span>
+            </div>
+            <select
+              value={currentStyle.scrim === undefined ? "" : currentStyle.scrim ? "on" : "off"}
+              onChange={(e) =>
+                handleUpdate({ scrim: e.target.value === "" ? undefined : e.target.value === "on" })
+              }
+            >
+              <option value="">Sheet default ({theme.defaultScrim ? "On" : "Off"})</option>
+              <option value="on">On</option>
+              <option value="off">Off</option>
             </select>
           </div>
 

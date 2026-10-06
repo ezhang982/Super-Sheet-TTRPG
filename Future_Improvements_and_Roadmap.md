@@ -56,6 +56,61 @@ Theme: Eliminating persistence race conditions, hardening dual-storage consisten
 - [x] Storage split-brain reconciliation (timestamp/version checks between IDB and localStorage).
 - [x] Granular Zustand selectors and "Pass IDs, Not Objects" pattern in Canvas / BlockContainer.
 - [x] Scoped history / command-based undo for Play Mode counters without layout risk.
+
+================================================================================
+Phase 12 (Style Phase 0): Style Foundation & Preset Token System (Completed)
+--------------------------------------------------------------------------------
+Theme: Non-breaking additive schema tokens and central design registry.
+- [x] Token model in schema (free strings falling back safely at render time).
+- [x] Architecture in src/styles/ (types.ts, registry.ts, resolveStyle.ts).
+- [x] Layer model established (bottom to top: bg color -> texture -> pattern -> image -> watermark -> content -> frame -> corners -> glow).
+- [x] Stubs for svgSanitizer.ts and assetLibrary.ts.
+
+================================================================================
+Phase 13 (Style Phase 1): CSS Effects & Cascade UI (Completed)
+--------------------------------------------------------------------------------
+Theme: Metallic frames, chamfers, shading, and visual cascade pickers.
+- [x] Gradient metallic ring masks (gold, silver, bronze, foil).
+- [x] Shapes (rect, rounded, sharp, chamfer with diagonal edge reconstruction).
+- [x] Inner shading (soft, deep, vignette) and glow via --card-fx.
+- [x] Visual thumbnail picker (StyleOptionGrid.tsx) and bulk clear overrides.
+
+================================================================================
+Phase 14 (Style Phase 2): Canvas Patterns & Surface Textures (Completed)
+--------------------------------------------------------------------------------
+Theme: Rich tileable patterns and material textures without file bloat.
+- [x] 8 tileable patterns (dots, grid, blueprint, hatch, hex-mesh, constellation, speckle).
+- [x] 5 surface textures (grain, carbon, scanlines, glass with backdrop-filter blur).
+- [x] Canvas pattern resolution, opacity & scale sliders.
+- [x] Readability scrim layer for busy art.
+
+================================================================================
+Phase 15 (Style Phase 3): SVG Frame Engine & Corner Accents (Completed)
+--------------------------------------------------------------------------------
+Theme: High-fidelity 9-slice SVG borders and modular corner ornaments.
+- [x] 9-slice SVG builder with standardized 96x96 geometry and seam alignment at 32/64.
+- [x] Dynamic tint pipeline ({{COLOR}}, {{ACCENT}}, resolveLiteralColor).
+- [x] 13 starter frames across 4 aesthetic families (Fantasy, Sci-Fi, Gothic, Classic).
+- [x] Modular corner accents overlay engine (Layer 8) with 8 corner designs.
+- [x] Dynamic content clearance offsets (--frame-pad-x, --frame-pad-y).
+
+================================================================================
+Phase 3b: Watermarks & Decals (Next)
+--------------------------------------------------------------------------------
+Theme: Subtle thematic background emblems and header divider ornaments.
+- Card & canvas watermark layer with opacity control.
+- Starter watermark emblems (d20, crest, arcane circle, biohazard, dragon).
+- Card header decals and ornate dividers.
+
+================================================================================
+Phase 4: Style Packs (Planned)
+--------------------------------------------------------------------------------
+Theme: Curated 1-click aesthetic themes with non-destructive color preservation.
+
+================================================================================
+Phase 5: Custom User SVGs, "My Designs" & Motion (Planned)
+--------------------------------------------------------------------------------
+Theme: User-uploaded/pasted SVGs, IndexedDB design library, and animated effects.
 ================================================================================
 
 ```
@@ -206,5 +261,100 @@ Blocks automatically publish variables to a sheet-wide in-memory symbol table:
 * [x] **Dedicated Play Mode History Stack:** Implemented a lightweight command log (`playHistory: { past, future }`) tracking counter changes and batch rest resets during tabletop play.
 * [x] **Layout-Safe Ergonomics:** Play Mode undo/redo (`undoPlayMode` / `redoPlayMode`) exclusively restores counter data (`block.data`) without touching canvas layouts or unpausing Zundo Edit Mode temporal tracking.
 * [x] **Unified Shortcuts & Bottom Bar:** `Ctrl+Z` / `Ctrl+Shift+Z` / `Ctrl+Y` and bottom history buttons dynamically adapt between Edit Mode (canvas layout changes) and Play Mode (gameplay counters) with contextual tooltips.
+
+---
+
+### Phase 12 (Style System Phase 0) — Style Foundation & Preset Token System *(Completed)*
+
+#### 1. Preset Token Model
+* [x] Added additive, optional token fields to `GlobalThemeSchema` (`defaultFrame`, `defaultShape`, `defaultShading`, `defaultGlow`, `defaultTexture`, `defaultPattern`, `cardPatternOpacity`, `defaultScrim`, `defaultCorners`, `canvasPattern`, `canvasPatternOpacity`, `canvasPatternScale`).
+* [x] Added matching block-level override fields to `BlockStyleSchema` (`frame`, `shape`, `shading`, `glow`, `accentTint`, `texture`, `pattern`, `scrim`, `corners`).
+* [x] Token values are free strings (`z.string().max(100)`), never rigid enums, guaranteeing safe runtime fallback rather than schema rejection.
+* [x] Preserved legacy `borderStyle` mapping for complete backward compatibility with older saves.
+
+#### 2. Architecture & Registry
+* [x] Created `src/styles/types.ts` defining render contexts, output objects, and layer models.
+* [x] Created `src/styles/registry.ts` housing the central design definitions.
+* [x] Created `src/styles/resolveStyle.ts` implementing the cascade: `card token` -> `legacy field` -> `sheet default token` -> `built-in fallback`.
+* [x] Created stubs for `svgSanitizer.ts` (fail-closed security) and `assetLibrary.ts` (IndexedDB hybrid storage interface).
+* [x] Full regression test suite: `verify-phase12.ts` passing 100%.
+
+---
+
+### Phase 13 (Style System Phase 1) — CSS Effects & Cascade UI *(Completed)*
+
+#### 1. Metallic Frames & Mask Overlays
+* [x] Implemented gradient metallic frames (`gold`, `silver`, `bronze`, `foil`) using a composite `-webkit-mask` / `mask` ring (`.frame-ring`).
+* [x] Preserves rounded corners and works cleanly over translucent card backgrounds where standard CSS `border-image` gradients fail.
+
+#### 2. Outline Shapes & Diagonal Reconstruction
+* [x] Implemented outline shapes (`rect`, `rounded`, `sharp`, `chamfer`).
+* [x] `shape-chamfer`: 8-point polygon `clip-path` with an `::after` overlay reconstructing the cut diagonal corner borders.
+* [x] Outer glow and shadows automatically routed to `inset` shadows for chamfers to avoid `clip-path` shadow clipping.
+
+#### 3. Visual Thumbnail Grid Picker & Cascade UI
+* [x] Created `StyleOptionGrid.tsx`: thumbnail tiles showing live miniature previews of each style option.
+* [x] Integrated sheet defaults vs per-card override pickers in `BlockStyleModal.tsx` and `ThemeDrawer.tsx`.
+* [x] Added "Make all cards use these defaults" bulk reset with full single-step undo support.
+* [x] Full regression test suite: `verify-phase13.ts` passing 100%.
+
+---
+
+### Phase 14 (Style System Phase 2) — Canvas Patterns & Surface Textures *(Completed)*
+
+#### 1. Tileable Patterns Engine
+* [x] Registered 8 tileable SVG patterns in `src/styles/patterns.ts`: `none`, `dots`, `grid`, `blueprint`, `hatch`, `hex-mesh`, `constellation`, `speckle`.
+* [x] Dynamic tint pipeline utilizing literal colors and opacity multipliers.
+* [x] Canvas pattern resolution injecting `--canvas-pattern-image` and `--canvas-pattern-size` into `:root`.
+* [x] Pattern opacity and scale sliders in `ThemeDrawer.tsx`.
+
+#### 2. Card Surface Textures & Scrim Layer
+* [x] Registered 5 card textures: `none`, `grain`, `carbon`, `scanlines`, `glass`.
+* [x] Frosted glass (`.texture-glass`) utilizing `backdrop-filter: blur(12px)` and automatic translucent background fallback.
+* [x] Fixed layer stacking order: Scrim -> Tint Wash -> Custom URL -> Pattern -> Texture.
+* [x] Protective Readability Scrim (`scrim: boolean`) darkening behind text over busy art.
+* [x] Full regression test suite: `verify-phase14.ts` passing 100%.
+
+---
+
+### Phase 15 (Style System Phase 3) — SVG Frame Engine & Corner Accents *(Completed)*
+
+#### 1. 9-Slice SVG Border Engine
+* [x] Created `build9SliceFrame()` in `src/styles/svgFrames.ts` using CSS `border-image` with standardized 96x96 geometry and seam alignment at 32/64.
+* [x] Dynamic tint pipeline (`resolveLiteralColor`, `{{COLOR}}`, `{{ACCENT}}`) replacing placeholders with literal theme colors.
+* [x] 13 starter SVG frames across 4 aesthetic families:
+  * **Fantasy:** `filigree`, `scroll-royal`, `runic`, `celestial` (legacy `ornate` preserved).
+  * **Sci-Fi:** `tech-brackets`, `circuit-edge`, `holo-terminal`.
+  * **Gothic:** `thorn-vine`, `iron-spikes`, `bone-crypt`.
+  * **Classic:** `art-deco`, `victorian`, `celtic`.
+* [x] Dynamic content clearance offsets (`--frame-pad-x`, `--frame-pad-y`) preventing frame overlap on card headers and bodies.
+
+#### 2. Modular Corner Accents Engine (Layer 8)
+* [x] Registered 8 corner accents in `src/styles/corners.ts`: `none`, `filigree`, `tech`, `rivets`, `flourish`, `runes`, `spikes`, `gem`.
+* [x] Created `CornerAccents.tsx` overlay component positioned at Layer 8 with `pointer-events: none` and `border-radius: inherit`.
+* [x] Integrated into standard card view, pop-out focus view, `BlockStyleModal.tsx`, and `ThemeDrawer.tsx`.
+* [x] Full regression test suite: `verify-phase15.ts` passing 100%.
+
+---
+
+### Phase 3b — Watermarks & Decals *(Next)*
+* [ ] Card/canvas watermark layer (built-in emblems: d20, crest, rune circle, biohazard, dragon).
+* [ ] Opacity slider and position controls for watermarks.
+* [ ] Header decal / decorative divider ornaments between card headers and content.
+
+---
+
+### Phase 4 — Style Packs *(Planned)*
+* [ ] Bundles of tokens, colors, and fonts (e.g. "Cyberpunk Neon", "High Fantasy Parchment", "Gothic Horror", "Grimdark Terminal").
+* [ ] Non-destructive "Keep my custom colors?" prompt on apply.
+
+---
+
+### Phase 5 — Custom User SVGs, "My Designs" & Motion *(Planned)*
+* [ ] Local SVG upload and code paste into browser-stored IndexedDB library ("My Designs").
+* [ ] Fail-closed SVG sanitizer stripping scripts and dangerous tags on upload and import.
+* [ ] Content-hash asset IDs and embedded copies inside character documents for zero-loss export.
+* [ ] Optional animated border effects (neon pulse) strictly honoring `prefers-reduced-motion`.
+
 
 
