@@ -569,6 +569,37 @@ export const useCharacterStore = create<CharacterStore>()(
         });
       },
 
+      clearBlockStyleOverrides: (keys: Array<keyof BlockStyle>) => {
+        const { character } = get();
+        const blocks = { ...character.blocks };
+        let changed = false;
+
+        for (const [id, block] of Object.entries(character.blocks)) {
+          if (!block.style) continue;
+          const style: BlockStyle = { ...block.style };
+          let touched = false;
+          for (const key of keys) {
+            if (key in style) {
+              delete style[key];
+              touched = true;
+            }
+          }
+          if (touched) {
+            blocks[id] = { ...block, style } as Block;
+            changed = true;
+          }
+        }
+
+        if (!changed) return;
+        set({
+          character: {
+            ...character,
+            blocks,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
       updateBlockTags: (blockId: string, tags: string[]) => {
         const { character } = get();
         const block = character.blocks[blockId];

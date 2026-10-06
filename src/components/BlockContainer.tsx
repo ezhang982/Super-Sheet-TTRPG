@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, type CSSProperties } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import { TrackerBlock } from "./primitives/TrackerBlock";
@@ -12,6 +12,7 @@ import { SkillListBlock } from "./primitives/SkillListBlock";
 import { BlockStyleModal } from "./BlockStyleModal";
 import { CardContextMenu } from "./CardContextMenu";
 import { getSuggestedTags } from "../utils/tagKeywords";
+import { resolveBlockStyle } from "../styles/resolveStyle";
 
 interface BlockContainerProps {
   blockId: string;
@@ -32,6 +33,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
   const updateBlockTitle = useCharacterStore((state) => state.updateBlockTitle);
   const rawTagColors = useCharacterStore((state) => state.character.theme.tagColors);
   const tagColors = rawTagColors || EMPTY_TAG_COLORS;
+  const theme = useCharacterStore((state) => state.character.theme);
 
   const suggestedTags = useMemo(() => (block ? getSuggestedTags(block) : []), [block]);
 
@@ -69,22 +71,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Compute block-level styles falling back to global theme
-  const isOrnate = block.style?.borderStyle === "ornate";
-  const borderStyleVal = isOrnate ? "double" : (block.style?.borderStyle || "solid");
-  const borderWidthVal = block.style?.borderStyle === "none" ? "0px" : (isOrnate || block.style?.borderStyle === "double") ? "3px" : "1px";
-
-  const blockStyle: CSSProperties = {
-    borderColor: block.style?.borderColor || "var(--border-color)",
-    borderStyle: borderStyleVal,
-    borderWidth: borderWidthVal,
-    backgroundColor: block.style?.backgroundOpacity !== undefined
-      ? (block.style.backgroundOpacity === 0 ? "transparent" : `rgba(28, 30, 36, ${block.style.backgroundOpacity})`)
-      : "var(--card-bg)",
-    backgroundImage: block.style?.backgroundUrl ? `url(${block.style.backgroundUrl})` : undefined,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  };
+  // Compute block-level styles (frame, background) via the style registry.
+  const { className: frameClassName, style: blockStyle } = resolveBlockStyle(block.style, theme);
 
   const handleCommitTitle = () => {
     if (titleInput.trim()) {
@@ -189,7 +177,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
     <div
       id={`block-${block.id}`}
       data-block-id={block.id}
-      className={`block-container ${block.type} ${isOrnate ? "border-ornate" : ""} ${
+      className={`block-container ${block.type} ${frameClassName} ${
         isDimmed ? "dimmed-by-filter" : ""
       }`}
       style={blockStyle}
@@ -377,7 +365,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
         createPortal(
           <div className="card-popout-overlay" onClick={() => setIsPopout(false)}>
             <div
-              className={`block-container ${block.type} ${isOrnate ? "border-ornate" : ""} is-popout-view`}
+              className={`block-container ${block.type} ${frameClassName} is-popout-view`}
               style={{
                 ...blockStyle,
                 maxWidth:

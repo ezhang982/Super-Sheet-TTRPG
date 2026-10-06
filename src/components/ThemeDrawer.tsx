@@ -2,6 +2,9 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { GlobalTheme } from "../types/schema";
+import { isKnownFrame, isKnownShading, isKnownShape, listShadings } from "../styles/registry";
+import { StyleOptionGrid } from "./StyleOptionGrid";
+import { buildFrameOptions, buildShapeOptions } from "./styleOptions";
 
 export interface ThemePreset {
   id: string;
@@ -93,6 +96,7 @@ interface ThemeDrawerProps {
 export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => {
   const theme = useCharacterStore((state) => state.character.theme);
   const setGlobalTheme = useCharacterStore((state) => state.setGlobalTheme);
+  const clearBlockStyleOverrides = useCharacterStore((state) => state.clearBlockStyleOverrides);
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
@@ -102,7 +106,20 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
   };
 
   const handleReset = () => {
-    setGlobalTheme(THEME_PRESETS[0].theme);
+    setGlobalTheme({
+      ...THEME_PRESETS[0].theme,
+      defaultFrame: undefined,
+      defaultShape: undefined,
+      defaultShading: undefined,
+      defaultGlow: undefined,
+    });
+  };
+
+  const handleApplyToAllCards = () => {
+    const ok = window.confirm(
+      "Remove every card's own frame, shape, shading and glow so all cards follow these defaults?\n\nYou can undo this."
+    );
+    if (ok) clearBlockStyleOverrides(["frame", "borderStyle", "shape", "shading", "glow"]);
   };
 
   // Helper to ensure valid 6-character hex for native color pickers
@@ -286,6 +303,61 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
                 />
               </div>
             </div>
+          </section>
+
+          {/* Card Style: sheet-wide defaults (cards can override individually) */}
+          <section className="drawer-section">
+            <h3 className="drawer-section-title">Card Style (Sheet Default)</h3>
+            <p className="drawer-hint">
+              Applies to every card unless that card has its own override in its style menu.
+            </p>
+
+            <div className="theme-form-group">
+              <label>Frame</label>
+              <StyleOptionGrid
+                label="Default frame"
+                options={buildFrameOptions(theme)}
+                value={isKnownFrame(theme.defaultFrame) ? theme.defaultFrame : "solid"}
+                onChange={(id) => setGlobalTheme({ defaultFrame: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>Shape</label>
+              <StyleOptionGrid
+                label="Default shape"
+                options={buildShapeOptions(theme)}
+                value={isKnownShape(theme.defaultShape) ? theme.defaultShape : "rect"}
+                onChange={(id) => setGlobalTheme({ defaultShape: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>Inner Shading</label>
+              <select
+                value={isKnownShading(theme.defaultShading) ? theme.defaultShading : "none"}
+                onChange={(e) => setGlobalTheme({ defaultShading: e.target.value })}
+              >
+                {listShadings().map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <label className="theme-checkbox-row">
+              <input
+                type="checkbox"
+                checked={theme.defaultGlow ?? false}
+                onChange={(e) => setGlobalTheme({ defaultGlow: e.target.checked })}
+              />
+              <span>Glow around cards (uses accent color)</span>
+            </label>
+
+            <button type="button" className="btn-secondary" onClick={handleApplyToAllCards}>
+              Make all cards use these defaults
+            </button>
           </section>
         </div>
 

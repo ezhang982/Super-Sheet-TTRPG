@@ -17,6 +17,25 @@ const CharacterMetaSchema = z.object({
   updatedAt: z.number(),
 });
 
+// ---------- Style tokens & custom assets ----------
+// Designs (frames, patterns, ...) live in app code (src/styles) and are
+// referenced by id. Ids are FREE STRINGS, not enums: an id this app version
+// doesn't know (newer save, deleted asset) must fall back at render time rather
+// than fail validation. User-supplied SVG is referenced as "custom:<assetId>".
+const StyleIdSchema = z.string().max(100);
+
+export const MAX_CUSTOM_SVG_CHARS = 30_000; // ~30 KB per SVG
+export const MAX_CUSTOM_ASSETS_PER_CHARACTER = 50;
+
+const CustomAssetSchema = z.object({
+  id: z.string().max(100), // content hash of the sanitized SVG
+  kind: z.enum(["frame", "corners", "pattern", "watermark"]),
+  name: z.string().max(80),
+  svg: z.string().max(MAX_CUSTOM_SVG_CHARS), // MUST be sanitized before storing
+  slice: z.number().min(0).max(200).optional(), // 9-slice inset, frames only
+  recolor: z.boolean().optional(), // swap placeholder colors for theme colors
+});
+
 // ---------- Theme ----------
 const GlobalThemeSchema = z.object({
   fontHeading: z.string(),
@@ -26,15 +45,39 @@ const GlobalThemeSchema = z.object({
   borderColor: z.string(),
   accentColor: z.string(),
   tagColors: z.record(z.string(), z.string()).optional(),
+  // --- Style tokens: sheet-wide defaults (all optional) ---
+  canvasPattern: StyleIdSchema.optional(),
+  canvasPatternOpacity: z.number().min(0).max(1).optional(),
+  canvasPatternScale: z.number().min(0.25).max(4).optional(),
+  defaultFrame: StyleIdSchema.optional(),
+  defaultCorners: StyleIdSchema.optional(),
+  defaultTexture: StyleIdSchema.optional(),
+  defaultGlow: z.boolean().optional(),
+  defaultShape: StyleIdSchema.optional(),
+  defaultShading: StyleIdSchema.optional(),
+  defaultWatermark: StyleIdSchema.optional(),
+  watermarkOpacity: z.number().min(0).max(1).optional(),
+  animation: StyleIdSchema.optional(),
+  packId: StyleIdSchema.optional(), // which style pack was last applied (display only)
 });
 
 const BlockStyleSchema = z
   .object({
-    borderStyle: z.enum(["none", "solid", "double", "dashed", "groove", "ornate"]),
+    borderStyle: z.enum(["none", "solid", "double", "dashed", "groove", "ornate"]), // legacy; read as a frame id
     borderColor: z.string(),
     backgroundOpacity: z.number().min(0).max(1),
     backgroundUrl: z.string(), // URL only — never an upload, keeps JSON/localStorage light
     headerBannerUrl: z.string(),
+    // --- Style tokens: per-card overrides of the sheet defaults ---
+    frame: StyleIdSchema,
+    corners: StyleIdSchema,
+    texture: StyleIdSchema,
+    pattern: StyleIdSchema,
+    glow: z.boolean(),
+    shading: StyleIdSchema, // inner shading: none / soft / deep / vignette
+    accentTint: z.string(),
+    watermark: StyleIdSchema,
+    shape: StyleIdSchema, // e.g. rect / chamfer / rounded
   })
   .partial(); // every field optional; unset falls back to global theme
 
@@ -221,10 +264,20 @@ export const CharacterSchema = z.object({
   activeTabId: z.string(),
   layouts: z.record(z.string(), z.array(LayoutItemSchema)), // tabId -> layout items
   blocks: z.record(z.string(), BlockSchema), // blockId -> block
+  // Embedded copies of custom SVG designs this character uses (portable on
+  // export). The shared "My Designs" library lives in the browser, not here.
+  customAssets: z
+    .record(z.string(), CustomAssetSchema)
+    .refine((r) => Object.keys(r).length <= MAX_CUSTOM_ASSETS_PER_CHARACTER, {
+      message: `A character can embed at most ${MAX_CUSTOM_ASSETS_PER_CHARACTER} custom designs`,
+    })
+    .optional(),
 });
 
 // ---------- Inferred types (never hand-write these separately) ----------
 export type Character = z.infer<typeof CharacterSchema>;
+export type CustomAsset = z.infer<typeof CustomAssetSchema>;
+export type CustomAssetKind = CustomAsset["kind"];
 export type Block = z.infer<typeof BlockSchema>;
 export type BlockType = Block["type"];
 export type Tab = z.infer<typeof TabSchema>;

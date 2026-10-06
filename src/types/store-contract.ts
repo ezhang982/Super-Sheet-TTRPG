@@ -64,6 +64,9 @@ export interface CharacterStore {
   // can be updated without wiping out unmentioned keys.
   updateBlockData: (blockId: string, patch: Partial<Block["data"]> | Record<string, unknown>) => void;
   updateBlockStyle: (blockId: string, patch: Partial<BlockStyle>) => void;
+  // Removes the listed style keys from EVERY card in one undoable step, so the
+  // cards fall back to the sheet-wide defaults.
+  clearBlockStyleOverrides: (keys: Array<keyof BlockStyle>) => void;
   updateBlockTags: (blockId: string, tags: string[]) => void;
   updateBlockTitle: (blockId: string, title: string) => void;
   enableTagSuggestions: boolean;
