@@ -114,9 +114,33 @@ export interface ResolvedCorner {
   size: number;
 }
 
+/** Watermark definition (thematic emblem on card or canvas background). */
+export interface WatermarkDefinition {
+  id: string;
+  label: string;
+  category: StyleCategory;
+  /** SVG template string with {{COLOR}} and/or {{ACCENT}} */
+  svgTemplate: string;
+  viewBox?: string;
+}
+
+/** Header divider definition (ornate divider/decal separating card header and body). */
+export interface HeaderDividerDefinition {
+  id: string;
+  label: string;
+  category: StyleCategory;
+  /** Center decal SVG template with {{COLOR}} / {{ACCENT}}, or undefined for pure lines */
+  decalSvg?: string;
+  decalWidth?: number;
+  decalHeight?: number;
+  /** Style type: "line" | "fade" | "decal" | "none" */
+  type: "line" | "fade" | "decal" | "none";
+}
+
 /** Final result handed to the card container component. */
 export interface ResolvedBlockStyle {
   className: string;
   style: CSSProperties;
   corner?: ResolvedCorner;
+  dividerId: string;
 }

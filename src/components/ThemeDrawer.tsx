@@ -3,10 +3,15 @@ import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { GlobalTheme } from "../types/schema";
 import {
+  DEFAULT_CANVAS_WATERMARK_OPACITY,
+  DEFAULT_WATERMARK_OPACITY,
+  WATERMARK_POSITIONS,
   isKnownCorner,
+  isKnownDivider,
   isKnownFrame,
   isKnownShading,
   isKnownShape,
+  isKnownWatermark,
   listShadings,
 } from "../styles/registry";
 import { isKnownPattern, isKnownTexture } from "../styles/patterns";
@@ -14,10 +19,12 @@ import { DEFAULT_PATTERN_OPACITY } from "../styles/resolveStyle";
 import { StyleOptionGrid } from "./StyleOptionGrid";
 import {
   buildCornerOptions,
+  buildDividerOptions,
   buildFrameOptions,
   buildPatternOptions,
   buildShapeOptions,
   buildTextureOptions,
+  buildWatermarkOptions,
 } from "./styleOptions";
 
 export interface ThemePreset {
@@ -134,12 +141,20 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
       canvasPattern: undefined,
       canvasPatternOpacity: undefined,
       canvasPatternScale: undefined,
+      defaultWatermark: undefined,
+      watermarkOpacity: undefined,
+      defaultWatermarkPosition: undefined,
+      canvasWatermark: undefined,
+      canvasWatermarkOpacity: undefined,
+      canvasWatermarkPosition: undefined,
+      canvasWatermarkScale: undefined,
+      defaultHeaderDivider: undefined,
     });
   };
 
   const handleApplyToAllCards = () => {
     const ok = window.confirm(
-      "Remove every card's own frame, corners, shape, shading, texture, pattern, and glow so all cards follow these defaults?\n\nYou can undo this."
+      "Remove every card's own frame, corners, shape, shading, texture, pattern, watermark, divider, and glow so all cards follow these defaults?\n\nYou can undo this."
     );
     if (ok)
       clearBlockStyleOverrides([
@@ -152,6 +167,10 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
         "texture",
         "pattern",
         "scrim",
+        "watermark",
+        "watermarkOpacity",
+        "watermarkPosition",
+        "headerDivider",
       ]);
   };
 
@@ -384,6 +403,66 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
             </div>
           </section>
 
+          {/* Canvas Watermark */}
+          <section className="drawer-section">
+            <h3 className="drawer-section-title">Canvas Watermark</h3>
+            <p className="drawer-hint">
+              Subtle atmospheric emblem fixed in the background across the sheet.
+            </p>
+
+            <div className="theme-form-group">
+              <label>Emblem</label>
+              <StyleOptionGrid
+                label="Canvas watermark"
+                options={buildWatermarkOptions(theme)}
+                value={isKnownWatermark(theme.canvasWatermark) ? theme.canvasWatermark : "none"}
+                onChange={(id) => setGlobalTheme({ canvasWatermark: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>
+                Emblem Opacity ({Math.round((theme.canvasWatermarkOpacity ?? DEFAULT_CANVAS_WATERMARK_OPACITY) * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="0.4"
+                step="0.01"
+                value={theme.canvasWatermarkOpacity ?? DEFAULT_CANVAS_WATERMARK_OPACITY}
+                onChange={(e) => setGlobalTheme({ canvasWatermarkOpacity: parseFloat(e.target.value) })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>
+                Emblem Scale ({Math.round((theme.canvasWatermarkScale ?? 1) * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2.5"
+                step="0.1"
+                value={theme.canvasWatermarkScale ?? 1}
+                onChange={(e) => setGlobalTheme({ canvasWatermarkScale: parseFloat(e.target.value) })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>Position</label>
+              <select
+                value={theme.canvasWatermarkPosition ?? "center"}
+                onChange={(e) => setGlobalTheme({ canvasWatermarkPosition: e.target.value })}
+              >
+                {WATERMARK_POSITIONS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </section>
+
           {/* Card Style: sheet-wide defaults (cards can override individually) */}
           <section className="drawer-section">
             <h3 className="drawer-section-title">Card Style (Sheet Default)</h3>
@@ -408,6 +487,16 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
                 options={buildShapeOptions(theme)}
                 value={isKnownShape(theme.defaultShape) ? theme.defaultShape : "rect"}
                 onChange={(id) => setGlobalTheme({ defaultShape: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>Header Divider</label>
+              <StyleOptionGrid
+                label="Default header divider"
+                options={buildDividerOptions(theme)}
+                value={isKnownDivider(theme.defaultHeaderDivider) ? theme.defaultHeaderDivider : "default"}
+                onChange={(id) => setGlobalTheme({ defaultHeaderDivider: id })}
               />
             </div>
 
@@ -468,6 +557,44 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
                 value={theme.cardPatternOpacity ?? DEFAULT_PATTERN_OPACITY}
                 onChange={(e) => setGlobalTheme({ cardPatternOpacity: parseFloat(e.target.value) })}
               />
+            </div>
+
+            <div className="theme-form-group">
+              <label>Card Watermark</label>
+              <StyleOptionGrid
+                label="Default card watermark"
+                options={buildWatermarkOptions(theme)}
+                value={isKnownWatermark(theme.defaultWatermark) ? theme.defaultWatermark : "none"}
+                onChange={(id) => setGlobalTheme({ defaultWatermark: id })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>
+                Watermark Strength ({Math.round((theme.watermarkOpacity ?? DEFAULT_WATERMARK_OPACITY) * 100)}%)
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="0.5"
+                step="0.02"
+                value={theme.watermarkOpacity ?? DEFAULT_WATERMARK_OPACITY}
+                onChange={(e) => setGlobalTheme({ watermarkOpacity: parseFloat(e.target.value) })}
+              />
+            </div>
+
+            <div className="theme-form-group">
+              <label>Watermark Position</label>
+              <select
+                value={theme.defaultWatermarkPosition ?? "center"}
+                onChange={(e) => setGlobalTheme({ defaultWatermarkPosition: e.target.value })}
+              >
+                {WATERMARK_POSITIONS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <label className="theme-checkbox-row">

@@ -2,19 +2,28 @@ import React from "react";
 import { createPortal } from "react-dom";
 import type { Block, BlockStyle } from "../types/schema";
 import { useCharacterStore } from "../store/useCharacterStore";
-import { getShading, listShadings } from "../styles/registry";
+import {
+  DEFAULT_WATERMARK_OPACITY,
+  WATERMARK_POSITIONS,
+  getShading,
+  listShadings,
+} from "../styles/registry";
 import { StyleOptionGrid } from "./StyleOptionGrid";
 import {
   buildCornerOptions,
+  buildDividerOptions,
   buildFrameOptions,
   buildPatternOptions,
   buildShapeOptions,
   buildTextureOptions,
+  buildWatermarkOptions,
   cornerDefaultPreview,
+  dividerDefaultPreview,
   frameDefaultPreview,
   patternDefaultPreview,
   shapeDefaultPreview,
   textureDefaultPreview,
+  watermarkDefaultPreview,
 } from "./styleOptions";
 
 interface BlockStyleModalProps {
@@ -88,6 +97,10 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
       pattern: undefined,
       scrim: undefined,
       accentTint: undefined,
+      watermark: undefined,
+      watermarkOpacity: undefined,
+      watermarkPosition: undefined,
+      headerDivider: undefined,
     });
   };
 
@@ -159,6 +172,23 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
               value={currentStyle.shape}
               onChange={(id) => handleUpdate({ shape: id })}
               defaultOption={shapeDefaultPreview(theme)}
+            />
+          </div>
+
+          {/* Header Divider */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Header Divider</label>
+              <span className="field-hint">
+                {currentStyle.headerDivider ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Header divider"
+              options={buildDividerOptions(theme)}
+              value={currentStyle.headerDivider}
+              onChange={(id) => handleUpdate({ headerDivider: id })}
+              defaultOption={dividerDefaultPreview(theme)}
             />
           </div>
 
@@ -245,6 +275,105 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
               <option value="on">On</option>
               <option value="off">Off</option>
             </select>
+          </div>
+
+          {/* Card Watermark */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Card Watermark</label>
+              <span className="field-hint">
+                {currentStyle.watermark ? "Overrides sheet default" : "Using sheet default"}
+              </span>
+            </div>
+            <StyleOptionGrid
+              label="Card watermark"
+              options={buildWatermarkOptions(theme)}
+              value={currentStyle.watermark}
+              onChange={(id) => handleUpdate({ watermark: id })}
+              defaultOption={watermarkDefaultPreview(theme)}
+            />
+          </div>
+
+          {/* Watermark Opacity */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Watermark Opacity</label>
+              <span className="field-hint">
+                {Math.round(
+                  (currentStyle.watermarkOpacity ??
+                    theme.watermarkOpacity ??
+                    DEFAULT_WATERMARK_OPACITY) * 100
+                )}
+                %
+                {currentStyle.watermarkOpacity !== undefined
+                  ? " (Card override)"
+                  : " (Sheet default)"}
+              </span>
+            </div>
+            <div className="slider-wrapper">
+              <input
+                type="range"
+                min="0"
+                max="0.5"
+                step="0.02"
+                value={
+                  currentStyle.watermarkOpacity ??
+                  theme.watermarkOpacity ??
+                  DEFAULT_WATERMARK_OPACITY
+                }
+                onChange={(e) =>
+                  handleUpdate({ watermarkOpacity: parseFloat(e.target.value) })
+                }
+              />
+              {currentStyle.watermarkOpacity !== undefined && (
+                <button
+                  type="button"
+                  className="clear-field-btn"
+                  onClick={() => handleUpdate({ watermarkOpacity: undefined })}
+                  title="Revert to sheet default watermark opacity"
+                >
+                  Revert
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Watermark Position */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Watermark Position</label>
+              <span className="field-hint">
+                {currentStyle.watermarkPosition ? "Card override" : "Sheet default"}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", width: "100%" }}>
+              <select
+                value={currentStyle.watermarkPosition ?? ""}
+                onChange={(e) =>
+                  handleUpdate({ watermarkPosition: e.target.value || undefined })
+                }
+                style={{ flex: 1 }}
+              >
+                <option value="">
+                  Sheet default ({theme.defaultWatermarkPosition ?? "center"})
+                </option>
+                {WATERMARK_POSITIONS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+              {currentStyle.watermarkPosition && (
+                <button
+                  type="button"
+                  className="clear-field-btn"
+                  onClick={() => handleUpdate({ watermarkPosition: undefined })}
+                  title="Revert to sheet default position"
+                >
+                  Revert
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Glow */}

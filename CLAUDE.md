@@ -354,8 +354,23 @@ keep multi-session AI-assisted work from drifting.
 - [x] Full regression test suite (`verify-phase15.ts` and all 15 previous test suites) passing 100%.
 - **Gate:** 9-slice frames and corner accents render at arbitrary card sizes; zero regressions across the codebase.
 
+### ✅ Phase 16 (Style System Phase 3b) — Watermarks & Decals (Delivered)
+- [x] Card & canvas watermark engine (`src/styles/watermarks.ts`) at Layer 5 (between backgroundUrl/pattern/texture and content/scrim).
+- [x] 8 built-in watermark emblems: `none`, `d20`, `crest`, `arcane-circle` (with alias `rune-circle`), `biohazard`, `dragon`, `skull`, `compass`.
+- [x] Watermark position controls (Center, Bottom Right, Top Right, Bottom Left, Top Left) and opacity sliders for both canvas and cards.
+- [x] Canvas watermark resolution (`resolveCanvasWatermark`) with fixed attachment and scale multiplier wired into root CSS variables.
+- [x] Header divider & decal engine (`src/styles/dividers.ts`, `src/components/HeaderDivider.tsx`) across aesthetic families:
+      - **Classic:** `default` (subtle line), `fade` (gradient fade), `celtic` (celtic knot)
+      - **Fantasy:** `flourish` (royal flourish), `gem` (celestial star), `runes` (arcane glyphs)
+      - **Sci-Fi:** `tech` (cyber notch)
+      - **Gothic:** `gothic` (gothic spikes)
+      - **Minimal:** `none` (no divider line)
+- [x] Non-destructive cascade UI in `ThemeDrawer.tsx` and `BlockStyleModal.tsx` with live preview tiles in `StyleOptionGrid.tsx`.
+- [x] Bulk clear overrides (`clearBlockStyleOverrides`) integration for `watermark`, `watermarkOpacity`, `watermarkPosition`, `headerDivider`.
+- [x] Full regression test suite (`verify-phase16.ts` and all 16 previous test suites) passing 100%.
+- **Gate:** Watermarks and header divider ornaments render seamlessly across canvas and cards; zero regressions across the codebase.
+
 ### 🚀 Upcoming Style Phases
-- **Phase 3b — Watermarks & Decals:** Card/canvas watermark layer (d20, crest, rune circle, biohazard) and header divider decals.
 - **Phase 4 — Style Packs:** 1-click theme presets with non-destructive color preservation prompts.
 - **Phase 5 — Custom User SVGs, "My Designs" & Motion:** Local SVG upload/paste, IndexedDB design library, sanitize-on-import, and reduced-motion compliant animated border effects.
 

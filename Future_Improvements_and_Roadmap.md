@@ -95,15 +95,16 @@ Theme: High-fidelity 9-slice SVG borders and modular corner ornaments.
 - [x] Dynamic content clearance offsets (--frame-pad-x, --frame-pad-y).
 
 ================================================================================
-Phase 3b: Watermarks & Decals (Next)
+Phase 3b: Watermarks & Decals (Completed)
 --------------------------------------------------------------------------------
 Theme: Subtle thematic background emblems and header divider ornaments.
-- Card & canvas watermark layer with opacity control.
-- Starter watermark emblems (d20, crest, arcane circle, biohazard, dragon).
-- Card header decals and ornate dividers.
+- [x] Card & canvas watermark layer with opacity control.
+- [x] Starter watermark emblems (d20, crest, arcane circle, biohazard, dragon, skull, compass).
+- [x] Card header decals and ornate dividers (flourish, celtic, tech, gothic, gem, runes).
+- [x] Watermark position controls and scale adjustments.
 
 ================================================================================
-Phase 4: Style Packs (Planned)
+Phase 4: Style Packs (Next)
 --------------------------------------------------------------------------------
 Theme: Curated 1-click aesthetic themes with non-destructive color preservation.
 
@@ -337,14 +338,15 @@ Blocks automatically publish variables to a sheet-wide in-memory symbol table:
 
 ---
 
-### Phase 3b — Watermarks & Decals *(Next)*
-* [ ] Card/canvas watermark layer (built-in emblems: d20, crest, rune circle, biohazard, dragon).
-* [ ] Opacity slider and position controls for watermarks.
-* [ ] Header decal / decorative divider ornaments between card headers and content.
+### Phase 3b — Watermarks & Decals *(Completed)*
+* [x] Card & canvas watermark layer (built-in emblems: `d20`, `crest`, `arcane-circle`, `biohazard`, `dragon`, `skull`, `compass`).
+* [x] Opacity slider and position controls for watermarks (Center, Bottom Right, Top Right, Bottom Left, Top Left) and scale multiplier.
+* [x] Card header decals and ornate dividers (`flourish`, `celtic`, `tech`, `gothic`, `gem`, `runes`, `fade`, `default`) between card headers and content.
+* [x] Full regression test suite: `verify-phase16.ts` passing 100%.
 
 ---
 
-### Phase 4 — Style Packs *(Planned)*
+### Phase 4 — Style Packs *(Next)*
 * [ ] Bundles of tokens, colors, and fonts (e.g. "Cyberpunk Neon", "High Fantasy Parchment", "Gothic Horror", "Grimdark Terminal").
 * [ ] Non-destructive "Keep my custom colors?" prompt on apply.
 
