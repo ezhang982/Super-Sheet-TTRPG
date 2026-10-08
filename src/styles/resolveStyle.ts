@@ -1,17 +1,26 @@
 import type { CSSProperties } from "react";
 import type { BlockStyle, GlobalTheme } from "../types/schema";
 import {
+  DEFAULT_CANVAS_WATERMARK_OPACITY,
+  DEFAULT_WATERMARK_OPACITY,
   FALLBACK_CORNER_ID,
+  FALLBACK_DIVIDER_ID,
   FALLBACK_FRAME_ID,
+  FALLBACK_WATERMARK_ID,
   getCorner,
   getFrame,
   getShading,
   getShape,
+  getWatermarkCssPosition,
   isKnownCorner,
+  isKnownDivider,
   isKnownFrame,
   isKnownShading,
   isKnownShape,
+  isKnownWatermark,
   renderCornerSvg,
+  renderWatermarkLayer,
+  renderWatermarkSvg,
 } from "./registry";
 import { getTexture, isKnownPattern, isKnownTexture, renderPattern } from "./patterns";
 import type { BackgroundLayer, ResolvedBlockStyle, ResolvedCorner } from "./types";
@@ -30,10 +39,10 @@ import type { BackgroundLayer, ResolvedBlockStyle, ResolvedCorner } from "./type
 //   4 backgroundUrl image            5 watermark    6 content
 //   7 frame (border / ring overlay)  8 corner accents
 //   9 glow / outer shadow            (+ inner shading, drawn as inset shadow)
-// Layers 2-4 are CSS background images. In CSS the FIRST listed image is on
-// top, so the list is built top-down: scrim, tint wash, url image, pattern,
-// texture. The scrim sits above all of them (and below content) so it can
-// protect text over busy art.
+// Layers 2-5 are CSS background images. In CSS the FIRST listed image is on
+// top, so the list is built top-down: scrim, tint wash, watermark, url image,
+// pattern, texture. The scrim sits above all of them (and below content) so
+// it can protect text over busy art.
 // =============================================================================
 
 const SCRIM_LAYER: BackgroundLayer = {
@@ -73,6 +82,22 @@ function resolvePatternId(style: BlockStyle | undefined, theme: GlobalTheme): st
 
 function resolveCornerId(style: BlockStyle | undefined, theme: GlobalTheme): string {
   return [style?.corners, theme.defaultCorners].find((id) => isKnownCorner(id)) ?? FALLBACK_CORNER_ID;
+}
+
+function resolveWatermarkId(style: BlockStyle | undefined, theme: GlobalTheme): string {
+  return [style?.watermark, theme.defaultWatermark].find((id) => isKnownWatermark(id)) ?? FALLBACK_WATERMARK_ID;
+}
+
+function resolveWatermarkOpacity(style: BlockStyle | undefined, theme: GlobalTheme): number {
+  return style?.watermarkOpacity ?? theme.watermarkOpacity ?? DEFAULT_WATERMARK_OPACITY;
+}
+
+function resolveWatermarkPosition(style: BlockStyle | undefined, theme: GlobalTheme): string {
+  return style?.watermarkPosition ?? theme.defaultWatermarkPosition ?? "center";
+}
+
+function resolveDividerId(style: BlockStyle | undefined, theme: GlobalTheme): string {
+  return [style?.headerDivider, theme.defaultHeaderDivider].find((id) => isKnownDivider(id)) ?? FALLBACK_DIVIDER_ID;
 }
 
 function mixedCardBackground(opacity: number): string {
@@ -139,6 +164,17 @@ export function resolveBlockStyle(
       repeat: "no-repeat",
     });
   }
+  // Layer 5: Watermark
+  const watermarkId = resolveWatermarkId(style, theme);
+  const watermarkOpacity = resolveWatermarkOpacity(style, theme);
+  const watermarkPos = resolveWatermarkPosition(style, theme);
+  const watermark = renderWatermarkLayer(watermarkId, {
+    color: tint || theme.accentColor,
+    opacity: watermarkOpacity,
+    position: watermarkPos,
+  });
+  if (watermark) layers.push(watermark);
+
   if (style?.backgroundUrl) {
     layers.push({ image: `url(${style.backgroundUrl})`, size: "cover", repeat: "no-repeat" });
   }
@@ -184,7 +220,9 @@ export function resolveBlockStyle(
     }
   }
 
-  return { className, style: css, corner };
+  const dividerId = resolveDividerId(style, theme);
+
+  return { className, style: css, corner, dividerId };
 }
 
 /**
@@ -207,6 +245,9 @@ export function resolvePreviewStyle(
     defaultPattern: undefined,
     defaultScrim: undefined,
     cardPatternOpacity: 1,
+    defaultWatermark: undefined,
+    watermarkOpacity: 0.35,
+    defaultHeaderDivider: undefined,
   });
 }
 
@@ -224,4 +265,34 @@ export function resolveCanvasPattern(
     scale: theme.canvasPatternScale ?? 1,
   });
   return layer ? { image: layer.image, size: layer.size } : undefined;
+}
+
+/**
+ * The canvas watermark emblem, as CSS values for `--canvas-watermark-*`.
+ * Returns undefined when no canvas watermark is selected.
+ */
+export function resolveCanvasWatermark(
+  theme: GlobalTheme
+): { image: string; size: string; position: string; attachment: string } | undefined {
+  if (!isKnownWatermark(theme.canvasWatermark) || theme.canvasWatermark === "none") {
+    return undefined;
+  }
+  const svgUri = renderWatermarkSvg(
+    theme.canvasWatermark,
+    theme.accentColor,
+    theme.canvasWatermarkOpacity ?? DEFAULT_CANVAS_WATERMARK_OPACITY
+  );
+  if (!svgUri) return undefined;
+
+  const scale = theme.canvasWatermarkScale ?? 1;
+  const pct = Math.round(50 * scale);
+  const size = `min(${Math.round(600 * scale)}px, ${pct}vw) min(${Math.round(600 * scale)}px, ${pct}vh)`;
+  const position = getWatermarkCssPosition(theme.canvasWatermarkPosition);
+
+  return {
+    image: `url("${svgUri}")`,
+    size,
+    position,
+    attachment: "fixed",
+  };
 }

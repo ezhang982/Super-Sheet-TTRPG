@@ -8,6 +8,25 @@ export {
   listCorners,
   renderCornerSvg,
 } from "./corners";
+export {
+  DEFAULT_CANVAS_WATERMARK_OPACITY,
+  DEFAULT_WATERMARK_OPACITY,
+  FALLBACK_WATERMARK_ID,
+  WATERMARK_POSITIONS,
+  getWatermark,
+  getWatermarkCssPosition,
+  isKnownWatermark,
+  listWatermarks,
+  renderWatermarkLayer,
+  renderWatermarkSvg,
+} from "./watermarks";
+export {
+  FALLBACK_DIVIDER_ID,
+  getDivider,
+  isKnownDivider,
+  listDividers,
+  renderDividerDecalSvg,
+} from "./dividers";
 
 // =============================================================================
 // STYLE REGISTRY

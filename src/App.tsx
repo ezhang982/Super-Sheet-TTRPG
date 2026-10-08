@@ -11,7 +11,7 @@ import { ShortcutsModal } from "./components/ShortcutsModal";
 import { SessionScratchpadModal } from "./components/SessionScratchpadModal";
 import { TagManagerModal } from "./components/TagManagerModal";
 import { PlayModeRevertToast } from "./components/PlayModeRevertToast";
-import { resolveCanvasPattern } from "./styles/resolveStyle";
+import { resolveCanvasPattern, resolveCanvasWatermark } from "./styles/resolveStyle";
 import "./App.css";
 
 export const App: React.FC = () => {
@@ -53,6 +53,19 @@ export const App: React.FC = () => {
     } else {
       root.style.removeProperty("--canvas-pattern-image");
       root.style.removeProperty("--canvas-pattern-size");
+    }
+
+    const canvasWatermark = resolveCanvasWatermark(theme);
+    if (canvasWatermark) {
+      root.style.setProperty("--canvas-watermark-image", canvasWatermark.image);
+      root.style.setProperty("--canvas-watermark-size", canvasWatermark.size);
+      root.style.setProperty("--canvas-watermark-position", canvasWatermark.position);
+      root.style.setProperty("--canvas-watermark-attachment", canvasWatermark.attachment);
+    } else {
+      root.style.removeProperty("--canvas-watermark-image");
+      root.style.removeProperty("--canvas-watermark-size");
+      root.style.removeProperty("--canvas-watermark-position");
+      root.style.removeProperty("--canvas-watermark-attachment");
     }
   }, [theme]);
 

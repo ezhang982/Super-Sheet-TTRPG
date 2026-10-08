@@ -2,16 +2,21 @@ import React from "react";
 import type { GlobalTheme } from "../types/schema";
 import {
   getCorner,
+  getDivider,
   getFrame,
   getShape,
+  getWatermark,
   listCorners,
+  listDividers,
   listFrames,
   listShapes,
+  listWatermarks,
 } from "../styles/registry";
 import { getPattern, getTexture, listPatterns, listTextures } from "../styles/patterns";
 import { resolvePreviewStyle } from "../styles/resolveStyle";
 import type { StyleOption } from "./StyleOptionGrid";
 import { CornerAccents } from "./CornerAccents";
+import { HeaderDivider } from "./HeaderDivider";
 
 // Builds picker tiles (with live previews) from the style registry, so the
 // card modal and the theme drawer stay in sync with whatever designs exist.
@@ -91,4 +96,49 @@ export function textureDefaultPreview(theme: GlobalTheme) {
   const texture = getTexture(theme.defaultTexture);
   const p = resolvePreviewStyle({ texture: texture.id }, theme);
   return { subLabel: texture.label, previewClassName: p.className, previewStyle: p.style };
+}
+
+export function buildWatermarkOptions(theme: GlobalTheme): StyleOption[] {
+  return listWatermarks().map((w) => {
+    const p = resolvePreviewStyle({ watermark: w.id }, theme);
+    return { id: w.id, label: w.label, previewClassName: p.className, previewStyle: p.style };
+  });
+}
+
+export function watermarkDefaultPreview(theme: GlobalTheme) {
+  const wm = getWatermark(theme.defaultWatermark);
+  const p = resolvePreviewStyle({ watermark: wm.id }, theme);
+  return { subLabel: wm.label, previewClassName: p.className, previewStyle: p.style };
+}
+
+export function buildDividerOptions(theme: GlobalTheme): StyleOption[] {
+  return listDividers().map((d) => {
+    const p = resolvePreviewStyle({ headerDivider: d.id }, theme);
+    return {
+      id: d.id,
+      label: d.label,
+      previewClassName: p.className,
+      previewStyle: p.style,
+      previewContent: React.createElement(HeaderDivider, {
+        dividerId: d.id,
+        color: theme.borderColor,
+        accent: theme.accentColor,
+      }),
+    };
+  });
+}
+
+export function dividerDefaultPreview(theme: GlobalTheme) {
+  const d = getDivider(theme.defaultHeaderDivider);
+  const p = resolvePreviewStyle({ headerDivider: d.id }, theme);
+  return {
+    subLabel: d.label,
+    previewClassName: p.className,
+    previewStyle: p.style,
+    previewContent: React.createElement(HeaderDivider, {
+      dividerId: d.id,
+      color: theme.borderColor,
+      accent: theme.accentColor,
+    }),
+  };
 }

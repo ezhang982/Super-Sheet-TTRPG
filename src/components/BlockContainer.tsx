@@ -14,6 +14,7 @@ import { CardContextMenu } from "./CardContextMenu";
 import { getSuggestedTags } from "../utils/tagKeywords";
 import { resolveBlockStyle } from "../styles/resolveStyle";
 import { CornerAccents } from "./CornerAccents";
+import { HeaderDivider } from "./HeaderDivider";
 
 interface BlockContainerProps {
   blockId: string;
@@ -72,8 +73,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Compute block-level styles (frame, background, corners) via the style registry.
-  const { className: frameClassName, style: blockStyle, corner } = resolveBlockStyle(block.style, theme);
+  // Compute block-level styles (frame, background, corners, dividers) via the style registry.
+  const { className: frameClassName, style: blockStyle, corner, dividerId } = resolveBlockStyle(block.style, theme);
 
   const handleCommitTitle = () => {
     if (titleInput.trim()) {
@@ -179,6 +180,8 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
       id={`block-${block.id}`}
       data-block-id={block.id}
       className={`block-container ${block.type} ${frameClassName} ${
+        dividerId !== "default" ? "has-custom-divider" : ""
+      } ${
         isDimmed ? "dimmed-by-filter" : ""
       }`}
       style={blockStyle}
@@ -332,6 +335,12 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
         </div>
       )}
 
+      <HeaderDivider
+        dividerId={dividerId}
+        color={block.style?.borderColor || block.style?.accentTint || theme.borderColor}
+        accent={block.style?.accentTint || theme.accentColor}
+      />
+
       <div className="block-body">{renderPrimitive()}</div>
       {corner && <CornerAccents corner={corner} />}
 
@@ -367,7 +376,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
         createPortal(
           <div className="card-popout-overlay" onClick={() => setIsPopout(false)}>
             <div
-              className={`block-container ${block.type} ${frameClassName} is-popout-view`}
+              className={`block-container ${block.type} ${frameClassName} ${
+                dividerId !== "default" ? "has-custom-divider" : ""
+              } is-popout-view`}
               style={{
                 ...blockStyle,
                 maxWidth:
@@ -410,6 +421,11 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
                   </button>
                 </div>
               </div>
+              <HeaderDivider
+                dividerId={dividerId}
+                color={block.style?.borderColor || block.style?.accentTint || theme.borderColor}
+                accent={block.style?.accentTint || theme.accentColor}
+              />
               <div className="block-body">{renderPrimitive()}</div>
               {corner && <CornerAccents corner={corner} />}
             </div>

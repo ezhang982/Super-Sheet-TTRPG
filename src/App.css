@@ -3,9 +3,11 @@
   display: flex;
   flex-direction: column;
   background-color: var(--canvas-bg);
-  background-image: var(--canvas-pattern-image, none);
-  background-size: var(--canvas-pattern-size, auto);
-  background-repeat: repeat;
+  background-image: var(--canvas-watermark-image, none), var(--canvas-pattern-image, none);
+  background-size: var(--canvas-watermark-size, contain), var(--canvas-pattern-size, auto);
+  background-position: var(--canvas-watermark-position, center), 0 0;
+  background-repeat: no-repeat, repeat;
+  background-attachment: var(--canvas-watermark-attachment, fixed), scroll;
   color: var(--text-main);
   position: relative;
 }
@@ -370,6 +372,59 @@
   border-bottom: 1px solid var(--border-color);
   gap: 8px;
   min-height: 42px;
+}
+
+.has-custom-divider .block-header {
+  border-bottom: none;
+}
+
+/* Card Header Dividers & Decals */
+.card-header-divider {
+  width: 100%;
+  pointer-events: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.card-header-divider.divider-type-line {
+  height: 1px;
+  border-bottom: 1px solid var(--border-color);
+  margin: 0;
+}
+
+.card-header-divider.divider-type-fade {
+  height: 1px;
+  margin: 0;
+}
+
+.card-header-divider.divider-type-decal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  margin: -2px 0 0 0;
+  padding: 0 8px;
+}
+
+.divider-flank {
+  flex: 1;
+  height: 1px;
+  min-width: 8px;
+}
+
+.divider-decal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0 4px;
+  line-height: 0;
+}
+
+.divider-decal-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .block-header-left, .block-header-right {

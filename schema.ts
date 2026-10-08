@@ -60,6 +60,12 @@ const GlobalThemeSchema = z.object({
   defaultShading: StyleIdSchema.optional(),
   defaultWatermark: StyleIdSchema.optional(),
   watermarkOpacity: z.number().min(0).max(1).optional(),
+  defaultWatermarkPosition: z.string().max(40).optional(),
+  canvasWatermark: StyleIdSchema.optional(),
+  canvasWatermarkOpacity: z.number().min(0).max(1).optional(),
+  canvasWatermarkPosition: z.string().max(40).optional(),
+  canvasWatermarkScale: z.number().min(0.25).max(4).optional(),
+  defaultHeaderDivider: StyleIdSchema.optional(),
   animation: StyleIdSchema.optional(),
   packId: StyleIdSchema.optional(), // which style pack was last applied (display only)
 });
@@ -81,6 +87,9 @@ const BlockStyleSchema = z
     shading: StyleIdSchema, // inner shading: none / soft / deep / vignette
     accentTint: z.string(),
     watermark: StyleIdSchema,
+    watermarkOpacity: z.number().min(0).max(1),
+    watermarkPosition: z.string().max(40),
+    headerDivider: StyleIdSchema,
     shape: StyleIdSchema, // e.g. rect / chamfer / rounded
   })
   .partial(); // every field optional; unset falls back to global theme
