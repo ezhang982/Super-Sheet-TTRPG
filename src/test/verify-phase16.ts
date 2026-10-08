@@ -36,6 +36,8 @@ const watermarks = listWatermarks();
 assert(watermarks.length >= 8, `Registry contains at least 8 watermarks (actual: ${watermarks.length})`);
 
 // 5 Specified starter emblems
+assert(DEFAULT_WATERMARK_OPACITY === 0.1, "DEFAULT_WATERMARK_OPACITY is 0.1");
+assert(DEFAULT_CANVAS_WATERMARK_OPACITY === 0.05, "DEFAULT_CANVAS_WATERMARK_OPACITY is 0.05");
 assert(isKnownWatermark("d20"), "Watermark 'd20' recognized");
 assert(isKnownWatermark("crest"), "Watermark 'crest' recognized");
 assert(isKnownWatermark("arcane-circle"), "Watermark 'arcane-circle' recognized");
@@ -82,7 +84,7 @@ const wmLayerBR = renderWatermarkLayer("dragon", {
   color: "#2ecc71",
   position: "bottom-right",
 });
-assert(wmLayerBR!.position.includes("calc(100% - 16px)"), "Bottom-right position offset correctly mapped");
+assert(Boolean(wmLayerBR?.position && wmLayerBR.position.includes("calc(100% - 16px)")), "Bottom-right position offset correctly mapped");
 
 const wmLayerNone = renderWatermarkLayer("none", { color: "#ffffff" });
 assert(wmLayerNone === undefined, "Layer for 'none' is undefined");
@@ -133,7 +135,7 @@ const inheritedCard = resolveBlockStyle(undefined, themeWithDefaults);
 assert(inheritedCard.dividerId === "flourish", "Card inherits sheet default divider 'flourish'");
 const inheritedBg = String(inheritedCard.style.backgroundImage || "");
 assert(inheritedBg.includes("data:image/svg+xml"), "Card background inherits watermark SVG");
-assert(inheritedCard.style.backgroundPosition?.includes("calc(100% - 16px)"), "Card background inherits bottom-right position");
+assert(String(inheritedCard.style.backgroundPosition || "").includes("calc(100% - 16px)"), "Card background inherits bottom-right position");
 
 // 5b. Card overrides watermark and divider
 const overriddenCard = resolveBlockStyle(
@@ -146,7 +148,7 @@ const overriddenCard = resolveBlockStyle(
   themeWithDefaults
 );
 assert(overriddenCard.dividerId === "tech", "Card overrides divider to 'tech'");
-assert(overriddenCard.style.backgroundPosition?.includes("center"), "Card overrides position to center");
+assert(String(overriddenCard.style.backgroundPosition || "").includes("center"), "Card overrides position to center");
 
 // 5c. Card disables watermark with "none"
 const noWatermarkCard = resolveBlockStyle({ watermark: "none" }, themeWithDefaults);
