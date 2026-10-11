@@ -12,6 +12,7 @@ interface FloatingToolsMenuProps {
   onOpenShortcuts?: () => void;
   onOpenScratchpad?: () => void;
   onOpenTagManager?: () => void;
+  onOpenMyDesigns?: () => void;
 }
 
 export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
@@ -19,6 +20,7 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
   onOpenShortcuts,
   onOpenScratchpad,
   onOpenTagManager,
+  onOpenMyDesigns,
 }) => {
   const mode = useCharacterStore((state) => state.mode);
   const character = useCharacterStore((state) => state.character);
@@ -308,6 +310,19 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
               🎨 Theme & Styling
             </button>
 
+            {onOpenMyDesigns && (
+              <button
+                type="button"
+                className="tools-btn"
+                onClick={() => {
+                  onOpenMyDesigns();
+                  setIsOpen(false);
+                }}
+              >
+                🖼️ My Designs (Custom SVGs)
+              </button>
+            )}
+
             <button
               type="button"
               className="tools-btn"
@@ -422,7 +437,11 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
       {toastMessage && <div className="floating-toast">{toastMessage}</div>}
 
       {/* Global Theme Customizer Drawer */}
-      <ThemeDrawer isOpen={isThemeOpen} onClose={() => setIsThemeOpen(false)} />
+      <ThemeDrawer
+        isOpen={isThemeOpen}
+        onClose={() => setIsThemeOpen(false)}
+        onOpenMyDesigns={onOpenMyDesigns}
+      />
 
       {/* Rest Actions Configuration Modal */}
       <RestActionModal

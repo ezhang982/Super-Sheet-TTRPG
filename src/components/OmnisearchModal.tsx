@@ -12,6 +12,7 @@ export interface OmnisearchModalProps {
   onOpenSwitcher?: () => void;
   onOpenScratchpad?: () => void;
   onOpenTagManager?: () => void;
+  onOpenMyDesigns?: () => void;
 }
 
 interface SearchResultItem {
@@ -34,6 +35,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
   onOpenSwitcher,
   onOpenScratchpad,
   onOpenTagManager,
+  onOpenMyDesigns,
 }) => {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -135,6 +137,17 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
         action: () => {
           onClose();
           onOpenTheme?.();
+        },
+      },
+      {
+        id: "cmd_my_designs",
+        category: "Commands",
+        title: "🎨 My Designs (Custom SVGs)",
+        subtitle: "Import, sanitize, and manage custom SVG frames, watermarks, corners & patterns",
+        badge: "Styling",
+        action: () => {
+          onClose();
+          onOpenMyDesigns?.();
         },
       },
       {
@@ -362,7 +375,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
     }
 
     return items;
-  }, [query, character, mode, onOpenShortcuts, onOpenTheme, onOpenRest, onOpenNewChar, onOpenSwitcher, onOpenScratchpad, onOpenTagManager]);
+  }, [query, character, mode, onOpenShortcuts, onOpenTheme, onOpenRest, onOpenNewChar, onOpenSwitcher, onOpenScratchpad, onOpenTagManager, onOpenMyDesigns]);
 
   // Reset selected index when query changes
   useEffect(() => {

@@ -91,7 +91,9 @@ const BlockStyleSchema = z
     watermarkPosition: z.string().max(40),
     headerDivider: StyleIdSchema,
     shape: StyleIdSchema, // e.g. rect / chamfer / rounded
+    animation: StyleIdSchema, // animated border effect: none / neon-pulse / shimmer / arcane-flow
   })
+
   .partial(); // every field optional; unset falls back to global theme
 
 // ---------- Tabs & Layout ----------

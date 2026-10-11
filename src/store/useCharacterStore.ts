@@ -10,7 +10,9 @@ import {
   type GlobalTheme,
   type LayoutItem,
   type Tab,
+  type CustomAsset,
 } from "../types/schema";
+
 import type { CharacterStore, Mode, RestAction, PlayModeHistoryEntry } from "../types/store-contract";
 import {
   loadInitialCharacter,
@@ -24,6 +26,9 @@ import {
 } from "./storage";
 
 import { blankTemplate } from "../templates/blank";
+import { getStylePack, buildThemeFromPack } from "../styles/stylePacks";
+import { assetLibrary } from "../styles/assetLibrary";
+
 
 // Initialize IndexedDB, migrate legacy data, and reconcile dual-storage consistency
 if (typeof window !== "undefined") {
@@ -663,6 +668,89 @@ export const useCharacterStore = create<CharacterStore>()(
         });
       },
 
+      applyStylePack: (packId: string, options?: { keepColors?: boolean; resetCardOverrides?: boolean }) => {
+        const pack = getStylePack(packId);
+        if (!pack) return;
+        const { character } = get();
+        const nextTheme = buildThemeFromPack(pack, character.theme, { keepColors: options?.keepColors });
+
+        let blocks = character.blocks;
+        if (options?.resetCardOverrides) {
+          const overrideKeys: Array<keyof BlockStyle> = [
+            "frame",
+            "borderStyle",
+            "corners",
+            "shape",
+            "shading",
+            "glow",
+            "texture",
+            "pattern",
+            "scrim",
+            "watermark",
+            "watermarkOpacity",
+            "watermarkPosition",
+            "headerDivider",
+          ];
+          const newBlocks = { ...character.blocks };
+          let changed = false;
+          for (const [id, block] of Object.entries(character.blocks)) {
+            if (!block.style) continue;
+            const style: BlockStyle = { ...block.style };
+            let touched = false;
+            for (const key of overrideKeys) {
+              if (key in style) {
+                delete style[key];
+                touched = true;
+              }
+            }
+            if (touched) {
+              newBlocks[id] = { ...block, style } as Block;
+              changed = true;
+            }
+          }
+          if (changed) {
+            blocks = newBlocks;
+          }
+        }
+
+        set({
+          character: {
+            ...character,
+            theme: nextTheme,
+            blocks,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      embedCustomAsset: (asset: CustomAsset) => {
+        const { character } = get();
+        const customAssets = { ...(character.customAssets || {}), [asset.id]: asset };
+        set({
+          character: {
+            ...character,
+            customAssets,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      removeCustomAsset: (assetId: string) => {
+        const { character } = get();
+        if (!character.customAssets || !character.customAssets[assetId]) return;
+        const customAssets = { ...character.customAssets };
+        delete customAssets[assetId];
+        set({
+          character: {
+            ...character,
+            customAssets,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+
+
       setTagColor: (tag: string, color: string) => {
         const { character } = get();
         const currentTagColors = character.theme.tagColors || {};
@@ -965,7 +1053,15 @@ export const useCharacterStore = create<CharacterStore>()(
       },
 
       importCharacter: (json: unknown) => {
-        const result = CharacterSchema.safeParse(json);
+        let parsed = json;
+        if (typeof json === "string") {
+          try {
+            parsed = JSON.parse(json);
+          } catch (e) {
+            return { success: false, error: `Invalid JSON: ${String(e)}` };
+          }
+        }
+        const result = CharacterSchema.safeParse(parsed);
         if (!result.success) {
           const errorMsg = result.error.issues
             .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
@@ -974,10 +1070,14 @@ export const useCharacterStore = create<CharacterStore>()(
         }
         set({ character: result.data });
         saveCharacterToStorage(result.data);
+        if (result.data.customAssets) {
+          assetLibrary.mergeFromCharacter(result.data.customAssets).catch(console.warn);
+        }
         get().clearHistory();
         get().clearPlayHistory();
         return { success: true };
       },
+
 
 
       exportCharacter: () => {

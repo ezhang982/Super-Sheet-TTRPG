@@ -1,6 +1,8 @@
 import type { CSSProperties } from "react";
-import type { FrameDefinition, ShadingDefinition, ShapeDefinition } from "./types";
-import { SVG_FRAMES } from "./svgFrames";
+import type { FrameDefinition, FrameRenderContext, ShadingDefinition, ShapeDefinition } from "./types";
+import { SVG_FRAMES, renderCustomFrame } from "./svgFrames";
+import { getCustomAssetSync, listCustomAssetsSync } from "./assetLibrary";
+
 export {
   FALLBACK_CORNER_ID,
   getCorner,
@@ -27,6 +29,18 @@ export {
   listDividers,
   renderDividerDecalSvg,
 } from "./dividers";
+export {
+  FALLBACK_STYLE_PACK_ID,
+  STYLE_PACKS,
+  buildThemeFromPack,
+  getStylePack,
+  isKnownStylePack,
+  listStylePacks,
+} from "./stylePacks";
+export { assetLibrary, getCustomAssetSync } from "./assetLibrary";
+export { sanitizeSvg, hashSvgString, type SanitizeResult } from "./svgSanitizer";
+
+
 
 // =============================================================================
 // STYLE REGISTRY
@@ -150,16 +164,37 @@ const FRAMES: Record<string, FrameDefinition> = Object.fromEntries(
 );
 
 export function isKnownFrame(id: string | undefined): id is string {
-  return !!id && Object.prototype.hasOwnProperty.call(FRAMES, id);
+  if (!id) return false;
+  if (id.startsWith("custom:")) return true;
+  return Object.prototype.hasOwnProperty.call(FRAMES, id);
 }
 
-/** Look up a frame; unknown/undefined ids fall back to the solid frame. */
+/** Look up a frame; custom frames resolve dynamically, unknown/undefined ids fall back to the solid frame. */
 export function getFrame(id: string | undefined): FrameDefinition {
-  return isKnownFrame(id) ? FRAMES[id] : FRAMES[FALLBACK_FRAME_ID];
+  if (id?.startsWith("custom:")) {
+    const assetId = id.slice(7);
+    const asset = getCustomAssetSync(assetId);
+    if (asset) {
+      return {
+        id,
+        label: asset.name || "Custom Frame",
+        category: "classic",
+        render: (ctx: FrameRenderContext) => renderCustomFrame(asset, ctx),
+      };
+    }
+  }
+  return (id && isKnownFrame(id) && FRAMES[id]) ? FRAMES[id] : FRAMES[FALLBACK_FRAME_ID];
 }
+
 
 export function listFrames(): FrameDefinition[] {
-  return FRAME_LIST;
+  const custom = listCustomAssetsSync("frame").map((a) => ({
+    id: `custom:${a.id}`,
+    label: a.name ? `🎨 ${a.name}` : "🎨 Custom Frame",
+    category: "classic" as const,
+    render: (ctx: FrameRenderContext) => renderCustomFrame(a, ctx),
+  }));
+  return [...FRAME_LIST, ...custom];
 }
 
 // ---------- Shapes ----------
@@ -216,3 +251,35 @@ export function getShading(id: string | undefined): ShadingDefinition {
 export function listShadings(): ShadingDefinition[] {
   return SHADING_LIST;
 }
+
+// ---------- Animated border effects (Phase 5) ----------
+
+export interface AnimationDefinition {
+  id: string;
+  label: string;
+  className?: string;
+}
+
+export const ANIMATION_LIST: AnimationDefinition[] = [
+  { id: "none", label: "None" },
+  { id: "neon-pulse", label: "Neon Pulse", className: "fx-neon-pulse" },
+  { id: "shimmer", label: "Metallic Shimmer", className: "fx-shimmer" },
+  { id: "arcane-flow", label: "Arcane Flow", className: "fx-arcane-flow" },
+];
+
+const ANIMATIONS: Record<string, AnimationDefinition> = Object.fromEntries(
+  ANIMATION_LIST.map((a) => [a.id, a])
+);
+
+export function isKnownAnimation(id: string | undefined): id is string {
+  return !!id && Object.prototype.hasOwnProperty.call(ANIMATIONS, id);
+}
+
+export function getAnimation(id: string | undefined): AnimationDefinition {
+  return (id && isKnownAnimation(id) && ANIMATIONS[id]) ? ANIMATIONS[id] : ANIMATIONS["none"];
+}
+
+export function listAnimations(): AnimationDefinition[] {
+  return ANIMATION_LIST;
+}
+

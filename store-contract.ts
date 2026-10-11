@@ -5,7 +5,10 @@ import type {
   GlobalTheme,
   BlockStyle,
   LayoutItem,
+  Tab,
+  CustomAsset,
 } from "./schema";
+
 
 // =============================================================================
 // PHASE 0 — CANONICAL STORE CONTRACT
@@ -46,6 +49,8 @@ export interface CharacterStore {
   // (UI prompts confirmation if tab has blocks).
   removeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
+  moveTab: (fromIndex: number, toIndex: number) => void;
+  reorderTabs: (tabs: Tab[]) => void;
 
   // ---- Layout & blocks ----
   // updateTabLayout is committed ONCE per gesture from react-grid-layout's
@@ -53,6 +58,7 @@ export interface CharacterStore {
   // collision, so committing the full tab layout array ensures all shifted blocks
   // stay in sync, preserves one undo step per gesture, and avoids per-frame store re-renders.
   addBlock: (tabId: string, type: BlockType, initialData?: Block["data"]) => void;
+  duplicateBlock: (blockId: string) => string | null;
   deleteBlock: (blockId: string) => void;
   updateTabLayout: (tabId: string, layout: LayoutItem[]) => void;
   moveBlockToTab: (blockId: string, fromTabId: string, toTabId: string) => void;
@@ -60,11 +66,24 @@ export interface CharacterStore {
   // can be updated without wiping out unmentioned keys.
   updateBlockData: (blockId: string, patch: Partial<Block["data"]> | Record<string, unknown>) => void;
   updateBlockStyle: (blockId: string, patch: Partial<BlockStyle>) => void;
+  // Removes the listed style keys from EVERY card in one undoable step, so the
+  // cards fall back to the sheet-wide defaults.
+  clearBlockStyleOverrides: (keys: Array<keyof BlockStyle>) => void;
   updateBlockTags: (blockId: string, tags: string[]) => void;
   updateBlockTitle: (blockId: string, title: string) => void;
+  enableTagSuggestions: boolean;
+  setEnableTagSuggestions: (enabled: boolean) => void;
 
-  // ---- Theme ----
+  // ---- Theme & Tags ----
   setGlobalTheme: (patch: Partial<GlobalTheme>) => void;
+  applyStylePack: (packId: string, options?: { keepColors?: boolean; resetCardOverrides?: boolean }) => void;
+  embedCustomAsset: (asset: CustomAsset) => void;
+  removeCustomAsset: (assetId: string) => void;
+  setTagColor: (tag: string, color: string) => void;
+
+  removeTagColor: (tag: string) => void;
+  renameTagGlobally: (oldTag: string, newTag: string) => void;
+  deleteTagGlobally: (tag: string) => void;
 
   // ---- Rest engine ----
   // applyRest scans every block's tags[] for `tag`; matches reset per §6.1
@@ -74,16 +93,58 @@ export interface CharacterStore {
   removeRestAction: (id: string) => void;
 
   // ---- Persistence ----
+  saveStatus: "saved" | "saving" | "idle";
+  newCharacter: (template?: Character) => void;
+  loadCharacterById: (id: string) => Promise<boolean>;
+  duplicateCharacter: (id: string) => Promise<string | null>;
+  deleteCharacter: (id: string) => Promise<boolean>;
   importCharacter: (json: unknown) => { success: true } | { success: false; error: string };
   exportCharacter: () => Character;
   exportTemplate: () => Character; // strips meta.name + all instance values, keeps layout/tags/theme
 
   // ---- History ----
-  // Implemented as an undo middleware wrapping this store (temporal slice),
+  // Implemented as an undo middleware wrapping this store (temporal slice via zundo),
   // covering only the structural mutations above — NOT Play Mode tracker/pip
   // value changes. Text-field edits are debounced so one undo step = one
   // pause in typing, not one keystroke. Session-only; cleared on reload;
   // never touches persisted localStorage state. See CLAUDE.md §8.3.
   undo: () => void;
   redo: () => void;
+  clearHistory: () => void;
+
+  // ---- Play Mode Scoped History (Phase 11) ----
+  // Lightweight command log isolated to gameplay/counter adjustments
+  // (trackers, pips, inventory charges, rest resets) without layout risk.
+  playHistory: {
+    past: PlayModeHistoryEntry[];
+    future: PlayModeHistoryEntry[];
+  };
+  undoPlayMode: () => void;
+  redoPlayMode: () => void;
+  canUndoPlayMode: () => boolean;
+  canRedoPlayMode: () => boolean;
+  clearPlayHistory: () => void;
 }
+
+export type PlayModeHistoryEntry =
+  | {
+      type: "single";
+      id: string;
+      timestamp: number;
+      description: string;
+      blockId: string;
+      prevData: Record<string, unknown>;
+      nextData: Record<string, unknown>;
+    }
+  | {
+      type: "batch";
+      id: string;
+      timestamp: number;
+      description: string;
+      updates: Array<{
+        blockId: string;
+        prevData: Record<string, unknown>;
+        nextData: Record<string, unknown>;
+      }>;
+    };
+

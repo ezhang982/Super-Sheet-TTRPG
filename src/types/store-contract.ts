@@ -6,7 +6,9 @@ import type {
   BlockStyle,
   LayoutItem,
   Tab,
+  CustomAsset,
 } from "./schema";
+
 
 // =============================================================================
 // PHASE 0 — CANONICAL STORE CONTRACT
@@ -74,7 +76,11 @@ export interface CharacterStore {
 
   // ---- Theme & Tags ----
   setGlobalTheme: (patch: Partial<GlobalTheme>) => void;
+  applyStylePack: (packId: string, options?: { keepColors?: boolean; resetCardOverrides?: boolean }) => void;
+  embedCustomAsset: (asset: CustomAsset) => void;
+  removeCustomAsset: (assetId: string) => void;
   setTagColor: (tag: string, color: string) => void;
+
   removeTagColor: (tag: string) => void;
   renameTagGlobally: (oldTag: string, newTag: string) => void;
   deleteTagGlobally: (tag: string) => void;

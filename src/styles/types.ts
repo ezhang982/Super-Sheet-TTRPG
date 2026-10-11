@@ -144,3 +144,6 @@ export interface ResolvedBlockStyle {
   corner?: ResolvedCorner;
   dividerId: string;
 }
+
+export type { StylePack, StylePackColors, StylePackTokens } from "./stylePacks";
+

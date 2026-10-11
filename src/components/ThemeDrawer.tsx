@@ -6,6 +6,8 @@ import {
   DEFAULT_CANVAS_WATERMARK_OPACITY,
   DEFAULT_WATERMARK_OPACITY,
   WATERMARK_POSITIONS,
+  ANIMATION_LIST,
+  isKnownAnimation,
   isKnownCorner,
   isKnownDivider,
   isKnownFrame,
@@ -17,6 +19,8 @@ import {
 import { isKnownPattern, isKnownTexture } from "../styles/patterns";
 import { DEFAULT_PATTERN_OPACITY } from "../styles/resolveStyle";
 import { StyleOptionGrid } from "./StyleOptionGrid";
+import { listStylePacks, type StylePack } from "../styles/stylePacks";
+import { ApplyStylePackModal } from "./ApplyStylePackModal";
 import {
   buildCornerOptions,
   buildDividerOptions,
@@ -112,12 +116,17 @@ const FONT_BODY_OPTIONS = [
 interface ThemeDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenMyDesigns?: () => void;
 }
 
-export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => {
+export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose, onOpenMyDesigns }) => {
   const theme = useCharacterStore((state) => state.character.theme);
   const setGlobalTheme = useCharacterStore((state) => state.setGlobalTheme);
+  const applyStylePack = useCharacterStore((state) => state.applyStylePack);
   const clearBlockStyleOverrides = useCharacterStore((state) => state.clearBlockStyleOverrides);
+
+  const [selectedPackForModal, setSelectedPackForModal] = React.useState<StylePack | null>(null);
+  const stylePacks = React.useMemo(() => listStylePacks(), []);
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
@@ -149,8 +158,11 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
       canvasWatermarkPosition: undefined,
       canvasWatermarkScale: undefined,
       defaultHeaderDivider: undefined,
+      animation: undefined,
+      packId: undefined,
     });
   };
+
 
   const handleApplyToAllCards = () => {
     const ok = window.confirm(
@@ -180,10 +192,13 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
     return fallback;
   };
 
-  return createPortal(
-    <div className="drawer-overlay" onClick={onClose}>
-      <div
-        className="drawer-panel"
+  return (
+    <>
+      {createPortal(
+        <div className="drawer-overlay" onClick={onClose}>
+          <div
+            className="drawer-panel"
+
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -205,10 +220,85 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
         </div>
 
         <div className="drawer-body">
-          {/* Preset Palettes */}
+          {/* Style Packs */}
           <section className="drawer-section">
-            <h3 className="drawer-section-title">Presets</h3>
+            <div className="drawer-section-header-row">
+              <div>
+                <h3 className="drawer-section-title">📦 Style Packs</h3>
+                <p className="drawer-section-subtitle">
+                  Curated 1-click themes bundling frames, corners, textures, watermarks, dividers, and typography.
+                </p>
+              </div>
+            </div>
+
+            <div className="style-pack-grid">
+              {stylePacks.map((pack) => {
+                const isSelected = theme.packId === pack.id;
+                return (
+                  <button
+                    key={pack.id}
+                    type="button"
+                    className={`style-pack-card ${isSelected ? "selected" : ""}`}
+                    onClick={() => setSelectedPackForModal(pack)}
+                    aria-label={`Apply style pack: ${pack.name}`}
+                  >
+                    <div className="style-pack-card-header">
+                      <span className="style-pack-name">{pack.name}</span>
+                      {isSelected ? (
+                        <span className="style-pack-active-badge">Active</span>
+                      ) : (
+                        <span className="style-pack-category-badge">{pack.category}</span>
+                      )}
+                    </div>
+
+                    <div
+                      className="style-pack-preview-bar"
+                      style={{ backgroundColor: pack.colors.canvasBackground }}
+                    >
+                      <span
+                        className="style-pack-chip"
+                        title={`Card: ${pack.colors.cardBackground}`}
+                        style={{ backgroundColor: pack.colors.cardBackground }}
+                      />
+                      <span
+                        className="style-pack-chip"
+                        title={`Border: ${pack.colors.borderColor}`}
+                        style={{ backgroundColor: pack.colors.borderColor }}
+                      />
+                      <span
+                        className="style-pack-chip accent"
+                        title={`Accent: ${pack.colors.accentColor}`}
+                        style={{ backgroundColor: pack.colors.accentColor }}
+                      />
+                    </div>
+
+                    <p className="style-pack-desc">{pack.description}</p>
+
+                    <div className="style-pack-tokens-row">
+                      {pack.tokens.defaultFrame && (
+                        <span className="style-pack-token-pill">🖼️ {pack.tokens.defaultFrame}</span>
+                      )}
+                      {pack.tokens.defaultCorners && pack.tokens.defaultCorners !== "none" && (
+                        <span className="style-pack-token-pill">✨ {pack.tokens.defaultCorners}</span>
+                      )}
+                      {pack.tokens.defaultWatermark && pack.tokens.defaultWatermark !== "none" && (
+                        <span className="style-pack-token-pill">🛡️ {pack.tokens.defaultWatermark}</span>
+                      )}
+                      {pack.tokens.defaultTexture && pack.tokens.defaultTexture !== "none" && (
+                        <span className="style-pack-token-pill">🌫️ {pack.tokens.defaultTexture}</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Quick Color Presets */}
+          <section className="drawer-section">
+            <h3 className="drawer-section-title">Quick Color Presets</h3>
             <div className="theme-preset-grid">
+
               {THEME_PRESETS.map((preset) => {
                 const isSelected =
                   theme.accentColor === preset.theme.accentColor &&
@@ -615,10 +705,54 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
               <span>Readability scrim (darkens behind text over art and patterns)</span>
             </label>
 
+            <div className="theme-form-group">
+              <label>Animated Border Effects</label>
+              <select
+                value={isKnownAnimation(theme.animation) ? theme.animation : "none"}
+                onChange={(e) => setGlobalTheme({ animation: e.target.value })}
+              >
+                {ANIMATION_LIST.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.label}
+                  </option>
+                ))}
+              </select>
+              <span className="color-hint">Subtle looping border fx (strictly disabled under prefers-reduced-motion).</span>
+            </div>
+
             <button type="button" className="btn-secondary" onClick={handleApplyToAllCards}>
               Make all cards use these defaults
             </button>
           </section>
+
+          {/* Custom User Designs (SVG Assets) */}
+          {onOpenMyDesigns && (
+            <section className="drawer-section">
+              <h3 className="drawer-section-title">Custom User Designs</h3>
+              <p className="drawer-hint">
+                Import, sanitize, and manage custom SVG frames, corner accents, watermarks, and patterns.
+              </p>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  fontWeight: 600,
+                  padding: "10px",
+                }}
+                onClick={() => {
+                  onClose();
+                  onOpenMyDesigns();
+                }}
+              >
+                <span>🎨 Manage My Designs (Custom SVGs)</span>
+              </button>
+            </section>
+          )}
         </div>
 
         <div className="drawer-footer">
@@ -632,5 +766,19 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose }) => 
       </div>
     </div>,
     document.body
-  );
+  )}
+
+  <ApplyStylePackModal
+    pack={selectedPackForModal}
+    isOpen={!!selectedPackForModal}
+    currentTheme={theme}
+    onClose={() => setSelectedPackForModal(null)}
+    onApply={(packId, options) => {
+      applyStylePack(packId, options);
+      setSelectedPackForModal(null);
+    }}
+  />
+</>
+);
 };
+

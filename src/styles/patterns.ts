@@ -4,6 +4,8 @@ import type {
   PatternDefinition,
   TextureDefinition,
 } from "./types";
+import { getCustomAssetSync, listCustomAssetsSync } from "./assetLibrary";
+
 
 // =============================================================================
 // PATTERNS & TEXTURES REGISTRY (part of the style registry; see registry.ts)
@@ -151,16 +153,62 @@ const PATTERNS: Record<string, PatternDefinition> = Object.fromEntries(
 );
 
 export function isKnownPattern(id: string | undefined): id is string {
-  return !!id && Object.prototype.hasOwnProperty.call(PATTERNS, id);
+  if (!id) return false;
+  if (id.startsWith("custom:")) return true;
+  return Object.prototype.hasOwnProperty.call(PATTERNS, id);
 }
 
 export function getPattern(id: string | undefined): PatternDefinition {
-  return isKnownPattern(id) ? PATTERNS[id] : PATTERNS[FALLBACK_PATTERN_ID];
+  if (id?.startsWith("custom:")) {
+    const assetId = id.slice(7);
+    const asset = getCustomAssetSync(assetId);
+    if (asset) {
+      return {
+        id,
+        label: asset.name || "Custom Pattern",
+        render: (ctx) => {
+          let svg = asset.svg;
+          if (asset.recolor !== false) {
+            svg = svg
+              .replace(/\{\{COLOR\}\}/g, ctx.color)
+              .replace(/\{\{ACCENT\}\}/g, ctx.color)
+              .replace(/currentColor/g, ctx.color);
+          }
+          return {
+            image: svgUrl(svg),
+            size: `${px(120, ctx.scale)} ${px(120, ctx.scale)}`,
+            repeat: "repeat",
+          };
+        },
+      };
+    }
+  }
+  return (id && isKnownPattern(id) && PATTERNS[id]) ? PATTERNS[id] : PATTERNS[FALLBACK_PATTERN_ID];
 }
 
 export function listPatterns(): PatternDefinition[] {
-  return PATTERN_LIST;
+  const custom = listCustomAssetsSync("pattern").map((a) => ({
+    id: `custom:${a.id}`,
+    label: a.name ? `🎨 ${a.name}` : "🎨 Custom Pattern",
+    category: "classic" as const,
+    render: (ctx: PatternContext) => {
+      let svg = a.svg;
+      if (a.recolor !== false) {
+        svg = svg
+          .replace(/\{\{COLOR\}\}/g, ctx.color)
+          .replace(/\{\{ACCENT\}\}/g, ctx.color)
+          .replace(/currentColor/g, ctx.color);
+      }
+      return {
+        image: svgUrl(svg),
+        size: `${px(120, ctx.scale)} ${px(120, ctx.scale)}`,
+        repeat: "repeat" as const,
+      };
+    },
+  }));
+  return [...PATTERN_LIST, ...custom];
 }
+
 
 /** Convenience: render a pattern by id (undefined for none/unknown). */
 export function renderPattern(

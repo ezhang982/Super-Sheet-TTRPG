@@ -104,15 +104,27 @@ Theme: Subtle thematic background emblems and header divider ornaments.
 - [x] Watermark position controls and scale adjustments.
 
 ================================================================================
-Phase 4: Style Packs (Next)
+Phase 4: Style Packs (Completed)
 --------------------------------------------------------------------------------
 Theme: Curated 1-click aesthetic themes with non-destructive color preservation.
+- [x] Curated aesthetic themes across 10 tabletop genres bundling typography, colors, and tokens.
+- [x] Non-destructive "Keep my custom colors?" prompt on apply.
+- [x] Live typography sample and palette comparison in ApplyStylePackModal.
+- [x] Atomically reset card overrides option with single-step undo.
 
 ================================================================================
-Phase 5: Custom User SVGs, "My Designs" & Motion (Planned)
+Phase 5: Custom User SVGs, "My Designs" & Motion (Completed)
 --------------------------------------------------------------------------------
 Theme: User-uploaded/pasted SVGs, IndexedDB design library, and animated effects.
+- [x] Fail-closed SVG security sanitizer stripping scripts, foreignObjects, on* handlers, and external URLs.
+- [x] Browser-stored IndexedDB "My Designs" asset library with localStorage & synchronous memory cache.
+- [x] "custom:<id>" token resolution across 9-slice frames, corner accents, watermarks, and patterns.
+- [x] Full UI integration: MyDesignsModal with live preview, slider insets, and direct sheet application.
+- [x] Animated border effects (neon-pulse, shimmer, arcane-flow) strictly neutralized under prefers-reduced-motion.
+- [x] Zero-loss portability: embedded customAssets dictionary on export, auto-merged into library on import.
+- [x] Test verification: verify-phase18.ts passing 100%.
 ================================================================================
+
 
 ```
 
@@ -346,17 +358,25 @@ Blocks automatically publish variables to a sheet-wide in-memory symbol table:
 
 ---
 
-### Phase 4 — Style Packs *(Next)*
-* [ ] Bundles of tokens, colors, and fonts (e.g. "Cyberpunk Neon", "High Fantasy Parchment", "Gothic Horror", "Grimdark Terminal").
-* [ ] Non-destructive "Keep my custom colors?" prompt on apply.
+### Phase 4 — Style Packs *(Completed)*
+* [x] Bundles of tokens, colors, and fonts across 10 curated tabletop themes (`fantasy-parchment`, `cyberpunk-neon`, `gothic-horror`, `grimdark-terminal`, `celestial-arcane`, `clean-obsidian`, `ancient-celtic`, `royal-scroll`, `frosted-mithril`, `iron-crypt`).
+* [x] Non-destructive "Keep my custom colors?" prompt on apply via `ApplyStylePackModal.tsx`.
+* [x] Live typography and color palette comparison preview before application.
+* [x] "Reset individual card overrides" option to synchronize existing cards in one atomic undo step.
+* [x] Full regression test suite: `verify-phase17.ts` passing 100%.
 
 ---
 
-### Phase 5 — Custom User SVGs, "My Designs" & Motion *(Planned)*
-* [ ] Local SVG upload and code paste into browser-stored IndexedDB library ("My Designs").
-* [ ] Fail-closed SVG sanitizer stripping scripts and dangerous tags on upload and import.
-* [ ] Content-hash asset IDs and embedded copies inside character documents for zero-loss export.
-* [ ] Optional animated border effects (neon pulse) strictly honoring `prefers-reduced-motion`.
+### Phase 5 — Custom User SVGs, "My Designs" & Motion *(Completed)*
+
+* [x] Local SVG upload and code paste into browser-stored IndexedDB library ("My Designs").
+* [x] Fail-closed SVG sanitizer stripping scripts, foreignObjects, on* handlers, and external URLs on upload and import.
+* [x] Content-hash asset IDs (`svg_<hash>`) and embedded copies inside character documents (`character.customAssets`) for zero-loss export.
+* [x] Seamless token resolution (`custom:<id>`) for 9-slice frames, modular corner accents, watermarks, and patterns.
+* [x] Dynamic injection of custom user designs into StyleOptionGrid pickers across `ThemeDrawer.tsx` and `BlockStyleModal.tsx`.
+* [x] Dedicated management UI: `MyDesignsModal.tsx` accessible via Floating Tools Menu, Omnisearch (`Ctrl+K`), and Theme Drawer.
+* [x] Optional animated border effects (`none`, `neon-pulse`, `shimmer`, `arcane-flow`) strictly honoring `@media (prefers-reduced-motion: reduce)`.
+* [x] Full regression test suite: `verify-phase18.ts` passing 100%.
 
 
 

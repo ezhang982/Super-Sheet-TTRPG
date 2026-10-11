@@ -1,13 +1,16 @@
-import type { Character } from "../types/schema";
+import type { Character, CustomAsset } from "../types/schema";
 
 const DB_NAME = "super_sheet_db";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_SHEETS = "sheets";
 const STORE_META = "meta";
+const STORE_DESIGNS = "my_designs";
 
 // In-memory fallback for non-browser environments (e.g. Node.js unit tests)
 const memorySheets = new Map<string, Character>();
 const memoryMeta = new Map<string, unknown>();
+const memoryDesigns = new Map<string, CustomAsset>();
+
 
 function isIndexedDBAvailable(): boolean {
   return typeof window !== "undefined" && typeof window.indexedDB !== "undefined";
@@ -30,7 +33,11 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORE_META)) {
         db.createObjectStore(STORE_META);
       }
+      if (!db.objectStoreNames.contains(STORE_DESIGNS)) {
+        db.createObjectStore(STORE_DESIGNS, { keyPath: "id" });
+      }
     };
+
 
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
@@ -155,3 +162,83 @@ export async function idbGetMeta<T>(key: string): Promise<T | null> {
     request.onerror = () => reject(request.error);
   });
 }
+
+/**
+ * Save custom design asset to IndexedDB
+ */
+export async function idbSaveDesign(asset: CustomAsset): Promise<void> {
+  if (!isIndexedDBAvailable()) {
+    memoryDesigns.set(asset.id, JSON.parse(JSON.stringify(asset)));
+    return;
+  }
+
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_DESIGNS], "readwrite");
+    const store = tx.objectStore(STORE_DESIGNS);
+    const request = store.put(asset);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Get a single custom design asset by ID
+ */
+export async function idbGetDesign(id: string): Promise<CustomAsset | undefined> {
+  if (!isIndexedDBAvailable()) {
+    const found = memoryDesigns.get(id);
+    return found ? JSON.parse(JSON.stringify(found)) : undefined;
+  }
+
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_DESIGNS], "readonly");
+    const store = tx.objectStore(STORE_DESIGNS);
+    const request = store.get(id);
+
+    request.onsuccess = () => resolve(request.result || undefined);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Get all custom design assets from IndexedDB
+ */
+export async function idbGetAllDesigns(): Promise<CustomAsset[]> {
+  if (!isIndexedDBAvailable()) {
+    return Array.from(memoryDesigns.values()).map((v) => JSON.parse(JSON.stringify(v)));
+  }
+
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_DESIGNS], "readonly");
+    const store = tx.objectStore(STORE_DESIGNS);
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+/**
+ * Delete a custom design asset by ID
+ */
+export async function idbDeleteDesign(id: string): Promise<void> {
+  if (!isIndexedDBAvailable()) {
+    memoryDesigns.delete(id);
+    return;
+  }
+
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_DESIGNS], "readwrite");
+    const store = tx.objectStore(STORE_DESIGNS);
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+

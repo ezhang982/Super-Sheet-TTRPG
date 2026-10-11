@@ -1,5 +1,7 @@
 import type { CornerDefinition } from "./types";
 import { resolveLiteralColor } from "./svgFrames";
+import { getCustomAssetSync, listCustomAssetsSync } from "./assetLibrary";
+
 
 // =============================================================================
 // CORNER ACCENTS (Phase 3)
@@ -110,15 +112,37 @@ const CORNERS: Record<string, CornerDefinition> = Object.fromEntries(
 );
 
 export function isKnownCorner(id: string | undefined): id is string {
-  return !!id && Object.prototype.hasOwnProperty.call(CORNERS, id);
+  if (!id) return false;
+  if (id.startsWith("custom:")) return true;
+  return Object.prototype.hasOwnProperty.call(CORNERS, id);
 }
 
 export function getCorner(id: string | undefined): CornerDefinition {
-  return isKnownCorner(id) ? CORNERS[id] : CORNERS[FALLBACK_CORNER_ID];
+  if (id?.startsWith("custom:")) {
+    const assetId = id.slice(7);
+    const asset = getCustomAssetSync(assetId);
+    if (asset) {
+      return {
+        id,
+        label: asset.name || "Custom Corner",
+        category: "classic",
+        svgTemplate: asset.svg,
+        size: 32,
+      };
+    }
+  }
+  return (id && isKnownCorner(id) && CORNERS[id]) ? CORNERS[id] : CORNERS[FALLBACK_CORNER_ID];
 }
 
 export function listCorners(): CornerDefinition[] {
-  return CORNER_LIST;
+  const custom = listCustomAssetsSync("corners").map((a) => ({
+    id: `custom:${a.id}`,
+    label: a.name ? `🎨 ${a.name}` : "🎨 Custom Corner",
+    category: "classic" as const,
+    svgTemplate: a.svg,
+    size: 32,
+  }));
+  return [...CORNER_LIST, ...custom];
 }
 
 /**
@@ -144,3 +168,4 @@ export function renderCornerSvg(
 
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
+
