@@ -5,6 +5,7 @@ import { useCharacterStore } from "../store/useCharacterStore";
 import {
   DEFAULT_WATERMARK_OPACITY,
   WATERMARK_POSITIONS,
+  ANIMATION_LIST,
   getShading,
   listShadings,
 } from "../styles/registry";
@@ -101,6 +102,7 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
       watermarkOpacity: undefined,
       watermarkPosition: undefined,
       headerDivider: undefined,
+      animation: undefined,
     });
   };
 
@@ -388,6 +390,29 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
               <option value="">Sheet default ({theme.defaultGlow ? "On" : "Off"})</option>
               <option value="on">On</option>
               <option value="off">Off</option>
+            </select>
+          </div>
+
+          {/* Animated Border Effects */}
+          <div className="form-row">
+            <div className="label-with-hint">
+              <label>Animated Border</label>
+              <span className="field-hint">Subtle motion fx</span>
+            </div>
+            <select
+              value={currentStyle.animation ?? ""}
+              onChange={(e) =>
+                handleUpdate({ animation: e.target.value === "" ? undefined : e.target.value })
+              }
+            >
+              <option value="">
+                Sheet default ({ANIMATION_LIST.find((a) => a.id === (theme.animation ?? "none"))?.label ?? "None"})
+              </option>
+              {ANIMATION_LIST.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.label}
+                </option>
+              ))}
             </select>
           </div>
 

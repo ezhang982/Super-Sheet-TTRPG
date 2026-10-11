@@ -370,9 +370,29 @@ keep multi-session AI-assisted work from drifting.
 - [x] Full regression test suite (`verify-phase16.ts` and all 16 previous test suites) passing 100%.
 - **Gate:** Watermarks and header divider ornaments render seamlessly across canvas and cards; zero regressions across the codebase.
 
+### ✅ Phase 17 (Style System Phase 4) — Style Packs (Delivered)
+- [x] 10 curated Style Packs registered in `src/styles/stylePacks.ts` across fantasy, sci-fi, gothic, metallic, and minimal aesthetics.
+- [x] Non-destructive application helper `buildThemeFromPack` supporting `keepColors: true` to preserve user canvas/card/border/accent colors and tag colors.
+- [x] Store action `applyStylePack(packId, { keepColors, resetCardOverrides })` updating `character.theme` with atomic single-step undo support.
+- [x] Accessible `ApplyStylePackModal.tsx` rendered via React portal featuring live typography samples, color palette comparisons, and card override reset toggle.
+- [x] Upgraded `ThemeDrawer.tsx` with hero "📦 Style Packs" card grid showing color swatch bars, active badges, and token pill summaries.
+- [x] Full regression test suite (`verify-phase17.ts` and all 17 previous test suites) passing 100%.
+- **Gate:** 1-click curated themes and color-preserving application fully verified with zero regressions.
+
+### ✅ Phase 18 (Style System Phase 5) — Custom User SVGs, "My Designs" & Motion (Delivered)
+- [x] Fail-closed SVG security sanitizer engine (`svgSanitizer.ts`): allow-list tags/attributes traversal, deterministic content-hash IDs (`svg_<hash>`), size capping (30,000 chars), strictly blocking `<script>`, `<foreignObject>`, inline `on*` handlers, external hrefs, and malicious CSS.
+- [x] Browser-stored IndexedDB `my_designs` object store with localStorage fallback and synchronous in-memory cache (`idb.ts`, `assetLibrary.ts`).
+- [x] Dynamic token resolution (`custom:<id>`) across 9-slice frames (`renderCustomFrame`), modular corner accents (`renderCornerSvg`), watermarks (`renderWatermarkSvg`, `renderWatermarkLayer`), and patterns (`renderPattern`).
+- [x] Custom asset injection into `StyleOptionGrid` pickers across `ThemeDrawer.tsx` and `BlockStyleModal.tsx`.
+- [x] Accessible `MyDesignsModal.tsx` dialog for uploading SVG files or pasting raw markup, with real-time sanitization feedback, preview rendering, 9-slice inset slider, and "Apply to Sheet" button.
+- [x] Animated border effects (`none`, `neon-pulse`, `shimmer`, `arcane-flow`) in `App.css` and `resolveStyle.ts`, strictly neutralized under `@media (prefers-reduced-motion: reduce)`.
+- [x] Zero-loss character export/import portability: custom assets embedded in `character.customAssets` (max 50) and auto-merged into the browser library on character import.
+- [x] Full regression test suite (`verify-phase18.ts` and all 18 previous test suites) passing 100%.
+- **Gate:** Custom SVGs, user design library, and motion effects fully verified with fail-closed security and accessibility compliance.
+
 ### 🚀 Upcoming Style Phases
-- **Phase 4 — Style Packs:** 1-click theme presets with non-destructive color preservation prompts.
-- **Phase 5 — Custom User SVGs, "My Designs" & Motion:** Local SVG upload/paste, IndexedDB design library, sanitize-on-import, and reduced-motion compliant animated border effects.
+- None (All Style System phases 0 through 5 successfully delivered!).
+
 
 
 ---

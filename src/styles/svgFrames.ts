@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
-import type { FrameDefinition, FrameRenderContext, StyleCategory } from "./types";
+import type { FrameDefinition, FrameOutput, FrameRenderContext, StyleCategory } from "./types";
+import type { CustomAsset } from "../types/schema";
+
 
 // =============================================================================
 // SVG FRAME ENGINE (Phase 3)
@@ -76,8 +78,8 @@ export function build9SliceFrame(config: SvgFrameConfig): FrameDefinition {
     label,
     category,
     render: (ctx: FrameRenderContext) => {
-      const resolvedColor = resolveLiteralColor(ctx.color, ctx.theme.borderColor);
-      const resolvedAccent = resolveLiteralColor(ctx.accent, ctx.theme.accentColor);
+      const resolvedColor = resolveLiteralColor(ctx.color, ctx.theme?.borderColor ?? "#5c6370");
+      const resolvedAccent = resolveLiteralColor(ctx.accent, ctx.theme?.accentColor ?? "#e5c07b");
 
       const svg = svgTemplate
         .replace(/\{\{COLOR\}\}/g, resolvedColor)
@@ -862,3 +864,38 @@ export const SVG_FRAMES: FrameDefinition[] = [
     padX: 2,
   }),
 ];
+
+/**
+ * Renders a user-uploaded custom SVG asset as a 9-slice frame.
+ */
+export function renderCustomFrame(asset: CustomAsset, ctx: FrameRenderContext): FrameOutput {
+  const resolvedColor = resolveLiteralColor(ctx.color, ctx.theme?.borderColor ?? "#5c6370");
+  const resolvedAccent = resolveLiteralColor(ctx.accent, ctx.theme?.accentColor ?? "#e5c07b");
+
+  let svg = asset.svg;
+  if (asset.recolor !== false) {
+    svg = svg
+      .replace(/\{\{COLOR\}\}/g, resolvedColor)
+      .replace(/\{\{ACCENT\}\}/g, resolvedAccent)
+      .replace(/currentColor/g, resolvedColor);
+  }
+
+  const encoded = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  const slice = asset.slice ?? 32;
+
+  const style: CSSProperties = {
+    borderStyle: "solid",
+    borderWidth: "16px",
+    borderImageSource: `url("${encoded}")`,
+    borderImageSlice: `${slice}`,
+    borderImageRepeat: "repeat",
+    borderRadius: "0px",
+  };
+
+  return {
+    style,
+    className: "frame-svg frame-custom",
+    lineColor: resolvedColor,
+  };
+}
+

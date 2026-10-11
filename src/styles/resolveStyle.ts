@@ -199,9 +199,17 @@ export function resolveBlockStyle(
     ...(isChamfer ? { "--shape-line": frame.lineColor ?? color } : {}),
   } as CSSProperties;
 
-  const className = [frame.className, shape.className, texture.className]
+  const animationId = style?.animation ?? theme.animation ?? "none";
+
+  let animClass = "";
+  if (animationId === "neon-pulse") animClass = "fx-neon-pulse";
+  else if (animationId === "shimmer") animClass = "fx-shimmer";
+  else if (animationId === "arcane-flow") animClass = "fx-arcane-flow";
+
+  const className = [frame.className, shape.className, texture.className, animClass]
     .filter(Boolean)
     .join(" ");
+
 
   const cornerId = resolveCornerId(style, theme);
   let corner: ResolvedCorner | undefined;

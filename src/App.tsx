@@ -10,6 +10,7 @@ import { OmnisearchModal } from "./components/OmnisearchModal";
 import { ShortcutsModal } from "./components/ShortcutsModal";
 import { SessionScratchpadModal } from "./components/SessionScratchpadModal";
 import { TagManagerModal } from "./components/TagManagerModal";
+import { MyDesignsModal } from "./components/MyDesignsModal";
 import { PlayModeRevertToast } from "./components/PlayModeRevertToast";
 import { resolveCanvasPattern, resolveCanvasWatermark } from "./styles/resolveStyle";
 import "./App.css";
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+  const [isMyDesignsOpen, setIsMyDesignsOpen] = useState(false);
 
   // Setup storage lifecycle listeners (visibilitychange, pagehide, beforeunload)
   useEffect(() => {
@@ -169,6 +171,7 @@ export const App: React.FC = () => {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenScratchpad={() => setIsScratchpadOpen(true)}
         onOpenTagManager={() => setIsTagManagerOpen(true)}
+        onOpenMyDesigns={() => setIsMyDesignsOpen(true)}
       />
 
       {/* Minimal Bottom Undo/Redo Bar */}
@@ -181,6 +184,7 @@ export const App: React.FC = () => {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenScratchpad={() => setIsScratchpadOpen(true)}
         onOpenTagManager={() => setIsTagManagerOpen(true)}
+        onOpenMyDesigns={() => setIsMyDesignsOpen(true)}
       />
 
       {/* Keyboard Shortcuts Cheatsheet Modal (?) */}
@@ -199,6 +203,12 @@ export const App: React.FC = () => {
       <TagManagerModal
         isOpen={isTagManagerOpen}
         onClose={() => setIsTagManagerOpen(false)}
+      />
+
+      {/* Custom User SVGs & "My Designs" Modal */}
+      <MyDesignsModal
+        isOpen={isMyDesignsOpen}
+        onClose={() => setIsMyDesignsOpen(false)}
       />
 
       {/* Play Mode Counter Revert Toast */}

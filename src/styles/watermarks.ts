@@ -1,5 +1,7 @@
 import type { BackgroundLayer, WatermarkDefinition } from "./types";
 import { resolveLiteralColor } from "./svgFrames";
+import { getCustomAssetSync, listCustomAssetsSync } from "./assetLibrary";
+
 
 // =============================================================================
 // WATERMARK REGISTRY
@@ -100,16 +102,37 @@ WATERMARKS["rune-circle"] = {
 };
 
 export function isKnownWatermark(id: string | undefined): id is string {
-  return !!id && Object.prototype.hasOwnProperty.call(WATERMARKS, id);
+  if (!id) return false;
+  if (id.startsWith("custom:")) return true;
+  return Object.prototype.hasOwnProperty.call(WATERMARKS, id);
 }
 
 export function getWatermark(id: string | undefined): WatermarkDefinition {
-  return isKnownWatermark(id) ? WATERMARKS[id] : WATERMARKS[FALLBACK_WATERMARK_ID];
+  if (id?.startsWith("custom:")) {
+    const assetId = id.slice(7);
+    const asset = getCustomAssetSync(assetId);
+    if (asset) {
+      return {
+        id,
+        label: asset.name || "Custom Watermark",
+        category: "classic",
+        svgTemplate: asset.svg,
+      };
+    }
+  }
+  return (id && isKnownWatermark(id) && WATERMARKS[id]) ? WATERMARKS[id] : WATERMARKS[FALLBACK_WATERMARK_ID];
 }
 
 export function listWatermarks(): WatermarkDefinition[] {
-  return WATERMARK_LIST;
+  const custom = listCustomAssetsSync("watermark").map((a) => ({
+    id: `custom:${a.id}`,
+    label: a.name ? `🎨 ${a.name}` : "🎨 Custom Watermark",
+    category: "classic" as const,
+    svgTemplate: a.svg,
+  }));
+  return [...WATERMARK_LIST, ...custom];
 }
+
 
 /**
  * Renders watermark SVG to a data URI, with literal color substitution
