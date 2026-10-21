@@ -16,41 +16,44 @@ other way around.
 
 ## 0. Project Philosophy (read this first)
 
-- **Manual over automated.** No formula engine, no reactive modifier graph,
-  no rules parser. Every value is typed in by hand. Don't build derivation
-  logic "for convenience" — it's explicitly out of scope.
-- **No dice roller.** Numbers are visual only. Don't add roll handlers.
-- **Tags are the only automation mechanism.** No `resetTrigger`/`resetTag`
-  fields anywhere. If you find yourself wanting a second reset field, the
-  answer is "put it in `tags[]`," not "add a field."
-- **Local-first.** No backend. No auth. No network calls except loading
-  Google Fonts. State lives in `localStorage`; JSON is the portability layer.
-- **One schema.** `schema.ts`'s Zod schema is the only place the data shape
-  is defined. TS types are inferred, never hand-duplicated. Runtime import
-  validation uses the same schema.
+- **Manual over automated, user-architected flexibility.** Super Sheet is a
+  system-agnostic tabletop sandbox. While it avoids hardcoded game edition
+  rules, it provides a user-driven `@Variable` math engine (Phase 8) and
+  interactive click-to-roll dice chips (`1d20+5`, Phase 10) that users can opt
+  into whenever they choose. Every calculation is transparent and non-prescriptive.
+- **Tags are the primary semantic automation mechanism.** Semantic tags (`#short-rest`,
+  `#long-rest`, `#spell`) drive rest resets, play mode canvas filtering, and
+  variable tagging without requiring brittle dedicated database fields.
+- **Local-first & Resilient.** No backend, no auth, zero tracking. State lives in
+  native browser `IndexedDB` (Phase 7) with atomic multi-store transactions,
+  automatic fallback reconciliation with `localStorage`, and portable `.json` export.
+- **Canonical Schemas & Contracts.** `src/types/schema.ts` is the single source of truth
+  for all character structures, with Zod runtime validation and inferred TypeScript types.
+  `src/types/store-contract.ts` defines all state mutations. Root files act as 1-line re-export barrels.
+- **8 Block Primitives.** Modular 12-column layout supporting `tracker`, `stat_group`,
+  `card`, `pip_array`, `notes`, `profile`, `skill_list`, and `inventory`.
 
 ---
 
-## 1. Locked Architectural Decisions (Phase 0 output)
+## 1. Locked Architectural Decisions
 
 | Decision | Choice | Why |
 |---|---|---|
-| Language & Runtime | React 19 + TypeScript from Phase 1 | Zod-inferred types, latest React 19 capabilities |
-| Schema | Zod, single source of truth | types + runtime import validation from one definition |
-| Styling | Vanilla CSS + custom properties | no framework dependency; full styling freedom for the theming engine (§7) |
-| State | Zustand + `zundo` | avoids re-render cost of Context; scoped temporal undo/redo |
-| Grid | `react-grid-layout`, 12-column | de facto standard for drag/resize grids in React; synced via `updateTabLayout` |
-| Reset logic | `tags[]` only, no separate reset field | one source of truth (§6.1) |
-| Undo/redo | Scoped to Edit Mode structural changes only via `zundo` | Play Mode value changes are frequent + trivially correctable; would just add stack noise |
-| Mobile Play Mode | Single-column reflow, not the drag grid | Edit Mode is desktop/tablet-primary in MVP |
-| Persistence | Native `IndexedDB` (with `localStorage` fallback) + JSON import/export | zero backend, no 5MB quota limit, multi-character manifest, portable |
+| Language & Runtime | React 19 + TypeScript | Zod-inferred types, latest React 19 concurrent features |
+| Schema | Zod, canonical in `src/types/schema.ts` | Inferred types + runtime import validation from single source of truth |
+| Styling | Vanilla CSS + CSS custom properties | Zero CSS framework bloat; dynamic theme properties and 9-slice frame engine (§7) |
+| State | Zustand + `zundo` | Re-render isolation, granular selectors, scoped history undo/redo |
+| Code Splitting | `React.lazy` + `Suspense` + Vite manual chunks | Sub-250 kB entry bundle; overlays & heavy decorative registries load on demand |
+| Grid | `react-grid-layout`, 12-column | Responsive drag/resize grid synced via `updateTabLayout` |
+| Reset logic | Semantic `tags[]` across blocks and items | Extensible recovery driven by user-defined Rest Actions |
+| Mobile Play Mode | Single-column reflow, not the drag grid | Optimized vertical flow for phone/tablet table use |
+| Persistence | Native `IndexedDB` with `localStorage` reconciliation + JSON export | Zero backend, 100% offline, atomic ACID durability on `tx.oncomplete` |
 
-Canonical code for the two biggest Phase 0 deliverables:
-- **`schema.ts`** — full Zod schema, discriminated union over the 5 block
-  primitives (`tracker`, `stat_group`, `card`, `pip_array`, `notes`),
-  inferred types, `DEFAULT_REST_TAGS`.
-- **`store-contract.ts`** — the full Zustand action surface (§2.2 of the
-  blueprint). Nothing mutates `character` state outside these actions.
+Canonical code locations:
+- **`src/types/schema.ts`** — full Zod schema, discriminated union over all 8 block
+  primitives, custom asset validation, and inferred types.
+- **`src/types/store-contract.ts`** — complete Zustand store interface.
+- **`schema.ts` / `store-contract.ts`** — 1-line re-export barrels pointing to `src/types/`.
 
 ### Decisions made while assembling Phase 0 (not explicit in v2, resolved here)
 

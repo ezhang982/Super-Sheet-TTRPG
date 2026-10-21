@@ -1,23 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
+import type { Combatant } from "../types/schema";
 
-export interface Combatant {
-  id: string;
-  name: string;
-  initiative: number;
-  hp: number;
-  maxHp: number;
-  isDown: boolean;
-}
+export type { Combatant };
 
 interface SessionScratchpadModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const STORAGE_KEY_NOTES = "super_sheet_session_scratchpad_notes";
-const STORAGE_KEY_COMBAT = "super_sheet_session_scratchpad_combat";
 
 export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
   isOpen,
@@ -25,58 +16,26 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
 }) => {
   const activeTabId = useCharacterStore((state) => state.character.activeTabId);
   const addBlock = useCharacterStore((state) => state.addBlock);
+  const scratchpad = useCharacterStore((state) => state.character.scratchpad);
+  const updateScratchpadNotes = useCharacterStore((state) => state.updateScratchpadNotes);
+  const updateScratchpadCombatants = useCharacterStore((state) => state.updateScratchpadCombatants);
+
+  const notes = scratchpad?.notes ?? "";
+  const combatants = scratchpad?.combatants ?? [];
 
   const [activeSubTab, setActiveSubTab] = useState<"notes" | "combat">("notes");
-
-  // Scratchpad Notes State
-  const [notes, setNotes] = useState<string>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEY_NOTES) || "";
-    } catch {
-      return "";
-    }
-  });
-
-  // Combatants State
-  const [combatants, setCombatants] = useState<Combatant[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_COMBAT);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
   const [currentTurnIdx, setCurrentTurnIdx] = useState<number>(0);
   const [newActorName, setNewActorName] = useState("");
   const [newActorInit, setNewActorInit] = useState("");
   const [newActorHp, setNewActorHp] = useState("");
   const [copiedNotification, setCopiedNotification] = useState(false);
 
-  // Auto-save notes
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_NOTES, notes);
-    } catch {
-      // ignore
-    }
-  }, [notes]);
-
-  // Auto-save combatants
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_COMBAT, JSON.stringify(combatants));
-    } catch {
-      // ignore
-    }
-  }, [combatants]);
-
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
 
   const handleClearNotes = () => {
     if (window.confirm("Clear all session scratchpad notes?")) {
-      setNotes("");
+      updateScratchpadNotes("");
     }
   };
 
@@ -115,15 +74,15 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
       isDown: false,
     };
 
-    setCombatants((prev) => [...prev, newEntry]);
+    updateScratchpadCombatants([...combatants, newEntry]);
     setNewActorName("");
     setNewActorInit("");
     setNewActorHp("");
   };
 
   const handleSortInitiative = () => {
-    setCombatants((prev) =>
-      [...prev].sort((a, b) => b.initiative - a.initiative)
+    updateScratchpadCombatants(
+      [...combatants].sort((a, b) => b.initiative - a.initiative)
     );
     setCurrentTurnIdx(0);
   };
@@ -134,8 +93,8 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
   };
 
   const handleHpChange = (id: string, delta: number) => {
-    setCombatants((prev) =>
-      prev.map((c) => {
+    updateScratchpadCombatants(
+      combatants.map((c) => {
         if (c.id !== id) return c;
         const updated = Math.max(0, c.hp + delta);
         return { ...c, hp: updated, isDown: updated === 0 };
@@ -144,12 +103,12 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
   };
 
   const handleRemoveCombatant = (id: string) => {
-    setCombatants((prev) => prev.filter((c) => c.id !== id));
+    updateScratchpadCombatants(combatants.filter((c) => c.id !== id));
   };
 
   const handleClearCombat = () => {
     if (window.confirm("Clear all combatants from the tracker?")) {
-      setCombatants([]);
+      updateScratchpadCombatants([]);
       setCurrentTurnIdx(0);
     }
   };
@@ -208,7 +167,7 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
                 className="scratchpad-textarea"
                 placeholder="Type session clues, loot, room details, or quick reminders here..."
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => updateScratchpadNotes(e.target.value)}
                 autoFocus
               />
 

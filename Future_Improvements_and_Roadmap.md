@@ -18,35 +18,35 @@ When adding automation and advanced features to Super Sheet, the following princ
 
 ```
 ================================================================================
-Phase 8: Formula Engine & Dynamic Math Calculations (In Planning)
+Phase 8: Formula Engine & Dynamic Math Calculations (Completed)
 --------------------------------------------------------------------------------
 Theme: Bringing flexible math and rapid arithmetic to Super Sheet without rules bloat.
-- Dynamic quick math in counters (+10, -5, *2, /2 on click-to-edit).
-- Automatic variable publishing from Stat Groups, Trackers, Profile, and custom tags.
-- System-agnostic formula evaluation (= 10 + @DEX.mod + @Prof).
-- Live autocomplete dropdown when typing @.
-- Safe error handling (#REF!, #CIRCULAR!) and non-destructive manual overrides.
+- [x] Dynamic quick math in counters (+10, -5, *2, /2 on click-to-edit).
+- [x] Automatic variable publishing from Stat Groups, Trackers, Profile, and custom tags.
+- [x] System-agnostic formula evaluation (= 10 + @DEX.mod + @Prof).
+- [x] Live autocomplete dropdown when typing @.
+- [x] Safe error handling (#REF!, #CIRCULAR!) and non-destructive manual overrides.
 
 ================================================================================
-Phase 9: Workflow Intelligence, Shortcuts & Omnisearch
+Phase 9: Workflow Intelligence, Shortcuts & Omnisearch (Completed)
 --------------------------------------------------------------------------------
 Theme: Blazing fast authoring, navigation, and power-user ergonomics.
-- Global Omnisearch / Command Palette (Ctrl+K / Cmd+K) across all tabs and blocks.
-- Universal keyboard shortcut suite with visual Cheatsheet modal.
-- Omnisearch and shortcut discovery in Floating Tools Menu for point-and-click users.
-- One-click "Duplicate Block" in the right-click Card Context Menu.
-- Non-intrusive "Suggested Tags" chip tray based on card description keywords.
-- Configurable Keyword Dictionary (src/utils/tagKeywords.ts) with on/off toggle.
+- [x] Global Omnisearch / Command Palette (Ctrl+K / Cmd+K) across all tabs and blocks.
+- [x] Universal keyboard shortcut suite with visual Cheatsheet modal.
+- [x] Omnisearch and shortcut discovery in Floating Tools Menu for point-and-click users.
+- [x] One-click "Duplicate Block" in the right-click Card Context Menu.
+- [x] Non-intrusive "Suggested Tags" chip tray based on card description keywords.
+- [x] Configurable Keyword Dictionary (src/utils/tagKeywords.ts) with on/off toggle.
 
 ================================================================================
-Phase 10: Tabletop Utility, Session State & Printability
+Phase 10: Tabletop Utility, Session State & Printability (Completed)
 --------------------------------------------------------------------------------
 Theme: The bridge between digital dashboards and the physical tabletop.
-- Dedicated Print / Clean PDF Export (@media print stylesheet, inverted theme).
-- Floating Session Scratchpad / Combat Log (ephemeral notes, monster HP, initiative).
-- Visual Tag Management & Palette (custom tag colors, badge styling, bulk rename).
-- Play Mode quick stat revert ("HP changed 48 -> 38. [Undo misclick]").
-- Decoupled roll notation click-to-copy / VTT webhook integration.
+- [x] Dedicated Print / Clean PDF Export (@media print stylesheet, inverted theme).
+- [x] Floating Session Scratchpad / Combat Log (ephemeral notes, monster HP, initiative).
+- [x] Visual Tag Management & Palette (custom tag colors, badge styling, bulk rename).
+- [x] Play Mode quick stat revert ("HP changed 48 -> 38. [Undo misclick]").
+- [x] Decoupled roll notation click-to-copy / VTT webhook integration.
 
 ================================================================================
 Phase 11: Resilience, Storage Hardening & Performance Optimization (Completed)

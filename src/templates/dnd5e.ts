@@ -360,4 +360,12 @@ export const dnd5eTemplate: Character = {
       style: {},
     },
   },
+  restActions: [
+    { id: "rest_short", label: "Short Rest", tag: "#short-rest" },
+    { id: "rest_long", label: "Long Rest", tag: "#long-rest" },
+  ],
+  scratchpad: {
+    notes: "",
+    combatants: [],
+  },
 };

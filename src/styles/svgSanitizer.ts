@@ -178,19 +178,39 @@ export function sanitizeSvg(raw: string): SanitizeResult {
         }
       }
 
-      // Disallow dangerous CSS expressions in style
+      // Disallow dangerous CSS expressions or external resource URLs in style
       if (attrName === "style") {
         if (
           attrVal.includes("@import") ||
           attrVal.includes("javascript:") ||
           attrVal.includes("expression(") ||
-          attrVal.includes("-moz-binding")
+          attrVal.includes("-moz-binding") ||
+          attrVal.includes("behavior:") ||
+          /url\s*\(\s*['"]?(?!#)/i.test(attrVal)
         ) {
           return {
             ok: false,
-            reason: "Dangerous CSS directives detected in inline style attribute.",
+            reason: "Dangerous CSS directives or external url() detected in inline style attribute.",
           };
         }
+      }
+
+      // Disallow external resource URLs in SVG presentation attributes
+      const isPresentationAttr = [
+        "fill",
+        "filter",
+        "mask",
+        "clip-path",
+        "stroke",
+        "marker-start",
+        "marker-mid",
+        "marker-end",
+      ].includes(attrName);
+      if (isPresentationAttr && attrVal.includes("url(") && /url\s*\(\s*['"]?(?!#)/i.test(attrVal)) {
+        return {
+          ok: false,
+          reason: `External url() reference in '${attr.name}' is prohibited. Only local fragment identifiers (e.g. url(#id)) are allowed.`,
+        };
       }
     }
   }

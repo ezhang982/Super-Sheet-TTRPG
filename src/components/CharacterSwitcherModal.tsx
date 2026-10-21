@@ -40,8 +40,10 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      refreshList();
-      setConfirmDeleteId(null);
+      loadManifestAsync().then((list) => {
+        setManifest(list);
+        setConfirmDeleteId(null);
+      });
     }
   }, [isOpen]);
 

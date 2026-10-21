@@ -3,6 +3,7 @@ import { temporal } from "zundo";
 import {
   CharacterSchema,
   DEFAULT_REST_TAGS,
+  MAX_CUSTOM_ASSETS_PER_CHARACTER,
   type Character,
   type Block,
   type BlockType,
@@ -11,6 +12,7 @@ import {
   type LayoutItem,
   type Tab,
   type CustomAsset,
+  type Combatant,
 } from "../types/schema";
 
 import type { CharacterStore, Mode, RestAction, PlayModeHistoryEntry } from "../types/store-contract";
@@ -34,7 +36,11 @@ import { assetLibrary } from "../styles/assetLibrary";
 if (typeof window !== "undefined") {
   initAndReconcileStorage().then((res) => {
     if (res.reconciled && res.character) {
-      useCharacterStore.setState({ character: res.character, saveStatus: "saved" });
+      useCharacterStore.setState({
+        character: res.character,
+        restActions: res.character.restActions || defaultRestActions,
+        saveStatus: "saved",
+      });
       useCharacterStore.getState().clearHistory();
       useCharacterStore.getState().clearPlayHistory();
     }
@@ -73,12 +79,14 @@ const defaultRestActions: RestAction[] = [
   { id: "rest_long", label: "Long Rest", tag: DEFAULT_REST_TAGS[1] },
 ];
 
+const initialLoadedChar = loadInitialCharacter();
+
 export const useCharacterStore = create<CharacterStore>()(
   temporal(
     (set, get) => ({
       // ---- State ----
-      character: loadInitialCharacter(),
-      restActions: defaultRestActions,
+      character: initialLoadedChar,
+      restActions: initialLoadedChar.restActions || defaultRestActions,
       mode: "edit",
       activeTagFilter: null,
       saveStatus: "saved",
@@ -725,7 +733,12 @@ export const useCharacterStore = create<CharacterStore>()(
 
       embedCustomAsset: (asset: CustomAsset) => {
         const { character } = get();
-        const customAssets = { ...(character.customAssets || {}), [asset.id]: asset };
+        const existingAssets = character.customAssets || {};
+        if (!existingAssets[asset.id] && Object.keys(existingAssets).length >= MAX_CUSTOM_ASSETS_PER_CHARACTER) {
+          console.warn(`Cannot embed custom asset ${asset.id}: limit of ${MAX_CUSTOM_ASSETS_PER_CHARACTER} reached.`);
+          return;
+        }
+        const customAssets = { ...existingAssets, [asset.id]: asset };
         set({
           character: {
             ...character,
@@ -986,18 +999,65 @@ export const useCharacterStore = create<CharacterStore>()(
 
 
       addRestAction: (label: string, tag: string) => {
-        const { restActions } = get();
+        const { character } = get();
+        const currentActions = character.restActions || defaultRestActions;
         const newAction: RestAction = {
           id: `rest_${crypto.randomUUID()}`,
           label,
           tag,
         };
-        set({ restActions: [...restActions, newAction] });
+        const updated = [...currentActions, newAction];
+        set({
+          restActions: updated,
+          character: {
+            ...character,
+            restActions: updated,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
       },
 
       removeRestAction: (id: string) => {
-        const { restActions } = get();
-        set({ restActions: restActions.filter((r) => r.id !== id) });
+        const { character } = get();
+        const currentActions = character.restActions || defaultRestActions;
+        const updated = currentActions.filter((r) => r.id !== id);
+        set({
+          restActions: updated,
+          character: {
+            ...character,
+            restActions: updated,
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      // ---- Scratchpad ----
+      updateScratchpadNotes: (notes: string) => {
+        const { character } = get();
+        set({
+          character: {
+            ...character,
+            scratchpad: {
+              ...(character.scratchpad || { combatants: [] }),
+              notes,
+            },
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
+      },
+
+      updateScratchpadCombatants: (combatants: Combatant[]) => {
+        const { character } = get();
+        set({
+          character: {
+            ...character,
+            scratchpad: {
+              ...(character.scratchpad || { notes: "" }),
+              combatants,
+            },
+            meta: { ...character.meta, updatedAt: Date.now() },
+          },
+        });
       },
 
       // ---- Persistence ----
@@ -1005,16 +1065,19 @@ export const useCharacterStore = create<CharacterStore>()(
         const base = (template && typeof template === "object" && "meta" in template && "layouts" in template) ? template : blankTemplate;
         const newId = `char_${crypto.randomUUID()}`;
         const now = Date.now();
-        const freshChar: Character = {
-          ...base,
-          meta: {
-            ...base.meta,
-            id: newId,
-            createdAt: now,
-            updatedAt: now,
-          },
+        const freshChar: Character = structuredClone(base);
+        freshChar.meta = {
+          ...base.meta,
+          id: newId,
+          createdAt: now,
+          updatedAt: now,
         };
-        set({ character: freshChar, activeTagFilter: null, mode: "edit" });
+        set({
+          character: freshChar,
+          restActions: freshChar.restActions || defaultRestActions,
+          activeTagFilter: null,
+          mode: "edit",
+        });
         saveCharacterToStorage(freshChar);
         get().clearHistory();
         get().clearPlayHistory();
@@ -1026,7 +1089,12 @@ export const useCharacterStore = create<CharacterStore>()(
 
         const found = await loadCharFromStorage(id);
         if (!found) return false;
-        set({ character: found, activeTagFilter: null, saveStatus: "saved" });
+        set({
+          character: found,
+          restActions: found.restActions || defaultRestActions,
+          activeTagFilter: null,
+          saveStatus: "saved",
+        });
         saveCharacterToStorage(found);
         get().clearHistory();
         get().clearPlayHistory();
@@ -1068,7 +1136,10 @@ export const useCharacterStore = create<CharacterStore>()(
             .join("; ");
           return { success: false, error: `Invalid character data: ${errorMsg}` };
         }
-        set({ character: result.data });
+        set({
+          character: result.data,
+          restActions: result.data.restActions || defaultRestActions,
+        });
         saveCharacterToStorage(result.data);
         if (result.data.customAssets) {
           assetLibrary.mergeFromCharacter(result.data.customAssets).catch(console.warn);
@@ -1330,9 +1401,11 @@ useCharacterStore.subscribe((state) => {
   if (state.character !== prevCharacter) {
     prevCharacter = state.character;
     debouncedSaveCharacter(state.character, 300, (status) => {
-      if (useCharacterStore.getState().saveStatus !== status) {
-        useCharacterStore.setState({ saveStatus: status });
-      }
+      queueMicrotask(() => {
+        if (useCharacterStore.getState().saveStatus !== status) {
+          useCharacterStore.setState({ saveStatus: status });
+        }
+      });
     });
   }
 });

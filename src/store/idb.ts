@@ -16,8 +16,16 @@ function isIndexedDBAvailable(): boolean {
   return typeof window !== "undefined" && typeof window.indexedDB !== "undefined";
 }
 
+let dbPromise: Promise<IDBDatabase> | null = null;
+
+export function resetDBCache(): void {
+  dbPromise = null;
+}
+
 function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+
+  dbPromise = new Promise((resolve, reject) => {
     if (!isIndexedDBAvailable()) {
       reject(new Error("IndexedDB is not available in this environment"));
       return;
@@ -38,14 +46,29 @@ function openDB(): Promise<IDBDatabase> {
       }
     };
 
+    request.onsuccess = () => {
+      const db = request.result;
+      db.onclose = () => {
+        dbPromise = null;
+      };
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+      };
+      resolve(db);
+    };
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => {
+      dbPromise = null;
+      reject(request.error);
+    };
   });
+
+  return dbPromise;
 }
 
 /**
- * Save a character document to IndexedDB
+ * Save a character document to IndexedDB (resolves on tx.oncomplete for ACID durability)
  */
 export async function idbSaveCharacter(char: Character): Promise<void> {
   if (!isIndexedDBAvailable()) {
@@ -57,10 +80,46 @@ export async function idbSaveCharacter(char: Character): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE_SHEETS], "readwrite");
     const store = tx.objectStore(STORE_SHEETS);
-    const request = store.put(char);
+    store.put(char);
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+/**
+ * Atomically save a character document and associated metadata (active ID and manifest) in a single transaction
+ */
+export async function idbSaveCharacterAtomic(
+  char: Character,
+  activeCharId?: string,
+  manifest?: unknown
+): Promise<void> {
+  if (!isIndexedDBAvailable()) {
+    memorySheets.set(char.meta.id, JSON.parse(JSON.stringify(char)));
+    if (activeCharId) memoryMeta.set("active_char_id", activeCharId);
+    if (manifest !== undefined) memoryMeta.set("manifest", JSON.parse(JSON.stringify(manifest)));
+    return;
+  }
+
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_SHEETS, STORE_META], "readwrite");
+    const sheetsStore = tx.objectStore(STORE_SHEETS);
+    const metaStore = tx.objectStore(STORE_META);
+
+    sheetsStore.put(char);
+    if (activeCharId) {
+      metaStore.put(activeCharId, "active_char_id");
+    }
+    if (manifest !== undefined) {
+      metaStore.put(manifest, "manifest");
+    }
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
   });
 }
 
@@ -97,10 +156,11 @@ export async function idbDeleteCharacter(id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE_SHEETS], "readwrite");
     const store = tx.objectStore(STORE_SHEETS);
-    const request = store.delete(id);
+    store.delete(id);
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
   });
 }
 
@@ -136,10 +196,11 @@ export async function idbSetMeta<T>(key: string, value: T): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE_META], "readwrite");
     const store = tx.objectStore(STORE_META);
-    const request = store.put(value, key);
+    store.put(value, key);
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
   });
 }
 
@@ -176,10 +237,11 @@ export async function idbSaveDesign(asset: CustomAsset): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE_DESIGNS], "readwrite");
     const store = tx.objectStore(STORE_DESIGNS);
-    const request = store.put(asset);
+    store.put(asset);
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
   });
 }
 
@@ -235,10 +297,11 @@ export async function idbDeleteDesign(id: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction([STORE_DESIGNS], "readwrite");
     const store = tx.objectStore(STORE_DESIGNS);
-    const request = store.delete(id);
+    store.delete(id);
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
   });
 }
 

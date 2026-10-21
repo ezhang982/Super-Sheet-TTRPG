@@ -1,7 +1,8 @@
-import { CharacterSchema, type Character } from "../types/schema";
+import { CharacterSchema, pruneUnusedCustomAssets, type Character } from "../types/schema";
 import { createDefaultCharacter } from "./fixtures";
 import {
   idbSaveCharacter,
+  idbSaveCharacterAtomic,
   idbGetCharacter,
   idbDeleteCharacter,
   idbGetAllCharacters,
@@ -211,8 +212,13 @@ export async function reconcileStorage(currentCharacter?: Character): Promise<Re
       return { reconciled: false, source: "none", character: null };
     }
 
-    // 2. Fetch from IndexedDB
-    const idbChar = await idbGetCharacter(activeId);
+    // 2. Fetch from IndexedDB and parse through schema to apply defaults
+    const rawIdbChar = await idbGetCharacter(activeId);
+    let idbChar: Character | null = null;
+    if (rawIdbChar) {
+      const parsed = CharacterSchema.safeParse(rawIdbChar);
+      idbChar = parsed.success ? parsed.data : null;
+    }
     let localChar: Character | null = currentCharacter || null;
 
     if (!localChar && typeof localStorage !== "undefined") {
@@ -333,15 +339,13 @@ export async function duplicateCharacterById(id: string): Promise<Character | nu
   const newId = `char_${crypto.randomUUID()}`;
   const now = Date.now();
 
-  const clone: Character = {
-    ...original,
-    meta: {
-      ...original.meta,
-      id: newId,
-      name: `${original.meta.name} (Copy)`,
-      createdAt: now,
-      updatedAt: now,
-    },
+  const clone: Character = structuredClone(original);
+  clone.meta = {
+    ...original.meta,
+    id: newId,
+    name: `${original.meta.name} (Copy)`,
+    createdAt: now,
+    updatedAt: now,
   };
 
   saveCharacterToStorage(clone);
@@ -425,7 +429,7 @@ export function setupStorageLifecycleListeners(): void {
 }
 
 /**
- * Save character to both IndexedDB and localStorage (with manifest update)
+ * Save character to both IndexedDB and localStorage (with atomic multi-store IDB write)
  */
 export function saveCharacterToStorage(char: Character): void {
   // If this exact character was pending debounce save, clear pending reference
@@ -433,30 +437,43 @@ export function saveCharacterToStorage(char: Character): void {
     pendingCharacterToSave = null;
   }
 
+  // Update manifest data
+  const manifest = loadManifest();
+  const existingIdx = manifest.findIndex((m) => m.id === char.meta.id);
+  const entry: CharacterManifestEntry = {
+    id: char.meta.id,
+    name: char.meta.name || "Untitled Character",
+    system: char.meta.system || "Custom",
+    updatedAt: char.meta.updatedAt || Date.now(),
+  };
+
+  if (existingIdx >= 0) {
+    manifest[existingIdx] = entry;
+  } else {
+    manifest.push(entry);
+  }
+
   // 1. Update localStorage (sync backup for instant frame-0 paint)
   if (typeof localStorage !== "undefined") {
     try {
       localStorage.setItem(`${STORAGE_PREFIX}${char.meta.id}`, JSON.stringify(char));
       localStorage.setItem(ACTIVE_CHAR_KEY, char.meta.id);
+      localStorage.setItem(MANIFEST_KEY, JSON.stringify(manifest));
     } catch (err) {
       // QuotaExceededError in localStorage is expected if size > 5MB; IndexedDB handles this!
       console.warn("localStorage quota exceeded, continuing with IndexedDB:", err);
     }
   }
 
-  // 2. Asynchronous IndexedDB write with in-flight tracking
+  // 2. Asynchronous IndexedDB write with atomic multi-store transaction and in-flight tracking
   inFlightIdbWrites++;
-  idbSaveCharacter(char)
+  idbSaveCharacterAtomic(char, char.meta.id, manifest)
     .catch((err) =>
-      console.error("Failed to save character to IndexedDB:", err)
+      console.error("Failed to save character atomically to IndexedDB:", err)
     )
     .finally(() => {
       inFlightIdbWrites = Math.max(0, inFlightIdbWrites - 1);
     });
-
-  idbSetMeta("active_char_id", char.meta.id).catch(() => {});
-
-  updateManifestEntry(char);
 }
 
 export function debouncedSaveCharacter(
@@ -476,7 +493,8 @@ export function debouncedSaveCharacter(
 }
 
 export async function exportCharacterAsJson(char: Character, isTemplate = false): Promise<boolean> {
-  const dataStr = JSON.stringify(char, null, 2);
+  const pruned = pruneUnusedCustomAssets(char);
+  const dataStr = JSON.stringify(pruned, null, 2);
   const filename = `${char.meta.name.toLowerCase().replace(/[^a-z0-9]/g, "-") || "character"}${
     isTemplate ? "-template" : "-sheet"
   }.json`;

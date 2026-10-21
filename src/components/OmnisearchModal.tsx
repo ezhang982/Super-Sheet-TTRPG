@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 
@@ -54,7 +54,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
   const setActiveTagFilter = useCharacterStore((state) => state.setActiveTagFilter);
 
   // Helper to scroll and highlight a block element
-  const navigateToBlock = (tabId: string, blockId: string) => {
+  const navigateToBlock = useCallback((tabId: string, blockId: string) => {
     setActiveTab(tabId);
     onClose();
 
@@ -72,7 +72,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
         }, 3000);
       }
     }, 120);
-  };
+  }, [setActiveTab, onClose]);
 
   // Compile full search index
   const results = useMemo(() => {
@@ -375,18 +375,32 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
     }
 
     return items;
-  }, [query, character, mode, onOpenShortcuts, onOpenTheme, onOpenRest, onOpenNewChar, onOpenSwitcher, onOpenScratchpad, onOpenTagManager, onOpenMyDesigns]);
-
-  // Reset selected index when query changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
+  }, [
+    query,
+    character,
+    mode,
+    setMode,
+    addBlock,
+    addTab,
+    undo,
+    redo,
+    exportCharacter,
+    onClose,
+    setActiveTagFilter,
+    navigateToBlock,
+    onOpenShortcuts,
+    onOpenTheme,
+    onOpenRest,
+    onOpenNewChar,
+    onOpenSwitcher,
+    onOpenScratchpad,
+    onOpenTagManager,
+    onOpenMyDesigns,
+  ]);
 
   // Auto-focus input on open
   useEffect(() => {
     if (isOpen) {
-      setQuery("");
-      setSelectedIndex(0);
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
@@ -451,7 +465,10 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
             className="omnisearch-input"
             placeholder="Search blocks, items, skills, tags, or commands..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
             onKeyDown={handleKeyDown}
           />
           <button type="button" className="omnisearch-close-badge" onClick={onClose} title="Close (Esc)">

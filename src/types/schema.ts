@@ -37,13 +37,48 @@ const CustomAssetSchema = z.object({
 });
 
 // ---------- Theme ----------
+const SafeUrlSchema = z.string().refine((val) => {
+  if (!val) return true;
+  const trimmed = val.trim();
+  if (
+    trimmed.toLowerCase().startsWith("javascript:") ||
+    trimmed.includes('"') ||
+    trimmed.includes("'") ||
+    trimmed.includes(";")
+  ) {
+    return false;
+  }
+  return (
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("data:image/") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("./")
+  );
+}, { message: "Invalid or unsafe URL format" });
+
+const SafeColorSchema = z.string().refine((val) => {
+  if (!val) return true;
+  const trimmed = val.trim();
+  if (
+    trimmed.includes('"') ||
+    trimmed.includes("'") ||
+    trimmed.includes("<") ||
+    trimmed.includes(">") ||
+    trimmed.includes(";")
+  ) {
+    return false;
+  }
+  return true;
+}, { message: "Invalid or unsafe CSS color format" });
+
 const GlobalThemeSchema = z.object({
   fontHeading: z.string(),
   fontBody: z.string(),
   canvasBackground: z.string(), // solid color, CSS gradient, or image URL
-  cardBackground: z.string(),
-  borderColor: z.string(),
-  accentColor: z.string(),
+  cardBackground: SafeColorSchema,
+  borderColor: SafeColorSchema,
+  accentColor: SafeColorSchema,
   tagColors: z.record(z.string(), z.string()).optional(),
   // --- Style tokens: sheet-wide defaults (all optional) ---
   canvasPattern: StyleIdSchema.optional(),
@@ -73,10 +108,10 @@ const GlobalThemeSchema = z.object({
 const BlockStyleSchema = z
   .object({
     borderStyle: z.enum(["none", "solid", "double", "dashed", "groove", "ornate"]), // legacy; read as a frame id
-    borderColor: z.string(),
+    borderColor: SafeColorSchema,
     backgroundOpacity: z.number().min(0).max(1),
-    backgroundUrl: z.string(), // URL only — never an upload, keeps JSON/localStorage light
-    headerBannerUrl: z.string(),
+    backgroundUrl: SafeUrlSchema, // URL only — never an upload, keeps JSON/localStorage light
+    headerBannerUrl: SafeUrlSchema,
     // --- Style tokens: per-card overrides of the sheet defaults ---
     frame: StyleIdSchema,
     corners: StyleIdSchema,
@@ -270,27 +305,140 @@ export const BlockSchema = z.discriminatedUnion("type", [
   SkillListBlockSchema,
 ]);
 
-// ---------- Root character document ----------
-export const CharacterSchema = z.object({
-  version: z.string(), // schema version, e.g. "2.0.0" — see CLAUDE.md "Schema versioning"
-  meta: CharacterMetaSchema,
-  theme: GlobalThemeSchema,
-  tabs: z.array(TabSchema),
-  activeTabId: z.string(),
-  layouts: z.record(z.string(), z.array(LayoutItemSchema)), // tabId -> layout items
-  blocks: z.record(z.string(), BlockSchema), // blockId -> block
-  // Embedded copies of custom SVG designs this character uses (portable on
-  // export). The shared "My Designs" library lives in the browser, not here.
-  customAssets: z
-    .record(z.string(), CustomAssetSchema)
-    .refine((r) => Object.keys(r).length <= MAX_CUSTOM_ASSETS_PER_CHARACTER, {
-      message: `A character can embed at most ${MAX_CUSTOM_ASSETS_PER_CHARACTER} custom designs`,
-    })
-    .optional(),
+export const RestActionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  tag: z.string(),
 });
+
+export const DEFAULT_REST_ACTIONS = [
+  { id: "rest_short", label: "Short Rest", tag: "#short-rest" },
+  { id: "rest_long", label: "Long Rest", tag: "#long-rest" },
+] as const;
+
+export const CombatantSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  initiative: z.number(),
+  hp: z.number(),
+  maxHp: z.number(),
+  isDown: z.boolean(),
+});
+
+export const ScratchpadSchema = z.object({
+  notes: z.string().default(""),
+  combatants: z.array(CombatantSchema).default([]),
+});
+
+// ---------- Root character document ----------
+export const CharacterSchema = z
+  .object({
+    version: z.string(), // schema version, e.g. "2.0.0" — see CLAUDE.md "Schema versioning"
+    meta: CharacterMetaSchema,
+    theme: GlobalThemeSchema,
+    tabs: z.array(TabSchema).min(1, "Character must have at least one tab"),
+    activeTabId: z.string(),
+    layouts: z.record(z.string(), z.array(LayoutItemSchema)), // tabId -> layout items
+    blocks: z.record(z.string(), BlockSchema), // blockId -> block
+    restActions: z.array(RestActionSchema).default([...DEFAULT_REST_ACTIONS]),
+    scratchpad: ScratchpadSchema.default({ notes: "", combatants: [] }),
+    // Embedded copies of custom SVG designs this character uses (portable on
+    // export). The shared "My Designs" library lives in the browser, not here.
+    customAssets: z
+      .record(z.string(), CustomAssetSchema)
+      .refine((r) => Object.keys(r).length <= MAX_CUSTOM_ASSETS_PER_CHARACTER, {
+        message: `A character can embed at most ${MAX_CUSTOM_ASSETS_PER_CHARACTER} custom designs`,
+      })
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    // 1. Verify activeTabId exists in tabs (auto-heal if missing)
+    const tabIds = new Set(data.tabs.map((t) => t.id));
+    if (!tabIds.has(data.activeTabId)) {
+      data.activeTabId = data.tabs[0].id;
+    }
+
+    // 2. Referential integrity: layout items must point to existing blocks and not be duplicated within a tab
+    for (const [tabId, items] of Object.entries(data.layouts)) {
+      const seen = new Set<string>();
+      items.forEach((item, index) => {
+        if (!data.blocks[item.i]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Layout item '${item.i}' in tab '${tabId}' references non-existent block`,
+            path: ["layouts", tabId, index, "i"],
+          });
+        }
+        if (seen.has(item.i)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Duplicate layout item '${item.i}' in tab '${tabId}'`,
+            path: ["layouts", tabId, index, "i"],
+          });
+        }
+        seen.add(item.i);
+      });
+    }
+  });
+
+/**
+ * Prunes customAssets that are not referenced in the character's theme or any block style.
+ */
+export function pruneUnusedCustomAssets(char: Character): Character {
+  if (!char.customAssets || Object.keys(char.customAssets).length === 0) {
+    return char;
+  }
+
+  const referencedIds = new Set<string>();
+
+  const checkToken = (token?: string) => {
+    if (token?.startsWith("custom:")) {
+      referencedIds.add(token.replace("custom:", ""));
+    }
+  };
+
+  // Check theme references
+  checkToken(char.theme.defaultFrame);
+  checkToken(char.theme.defaultCorners);
+  checkToken(char.theme.defaultWatermark);
+  checkToken(char.theme.canvasWatermark);
+  checkToken(char.theme.defaultPattern);
+  checkToken(char.theme.canvasPattern);
+
+  // Check all block styles
+  for (const block of Object.values(char.blocks)) {
+    if (block.style) {
+      checkToken(block.style.frame);
+      checkToken(block.style.corners);
+      checkToken(block.style.watermark);
+      checkToken(block.style.pattern);
+    }
+  }
+
+  const prunedAssets: Record<string, CustomAsset> = {};
+  let changed = false;
+
+  for (const [id, asset] of Object.entries(char.customAssets)) {
+    if (referencedIds.has(id)) {
+      prunedAssets[id] = asset;
+    } else {
+      changed = true;
+    }
+  }
+
+  if (!changed) return char;
+
+  return {
+    ...char,
+    customAssets: Object.keys(prunedAssets).length > 0 ? prunedAssets : undefined,
+  };
+}
 
 // ---------- Inferred types (never hand-write these separately) ----------
 export type Character = z.infer<typeof CharacterSchema>;
+export type RestAction = z.infer<typeof RestActionSchema>;
+export type Combatant = z.infer<typeof CombatantSchema>;
+export type Scratchpad = z.infer<typeof ScratchpadSchema>;
 export type CustomAsset = z.infer<typeof CustomAssetSchema>;
 export type CustomAssetKind = CustomAsset["kind"];
 export type Block = z.infer<typeof BlockSchema>;
