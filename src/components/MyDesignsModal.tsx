@@ -4,6 +4,15 @@ import type { CustomAsset, CustomAssetKind } from "../types/schema";
 import { assetLibrary } from "../styles/assetLibrary";
 import { sanitizeSvg } from "../styles/svgSanitizer";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import {
+  faLayerGroup,
+  faXmark,
+  faFloppyDisk,
+  faFolderOpen,
+  faWandMagicSparkles,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface MyDesignsModalProps {
   isOpen: boolean;
@@ -159,7 +168,7 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
       >
         <div className="modal-header">
           <div className="my-designs-title-group">
-            <span className="my-designs-icon">🎨</span>
+            <span className="my-designs-icon"><Icon icon={faLayerGroup} /></span>
             <div>
               <h2 id="my-designs-title">My Designs (Custom SVGs)</h2>
               <span className="my-designs-subtitle">
@@ -173,7 +182,7 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
             onClick={onClose}
             aria-label="Close dialog"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -192,10 +201,10 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
                 onChange={(e) => setKind(e.target.value as CustomAssetKind)}
                 className="select-input"
               >
-                <option value="frame">🖼️ Frame (9-Slice Border)</option>
-                <option value="corners">✨ Corner Accent (Overlay)</option>
-                <option value="watermark">🛡️ Watermark / Decal Emblem</option>
-                <option value="pattern">🕸️ Tileable Pattern</option>
+                <option value="frame">Frame (9-Slice Border)</option>
+                <option value="corners">Corner Accent (Overlay)</option>
+                <option value="watermark">Watermark / Decal Emblem</option>
+                <option value="pattern">Tileable Pattern</option>
               </select>
             </div>
 
@@ -284,8 +293,9 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
               type="submit"
               className="btn btn-primary my-designs-submit-btn"
               disabled={!sanitizedPreview || !name.trim()}
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
             >
-              💾 Save to My Designs
+              <Icon icon={faFloppyDisk} /> Save to My Designs
             </button>
           </form>
 
@@ -297,7 +307,7 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
 
             {designs.length === 0 ? (
               <div className="my-designs-empty-state">
-                <span className="empty-icon">📁</span>
+                <span className="empty-icon"><Icon icon={faFolderOpen} size="2x" /></span>
                 <p>No custom SVG designs saved yet.</p>
                 <span className="empty-hint">
                   Upload or paste an SVG above to store it in your browser library.
@@ -330,8 +340,9 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
                           className="btn btn-sm btn-secondary"
                           onClick={() => handleApplyToSheet(asset)}
                           title="Apply as sheet default"
+                          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                         >
-                          ✨ Apply to Sheet
+                          <Icon icon={faWandMagicSparkles} /> Apply to Sheet
                         </button>
                         <button
                           type="button"
@@ -339,7 +350,7 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
                           onClick={() => handleDeleteDesign(asset.id)}
                           title="Delete from My Designs"
                         >
-                          🗑️
+                          <Icon icon={faTrashCan} />
                         </button>
                       </div>
                     </div>

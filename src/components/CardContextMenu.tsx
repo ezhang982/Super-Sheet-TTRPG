@@ -2,6 +2,17 @@ import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { Block } from "../types/schema";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import {
+  faExpand,
+  faPalette,
+  faClone,
+  faPenToSquare,
+  faTag,
+  faFolderTree,
+  faCompassDrafting,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 
 export interface CardContextMenuProps {
   isOpen: boolean;
@@ -104,7 +115,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             onClose();
           }}
         >
-          <span className="context-item-icon">⛶</span>
+          <span className="context-item-icon"><Icon icon={faExpand} /></span>
           <span>Expand / Focus View</span>
         </button>
 
@@ -116,7 +127,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             onClose();
           }}
         >
-          <span className="context-item-icon">🎨</span>
+          <span className="context-item-icon"><Icon icon={faPalette} /></span>
           <span>Customize Style & Borders</span>
         </button>
 
@@ -132,7 +143,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             onClose();
           }}
         >
-          <span className="context-item-icon">📑</span>
+          <span className="context-item-icon"><Icon icon={faClone} /></span>
           <span>Duplicate Block</span>
           <kbd style={{ marginLeft: "auto", fontSize: "0.65rem", opacity: 0.7 }}>Ctrl+D</kbd>
         </button>
@@ -145,7 +156,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             onClose();
           }}
         >
-          <span className="context-item-icon">✏️</span>
+          <span className="context-item-icon"><Icon icon={faPenToSquare} /></span>
           <span>Rename Block</span>
         </button>
 
@@ -157,7 +168,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             onClose();
           }}
         >
-          <span className="context-item-icon">🏷️</span>
+          <span className="context-item-icon"><Icon icon={faTag} /></span>
           <span>Add Tag</span>
         </button>
 
@@ -165,7 +176,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
         {otherTabs.length > 0 && (
           <div className="context-submenu-group">
             <div className="context-menu-label">
-              <span className="context-item-icon">📑</span>
+              <span className="context-item-icon"><Icon icon={faFolderTree} /></span>
               <span>Move to Tab</span>
             </div>
             <div className="context-tab-options">
@@ -190,7 +201,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
         {currentLayoutItem && (
           <div className="context-submenu-group">
             <div className="context-menu-label">
-              <span className="context-item-icon">📐</span>
+              <span className="context-item-icon"><Icon icon={faCompassDrafting} /></span>
               <span>Quick Width</span>
             </div>
             <div className="context-tab-options">
@@ -223,7 +234,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({
             onClose();
           }}
         >
-          <span className="context-item-icon">🗑️</span>
+          <span className="context-item-icon"><Icon icon={faTrashCan} /></span>
           <span>Delete Block</span>
         </button>
       </div>

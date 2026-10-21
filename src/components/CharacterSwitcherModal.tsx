@@ -7,6 +7,17 @@ import {
   loadCharacterById as loadCharFromStorage,
   exportCharacterAsJson,
 } from "../store/storage";
+import { Icon } from "./ui/Icon";
+import {
+  faUsers,
+  faXmark,
+  faMagnifyingGlass,
+  faPlus,
+  faClone,
+  faFloppyDisk,
+  faTrashCan,
+  faFolderOpen,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface CharacterSwitcherModalProps {
   isOpen: boolean;
@@ -157,15 +168,15 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
       >
         <div className="modal-header">
           <div>
-            <h3 id="char-switcher-title" style={{ margin: 0, fontSize: "1.25rem" }}>
-              👥 Character Sheets
+            <h3 id="char-switcher-title" style={{ margin: 0, fontSize: "1.25rem", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Icon icon={faUsers} /> Character Sheets
             </h3>
             <p style={{ margin: "4px 0 0 0", fontSize: "0.825rem", color: "var(--text-muted)" }}>
               Manage and switch between your locally saved characters
             </p>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close">
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -173,7 +184,7 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
           {/* Search & Actions Toolbar */}
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <div className="skill-search-wrapper" style={{ flex: 1 }}>
-              <span className="skill-search-icon">🔍</span>
+              <span className="skill-search-icon"><Icon icon={faMagnifyingGlass} /></span>
               <input
                 type="text"
                 className="skill-search-input"
@@ -187,7 +198,7 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
                   className="skill-search-clear"
                   onClick={() => setSearchTerm("")}
                 >
-                  ×
+                  <Icon icon={faXmark} />
                 </button>
               )}
             </div>
@@ -205,13 +216,16 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
                 fontWeight: 600,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
               }}
               onClick={() => {
                 onClose();
                 onOpenNewModal();
               }}
             >
-              + New Sheet
+              <Icon icon={faPlus} /> New Sheet
             </button>
           </div>
 
@@ -323,7 +337,7 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
                         title="Duplicate character"
                         onClick={(e) => handleDuplicate(entry, e)}
                       >
-                        📋
+                        <Icon icon={faClone} />
                       </button>
 
                       <button
@@ -339,7 +353,7 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
                         title="Export JSON backup"
                         onClick={(e) => handleExport(entry, e)}
                       >
-                        💾
+                        <Icon icon={faFloppyDisk} />
                       </button>
 
                       {manifest.length > 1 && (
@@ -379,7 +393,7 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
                                 setConfirmDeleteId(entry.id);
                               }}
                             >
-                              🗑️
+                              <Icon icon={faTrashCan} />
                             </button>
                           )}
                         </>
@@ -414,9 +428,12 @@ export const CharacterSwitcherModal: React.FC<CharacterSwitcherModalProps> = ({
               borderRadius: "6px",
               cursor: "pointer",
               fontSize: "0.825rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
             }}
           >
-            📂 Import JSON File...
+            <Icon icon={faFolderOpen} /> Import JSON File...
           </button>
           <input
             ref={fileInputRef}

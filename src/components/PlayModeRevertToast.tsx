@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRevertToast } from "../store/useRevertToast";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import { faBolt, faRotateLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export const PlayModeRevertToast: React.FC = () => {
   const mode = useCharacterStore((state) => state.mode);
@@ -23,7 +25,7 @@ export const PlayModeRevertToast: React.FC = () => {
   return createPortal(
     <div className="revert-toast-container" role="status" aria-live="polite">
       <div className="revert-toast-card">
-        <span className="toast-icon">⚡</span>
+        <span className="toast-icon"><Icon icon={faBolt} /></span>
         <span className="toast-message">{toast.message}</span>
         <button
           type="button"
@@ -33,8 +35,9 @@ export const PlayModeRevertToast: React.FC = () => {
             dismissToast();
           }}
           title="Undo this counter change"
+          style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
         >
-          ↺ Revert
+          <Icon icon={faRotateLeft} /> Revert
         </button>
         <button
           type="button"
@@ -42,7 +45,7 @@ export const PlayModeRevertToast: React.FC = () => {
           onClick={dismissToast}
           aria-label="Dismiss toast"
         >
-          ×
+          <Icon icon={faXmark} />
         </button>
       </div>
     </div>,

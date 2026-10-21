@@ -2,6 +2,13 @@ import React, { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import { BUILTIN_TEMPLATES, type TemplateDefinition } from "../templates";
+import { Icon } from "./ui/Icon";
+import {
+  faWandMagicSparkles,
+  faXmark,
+  faLightbulb,
+  faFolderOpen,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface NewCharacterModalProps {
   isOpen: boolean;
@@ -76,8 +83,8 @@ export const NewCharacterModal: React.FC<NewCharacterModalProps> = ({
       >
         <div className="modal-header">
           <div>
-            <h3 id="new-character-dialog-title" style={{ margin: 0, fontSize: "1.25rem" }}>
-              ✨ New Character Sheet
+            <h3 id="new-character-dialog-title" style={{ margin: 0, fontSize: "1.25rem", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+              <Icon icon={faWandMagicSparkles} /> New Character Sheet
             </h3>
             <p
               style={{
@@ -95,7 +102,7 @@ export const NewCharacterModal: React.FC<NewCharacterModalProps> = ({
             onClick={onClose}
             aria-label="Close"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -202,10 +209,16 @@ export const NewCharacterModal: React.FC<NewCharacterModalProps> = ({
               fontSize: "0.8rem",
               color: "#e5c07b",
               lineHeight: 1.4,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "8px",
             }}
           >
-            💡 <strong>Note:</strong> Starting a new sheet will switch your active canvas.
-            Be sure you have exported your current sheet if you want to keep an offline JSON backup.
+            <Icon icon={faLightbulb} style={{ marginTop: "2px", flexShrink: 0 }} />
+            <div>
+              <strong>Note:</strong> Starting a new sheet will switch your active canvas.
+              Be sure you have exported your current sheet if you want to keep an offline JSON backup.
+            </div>
           </div>
         </div>
 
@@ -231,9 +244,12 @@ export const NewCharacterModal: React.FC<NewCharacterModalProps> = ({
               borderRadius: "6px",
               cursor: "pointer",
               fontSize: "0.85rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
             }}
           >
-            📂 Import JSON File...
+            <Icon icon={faFolderOpen} /> Import JSON File...
           </button>
           <input
             ref={fileInputRef}

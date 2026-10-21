@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 
 interface TabBarProps {
   onOpenOmnisearch?: () => void;
@@ -180,7 +182,7 @@ export const TabBar: React.FC<TabBarProps> = ({ onOpenOmnisearch }) => {
             onClick={onOpenOmnisearch}
             title="Search blocks, items, skills, tags, or commands (Ctrl+K)"
           >
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Icon icon={faMagnifyingGlass} /></span>
             <span className="search-text">Search</span>
             <kbd className="search-kbd">Ctrl+K</kbd>
           </button>

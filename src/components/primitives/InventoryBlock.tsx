@@ -3,6 +3,14 @@ import type { Block, InventoryItem } from "../../types/schema";
 import { evaluateQuickMath } from "../../utils/mathEngine";
 import { useCharacterVariables } from "../../store/useCharacterVariables";
 import { RichMarkdown } from "../RichMarkdown";
+import { Icon } from "../ui/Icon";
+import {
+  faCoins,
+  faShieldHalved,
+  faCircle,
+  faPenToSquare,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 
 type InventoryBlockType = Extract<Block, { type: "inventory" }>;
 
@@ -208,8 +216,9 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
             type="button"
             className="inventory-toggle-btn"
             onClick={() => setShowCurrencyConfig(!showCurrencyConfig)}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            🪙 {showCurrencyConfig ? "Hide Currencies" : "Manage Currencies"}
+            <Icon icon={faCoins} /> {showCurrencyConfig ? "Hide Currencies" : "Manage Currencies"}
           </button>
         </div>
 
@@ -293,7 +302,7 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
                       onClick={() => updateItem(item.id, { equipped: !item.equipped })}
                       title={item.equipped ? "Equipped (click to unequip)" : "Unequipped (click to equip)"}
                     >
-                      {item.equipped ? "⚔️" : "⚪"}
+                      {item.equipped ? <Icon icon={faShieldHalved} /> : <Icon icon={faCircle} style={{ opacity: 0.3 }} />}
                     </button>
 
                     <span
@@ -315,7 +324,7 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
                         onClick={() => setEditingItemId(isEditing ? null : item.id)}
                         title={isEditing ? "Done editing" : "Edit details"}
                       >
-                        {isEditing ? "Done" : "✏️"}
+                        {isEditing ? "Done" : <Icon icon={faPenToSquare} />}
                       </button>
                       <button
                         type="button"
@@ -323,7 +332,7 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
                         onClick={() => handleDeleteItem(item.id)}
                         title="Delete item"
                       >
-                        🗑️
+                        <Icon icon={faTrashCan} />
                       </button>
                     </div>
                   </div>
@@ -492,7 +501,7 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
           <div className="inventory-currency-pill-bar">
             {Object.entries(currency).map(([k, v]) => (
               <span key={k} className="currency-pill">
-                <span className="currency-symbol">🪙</span>
+                <span className="currency-symbol"><Icon icon={faCoins} /></span>
                 <span className="currency-val">{v}</span>
                 <span className="currency-unit">{k}</span>
               </span>
@@ -566,7 +575,7 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
                     onClick={() => handleToggleEquip(item.id)}
                     title={item.equipped ? "Equipped (click to unequip)" : "Unequipped (click to equip)"}
                   >
-                    {item.equipped ? "⚔️" : "⚪"}
+                    {item.equipped ? <Icon icon={faShieldHalved} /> : <Icon icon={faCircle} style={{ opacity: 0.3 }} />}
                   </button>
 
                   {/* Name & Tags */}

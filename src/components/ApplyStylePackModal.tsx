@@ -2,6 +2,20 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { StylePack } from "../styles/stylePacks";
 import type { GlobalTheme } from "../types/schema";
+import { Icon } from "./ui/Icon";
+import {
+  faBoxesStacked,
+  faBorderAll,
+  faWandMagicSparkles,
+  faCompassDrafting,
+  faCircleHalfStroke,
+  faCloud,
+  faTableCells,
+  faShieldHalved,
+  faGripLines,
+  faPalette,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface ApplyStylePackModalProps {
   pack: StylePack | null;
@@ -57,7 +71,7 @@ export const ApplyStylePackModal: React.FC<ApplyStylePackModalProps> = ({
       >
         <div className="apply-pack-header">
           <div className="apply-pack-title-row">
-            <span className="apply-pack-icon">📦</span>
+            <span className="apply-pack-icon"><Icon icon={faBoxesStacked} /></span>
             <div>
               <h2 id="apply-pack-dialog-title" className="apply-pack-title">
                 {pack.name}
@@ -71,7 +85,7 @@ export const ApplyStylePackModal: React.FC<ApplyStylePackModalProps> = ({
             onClick={onClose}
             aria-label="Close modal"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -167,42 +181,42 @@ export const ApplyStylePackModal: React.FC<ApplyStylePackModalProps> = ({
           <div className="apply-pack-token-chips">
             {pack.tokens.defaultFrame && (
               <span className="token-chip">
-                🖼️ Frame: <strong>{pack.tokens.defaultFrame}</strong>
+                <Icon icon={faBorderAll} /> Frame: <strong>{pack.tokens.defaultFrame}</strong>
               </span>
             )}
             {pack.tokens.defaultCorners && pack.tokens.defaultCorners !== "none" && (
               <span className="token-chip">
-                ✨ Corners: <strong>{pack.tokens.defaultCorners}</strong>
+                <Icon icon={faWandMagicSparkles} /> Corners: <strong>{pack.tokens.defaultCorners}</strong>
               </span>
             )}
             {pack.tokens.defaultShape && (
               <span className="token-chip">
-                📐 Shape: <strong>{pack.tokens.defaultShape}</strong>
+                <Icon icon={faCompassDrafting} /> Shape: <strong>{pack.tokens.defaultShape}</strong>
               </span>
             )}
             {pack.tokens.defaultShading && pack.tokens.defaultShading !== "none" && (
               <span className="token-chip">
-                🌑 Shading: <strong>{pack.tokens.defaultShading}</strong>
+                <Icon icon={faCircleHalfStroke} /> Shading: <strong>{pack.tokens.defaultShading}</strong>
               </span>
             )}
             {pack.tokens.defaultTexture && pack.tokens.defaultTexture !== "none" && (
               <span className="token-chip">
-                🌫️ Texture: <strong>{pack.tokens.defaultTexture}</strong>
+                <Icon icon={faCloud} /> Texture: <strong>{pack.tokens.defaultTexture}</strong>
               </span>
             )}
             {pack.tokens.defaultPattern && pack.tokens.defaultPattern !== "none" && (
               <span className="token-chip">
-                🕸️ Pattern: <strong>{pack.tokens.defaultPattern}</strong>
+                <Icon icon={faTableCells} /> Pattern: <strong>{pack.tokens.defaultPattern}</strong>
               </span>
             )}
             {pack.tokens.defaultWatermark && pack.tokens.defaultWatermark !== "none" && (
               <span className="token-chip">
-                🛡️ Watermark: <strong>{pack.tokens.defaultWatermark}</strong>
+                <Icon icon={faShieldHalved} /> Watermark: <strong>{pack.tokens.defaultWatermark}</strong>
               </span>
             )}
             {pack.tokens.defaultHeaderDivider && (
               <span className="token-chip">
-                ⚔️ Divider: <strong>{pack.tokens.defaultHeaderDivider}</strong>
+                <Icon icon={faGripLines} /> Divider: <strong>{pack.tokens.defaultHeaderDivider}</strong>
               </span>
             )}
           </div>
@@ -229,15 +243,17 @@ export const ApplyStylePackModal: React.FC<ApplyStylePackModalProps> = ({
             type="button"
             className="btn btn-secondary apply-pack-keep-btn"
             onClick={handleKeepColors}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            🎨 Keep My Custom Colors
+            <Icon icon={faPalette} /> Keep My Custom Colors
           </button>
           <button
             type="button"
             className="btn btn-primary apply-pack-full-btn"
             onClick={handleApplyFull}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            ✨ Apply Full Pack
+            <Icon icon={faWandMagicSparkles} /> Apply Full Pack
           </button>
           <button
             type="button"

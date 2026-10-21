@@ -1,4 +1,10 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Icon } from "./ui/Icon";
+import {
+  faTriangleExclamation,
+  faRotateRight,
+  faBroom,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   children: ReactNode;
@@ -65,7 +71,9 @@ export class ErrorBoundary extends Component<Props, State> {
               boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
             }}
           >
-            <div style={{ fontSize: "2.5rem", marginBottom: "12px" }}>⚠️</div>
+            <div style={{ marginBottom: "12px" }}>
+              <Icon icon={faTriangleExclamation} size="2x" style={{ color: "#e06c75" }} />
+            </div>
             <h2 style={{ color: "#e06c75", margin: "0 0 12px 0", fontSize: "1.4rem" }}>
               Something went wrong loading the sheet
             </h2>
@@ -105,9 +113,12 @@ export class ErrorBoundary extends Component<Props, State> {
                   cursor: "pointer",
                   fontWeight: 600,
                   fontSize: "0.9rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
                 }}
               >
-                🔄 Reload Page
+                <Icon icon={faRotateRight} /> Reload Page
               </button>
               <button
                 type="button"
@@ -120,9 +131,12 @@ export class ErrorBoundary extends Component<Props, State> {
                   borderRadius: "6px",
                   cursor: "pointer",
                   fontSize: "0.9rem",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
                 }}
               >
-                🧹 Clear Cache & Reset
+                <Icon icon={faBroom} /> Clear Cache & Reset
               </button>
             </div>
           </div>

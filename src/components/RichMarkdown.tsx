@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { DICE_REGEX, rollDice, copyDiceCommand } from "../utils/diceRolls";
 import { interpolateTextFormulas } from "../utils/mathEngine";
+import { Icon } from "./ui/Icon";
+import { faDiceD20, faCheck } from "@fortawesome/free-solid-svg-icons";
 
 export interface DiceRollChipProps {
   notation: string;
@@ -32,10 +34,15 @@ export const DiceRollChip: React.FC<DiceRollChipProps> = ({ notation }) => {
       className="dice-roll-chip"
       onClick={handleClick}
       title="Click to roll and copy /roll command to clipboard"
+      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
     >
-      🎲 {notation}
+      <Icon icon={faDiceD20} /> {notation}
       {rolledVal !== null && <span className="dice-rolled-val"> = {rolledVal}</span>}
-      {copied && <span className="dice-copied-badge">✓ Copied</span>}
+      {copied && (
+        <span className="dice-copied-badge" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+          <Icon icon={faCheck} /> Copied
+        </span>
+      )}
     </button>
   );
 };

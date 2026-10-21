@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import { faTags, faXmark, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 interface TagManagerModalProps {
   isOpen: boolean;
@@ -116,7 +118,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
       >
         <div className="modal-header">
           <div className="modal-title-group">
-            <span className="modal-icon">🏷️</span>
+            <span className="modal-icon"><Icon icon={faTags} /></span>
             <h3 id="tag-manager-title">Visual Tag Manager & Color Palette</h3>
           </div>
           <button
@@ -125,7 +127,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
             onClick={onClose}
             aria-label="Close dialog"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -274,16 +276,18 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
                             className="tag-action-icon-btn"
                             onClick={() => handleStartRename(tag)}
                             title={`Rename ${tag} across all blocks`}
+                            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                           >
-                            ✏️
+                            <Icon icon={faPenToSquare} />
                           </button>
                           <button
                             type="button"
                             className="tag-action-icon-btn danger"
                             onClick={() => handleDelete(tag, count)}
                             title={`Delete ${tag} globally`}
+                            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                           >
-                            🗑️
+                            <Icon icon={faTrashCan} />
                           </button>
                         </>
                       )}

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterVariables, useCharacterVariableDetails } from "../store/useCharacterVariables";
 import { isFormula, evaluateFormula } from "../utils/mathEngine";
+import { Icon } from "./ui/Icon";
+import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
 interface FormulaInputProps {
   value: string;
@@ -249,8 +251,8 @@ export const FormulaInput: React.FC<FormulaInputProps> = ({
       {isFormulaValue && liveEval && (
         <div className={`formula-live-preview ${liveEval.error ? "has-error" : "is-valid"}`}>
           {liveEval.error ? (
-            <span className="preview-error" title={liveEval.explanation}>
-              ⚠️ {liveEval.explanation || "Invalid formula"}
+            <span className="preview-error" title={liveEval.explanation} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+              <Icon icon={faTriangleExclamation} /> {liveEval.explanation || "Invalid formula"}
             </span>
           ) : (
             <span className="preview-success" title={liveEval.explanation}>

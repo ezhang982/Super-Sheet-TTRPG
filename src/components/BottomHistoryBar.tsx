@@ -1,5 +1,12 @@
 import React from "react";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import {
+  faRotateLeft,
+  faRotateRight,
+  faSpinner,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 
 export const BottomHistoryBar: React.FC = () => {
   const mode = useCharacterStore((state) => state.mode);
@@ -53,8 +60,9 @@ export const BottomHistoryBar: React.FC = () => {
           onClick={handleUndo}
           disabled={!canUndo}
           title={undoTitle}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
         >
-          ↩
+          <Icon icon={faRotateLeft} />
         </button>
         <button
           type="button"
@@ -62,8 +70,9 @@ export const BottomHistoryBar: React.FC = () => {
           onClick={handleRedo}
           disabled={!canRedo}
           title={redoTitle}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
         >
-          ↪
+          <Icon icon={faRotateRight} />
         </button>
       </div>
 
@@ -74,12 +83,16 @@ export const BottomHistoryBar: React.FC = () => {
       >
         {saveStatus === "saving" ? (
           <>
-            <span className="autosave-spinner">⏳</span>
+            <span className="autosave-spinner">
+              <Icon icon={faSpinner} spin />
+            </span>
             <span className="autosave-text">Saving...</span>
           </>
         ) : (
           <>
-            <span className="autosave-check">✓</span>
+            <span className="autosave-check">
+              <Icon icon={faCheck} />
+            </span>
             <span className="autosave-text">Saved locally</span>
           </>
         )}

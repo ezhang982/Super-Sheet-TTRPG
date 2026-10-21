@@ -2,6 +2,33 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { BlockType } from "../types/schema";
+import { Icon } from "./ui/Icon";
+import {
+  faGear,
+  faXmark,
+  faMagnifyingGlass,
+  faPlus,
+  faUsers,
+  faUser,
+  faHeartPulse,
+  faSliders,
+  faBookOpen,
+  faCircleDot,
+  faPenToSquare,
+  faBoxesStacked,
+  faCrosshairs,
+  faPalette,
+  faLayerGroup,
+  faHourglassHalf,
+  faScroll,
+  faTags,
+  faPrint,
+  faKeyboard,
+  faLightbulb,
+  faFloppyDisk,
+  faFileExport,
+  faFileImport,
+} from "@fortawesome/free-solid-svg-icons";
 
 export interface FloatingToolsMenuProps {
   onOpenOmnisearch?: () => void;
@@ -189,7 +216,9 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
         onClick={handleFabClick}
         title="Tools & Settings (Drag to move)"
       >
-        <span className="fab-icon">{isOpen ? "×" : "⚙"}</span>
+        <span className="fab-icon">
+          <Icon icon={isOpen ? faXmark : faGear} size="lg" />
+        </span>
       </button>
 
       {/* Expanded Tools Menu Panel */}
@@ -227,7 +256,9 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                   setIsOpen(false);
                 }}
               >
-                <span>🔍 Omnisearch</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                  <Icon icon={faMagnifyingGlass} /> Omnisearch
+                </span>
                 <kbd style={{ fontSize: "0.65rem", padding: "1px 5px", background: "rgba(0,0,0,0.3)", borderRadius: "3px" }}>Ctrl+K</kbd>
               </button>
             )}
@@ -240,24 +271,28 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                 borderColor: "var(--accent-color, #e06c75)",
                 fontWeight: 600,
                 color: "var(--accent-color, #e06c75)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
               }}
               onClick={() => {
                 onOpenNewChar?.();
                 setIsOpen(false);
               }}
             >
-              ✨ + New Sheet
+              <Icon icon={faPlus} /> New Sheet
             </button>
 
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={() => {
                 onOpenSwitcher?.();
                 setIsOpen(false);
               }}
             >
-              👥 Switch Character
+              <Icon icon={faUsers} /> Switch Character
             </button>
 
             {mode === "edit" && (
@@ -265,35 +300,36 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                 <button
                   type="button"
                   className="tools-btn primary"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                   onClick={() => setShowAddMenu(!showAddMenu)}
                 >
-                  + Add Block ▾
+                  <Icon icon={faPlus} /> Add Block ▾
                 </button>
                 {showAddMenu && (
                   <div className="tools-submenu">
-                    <button type="button" onClick={() => handleAddBlock("profile")}>
-                      👤 Character Profile
+                    <button type="button" onClick={() => handleAddBlock("profile")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faUser} /> Character Profile
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("tracker")}>
-                      📊 Tracker (HP/Counters)
+                    <button type="button" onClick={() => handleAddBlock("tracker")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faHeartPulse} /> Tracker (HP/Counters)
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("stat_group")}>
-                      🏷️ Stat Group (Attributes)
+                    <button type="button" onClick={() => handleAddBlock("stat_group")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faSliders} /> Stat Group (Attributes)
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("card")}>
-                      🃏 Feature Card (Actions)
+                    <button type="button" onClick={() => handleAddBlock("card")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faBookOpen} /> Feature Card (Actions)
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("pip_array")}>
-                      🔘 Pip Matrix (Slots/Pips)
+                    <button type="button" onClick={() => handleAddBlock("pip_array")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faCircleDot} /> Pip Matrix (Slots/Pips)
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("notes")}>
-                      📝 Notes Block (Markdown)
+                    <button type="button" onClick={() => handleAddBlock("notes")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faPenToSquare} /> Notes Block (Markdown)
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("inventory")}>
-                      🎒 Container / Inventory
+                    <button type="button" onClick={() => handleAddBlock("inventory")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faBoxesStacked} /> Container / Inventory
                     </button>
-                    <button type="button" onClick={() => handleAddBlock("skill_list")}>
-                      🎯 Skill List
+                    <button type="button" onClick={() => handleAddBlock("skill_list")} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                      <Icon icon={faCrosshairs} /> Skill List
                     </button>
                   </div>
                 )}
@@ -303,48 +339,52 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={() => {
                 onOpenTheme?.();
                 setIsOpen(false);
               }}
             >
-              🎨 Theme & Styling
+              <Icon icon={faPalette} /> Theme & Styling
             </button>
 
             {onOpenMyDesigns && (
               <button
                 type="button"
                 className="tools-btn"
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 onClick={() => {
                   onOpenMyDesigns();
                   setIsOpen(false);
                 }}
               >
-                🖼️ My Designs (Custom SVGs)
+                <Icon icon={faLayerGroup} /> My Designs (Custom SVGs)
               </button>
             )}
 
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={() => {
                 onOpenRest?.();
                 setIsOpen(false);
               }}
             >
-              ⏳ Rest Actions
+              <Icon icon={faHourglassHalf} /> Rest Actions
             </button>
 
             {onOpenScratchpad && (
               <button
                 type="button"
                 className="tools-btn"
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 onClick={() => {
                   onOpenScratchpad();
                   setIsOpen(false);
                 }}
               >
-                📜 Session Scratchpad
+                <Icon icon={faScroll} /> Session Scratchpad
               </button>
             )}
 
@@ -352,18 +392,20 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
               <button
                 type="button"
                 className="tools-btn"
+                style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 onClick={() => {
                   onOpenTagManager();
                   setIsOpen(false);
                 }}
               >
-                🏷️ Tag Manager & Colors
+                <Icon icon={faTags} /> Tag Manager & Colors
               </button>
             )}
 
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={() => {
                 setIsOpen(false);
                 setTimeout(() => {
@@ -371,7 +413,7 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                 }, 150);
               }}
             >
-              🖨️ Print Sheet / PDF
+              <Icon icon={faPrint} /> Print Sheet / PDF
             </button>
 
             {onOpenShortcuts && (
@@ -384,7 +426,9 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                   setIsOpen(false);
                 }}
               >
-                <span>⌨️ Shortcuts</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                  <Icon icon={faKeyboard} /> Shortcuts
+                </span>
                 <kbd style={{ fontSize: "0.65rem", padding: "1px 5px", background: "rgba(0,0,0,0.3)", borderRadius: "3px" }}>?</kbd>
               </button>
             )}
@@ -396,32 +440,37 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                   checked={enableTagSuggestions}
                   onChange={(e) => setEnableTagSuggestions(e.target.checked)}
                 />
-                <span>💡 Auto Tag Suggestions</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <Icon icon={faLightbulb} /> Auto Tag Suggestions
+                </span>
               </label>
             </div>
 
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={handleExportCharacter}
             >
-              💾 Export Sheet
+              <Icon icon={faFloppyDisk} /> Export Sheet
             </button>
 
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={handleExportTemplate}
             >
-              📋 Export Template
+              <Icon icon={faFileExport} /> Export Template
             </button>
 
             <button
               type="button"
               className="tools-btn"
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
               onClick={() => fileInputRef.current?.click()}
             >
-              📥 Import Sheet
+              <Icon icon={faFileImport} /> Import Sheet
             </button>
             <input
               ref={fileInputRef}
