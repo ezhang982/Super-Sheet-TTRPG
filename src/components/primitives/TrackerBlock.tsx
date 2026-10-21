@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Block } from "../../types/schema";
 import { evaluateQuickMath, evaluateFormula, isFormula } from "../../utils/mathEngine";
 import { FormulaInput } from "../FormulaInput";
@@ -21,15 +21,34 @@ export const TrackerBlock: React.FC<TrackerBlockProps> = ({
   const variables = useCharacterVariables();
   const showToast = useRevertToast((state) => state.showToast);
   const data = block.data;
+  const current = data.current;
+  const max = data.max;
   const step = data.step || 1;
   const temp = data.temp || 0;
 
-  const [editCurrentStr, setEditCurrentStr] = useState(data.current.toString());
-  const [editMaxStr, setEditMaxStr] = useState(data.max.toString());
+  const [editCurrentStr, setEditCurrentStr] = useState(current.toString());
+  const [editMaxStr, setEditMaxStr] = useState(max.toString());
   const [isEditingCurrent, setIsEditingCurrent] = useState(false);
-  const [currentInputVal, setCurrentInputVal] = useState(data.current.toString());
+  const [currentInputVal, setCurrentInputVal] = useState(current.toString());
   const [isEditingTemp, setIsEditingTemp] = useState(false);
   const [tempInputVal, setTempInputVal] = useState(temp.toString());
+
+  const prevCurrentRef = useRef(current);
+  const prevMaxRef = useRef(max);
+
+  // Keep local string states in sync only when external mutations happen (e.g. Undo/Redo or Rest actions)
+  useEffect(() => {
+    if (prevCurrentRef.current !== current) {
+      prevCurrentRef.current = current;
+      // oxlint-disable-next-line react/set-state-in-effect
+      setEditCurrentStr(current.toString());
+    }
+    if (prevMaxRef.current !== max) {
+      prevMaxRef.current = max;
+      // oxlint-disable-next-line react/set-state-in-effect
+      setEditMaxStr(max.toString());
+    }
+  }, [current, max]);
 
   const handleAdjustCurrent = (delta: number) => {
     const prev = data.current;

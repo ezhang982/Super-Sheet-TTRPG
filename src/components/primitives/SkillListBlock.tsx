@@ -11,7 +11,7 @@ interface SkillListBlockProps {
   onUpdateData: (patch: Partial<SkillListData> | Record<string, unknown>) => void;
 }
 
-export const DND_5E_STANDARD_SKILLS: Array<{ name: string; stat: string }> = [
+const DND_5E_STANDARD_SKILLS: Array<{ name: string; stat: string }> = [
   { name: "Acrobatics", stat: "DEX" },
   { name: "Animal Handling", stat: "WIS" },
   { name: "Arcana", stat: "INT" },
@@ -32,6 +32,8 @@ export const DND_5E_STANDARD_SKILLS: Array<{ name: string; stat: string }> = [
   { name: "Survival", stat: "WIS" },
 ];
 
+const EMPTY_SKILLS: any[] = [];
+
 export const SkillListBlock: React.FC<SkillListBlockProps> = ({
   block,
   mode,
@@ -39,7 +41,7 @@ export const SkillListBlock: React.FC<SkillListBlockProps> = ({
 }) => {
   const variables = useCharacterVariables();
   const [searchTerm, setSearchTerm] = useState("");
-  const skills = block.data.skills ?? [];
+  const skills = block.data.skills ?? EMPTY_SKILLS;
   const sortMode = block.data.sortMode ?? "alpha";
 
   // Cycle proficiency: 0 (None) -> 1 (Proficient) -> 2 (Expertise) -> 0

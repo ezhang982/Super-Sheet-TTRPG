@@ -47,11 +47,12 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
   const [isPopout, setIsPopout] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  useEffect(() => {
-    if (block?.title !== undefined) {
+  const handleStartRename = () => {
+    if (block) {
       setTitleInput(block.title);
+      setIsEditingTitle(true);
     }
-  }, [block?.title]);
+  };
 
   // Close popout on Escape
   useEffect(() => {
@@ -218,7 +219,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
           ) : (
             <h3
               className="block-title"
-              onDoubleClick={() => mode === "edit" && setIsEditingTitle(true)}
+              onDoubleClick={() => mode === "edit" && handleStartRename()}
               title={mode === "edit" ? "Double-click to rename (or right-click)" : undefined}
             >
               {block.title}
@@ -363,7 +364,7 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
           tabId={tabId}
           onClose={() => setContextMenu(null)}
           onOpenStyleModal={() => setIsStylingOpen(true)}
-          onStartRename={() => setIsEditingTitle(true)}
+          onStartRename={handleStartRename}
           onStartAddTag={() => setIsAddingTag(true)}
           onPopout={() => setIsPopout(true)}
           onDuplicate={() => duplicateBlock(block.id)}

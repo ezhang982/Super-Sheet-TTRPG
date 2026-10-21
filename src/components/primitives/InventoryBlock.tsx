@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import ReactMarkdown from "react-markdown";
 import type { Block, InventoryItem } from "../../types/schema";
-import { evaluateQuickMath, interpolateTextFormulas } from "../../utils/mathEngine";
+import { evaluateQuickMath } from "../../utils/mathEngine";
 import { useCharacterVariables } from "../../store/useCharacterVariables";
+import { RichMarkdown } from "../RichMarkdown";
 
 type InventoryBlockType = Extract<Block, { type: "inventory" }>;
 
@@ -715,9 +715,11 @@ export const InventoryBlock: React.FC<InventoryBlockProps> = ({
 
                 {/* Expanded Details Drawer */}
                 {isExpanded && item.description && (
-                  <div className="play-item-details-drawer prose-content">
-                    <ReactMarkdown>{interpolateTextFormulas(item.description, variables)}</ReactMarkdown>
-                  </div>
+                  <RichMarkdown
+                    content={item.description}
+                    variables={variables}
+                    className="play-item-details-drawer prose-content"
+                  />
                 )}
               </div>
             );

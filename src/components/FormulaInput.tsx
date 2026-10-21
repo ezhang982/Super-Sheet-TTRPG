@@ -206,17 +206,6 @@ export const FormulaInput: React.FC<FormulaInputProps> = ({
     }
   };
 
-  // Close on click outside
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
   return (
     <div
       className="formula-input-container"

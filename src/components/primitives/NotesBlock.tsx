@@ -1,49 +1,10 @@
 import React, { useState, useRef } from "react";
-import ReactMarkdown from "react-markdown";
 import type { Block } from "../../types/schema";
-import { interpolateTextFormulas } from "../../utils/mathEngine";
 import { useCharacterVariables } from "../../store/useCharacterVariables";
-import { DICE_REGEX, rollDice, copyDiceCommand } from "../../utils/diceRolls";
 import { VariableInsertButton } from "../VariableInsertButton";
+import { RichMarkdown } from "../RichMarkdown";
 
 type NotesBlockType = Extract<Block, { type: "notes" }>;
-
-const DiceRollChip: React.FC<{ notation: string }> = ({ notation }) => {
-  const [copied, setCopied] = useState(false);
-  const [rolledVal, setRolledVal] = useState<number | null>(null);
-
-  const handleClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const res = rollDice(notation);
-    if (res) {
-      setRolledVal(res.total);
-    }
-    await copyDiceCommand(notation);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-      setRolledVal(null);
-    }, 2500);
-  };
-
-  return (
-    <button
-      type="button"
-      className="dice-roll-chip"
-      onClick={handleClick}
-      title="Click to roll and copy /roll command to clipboard"
-    >
-      🎲 {notation}
-      {rolledVal !== null && <span className="dice-rolled-val"> = {rolledVal}</span>}
-      {copied && <span className="dice-copied-badge">✓ Copied</span>}
-    </button>
-  );
-};
-
-function formatMarkdownWithDice(text: string): string {
-  return text.replace(DICE_REGEX, (match) => `[${match}](#dice:${match.replace(/\s+/g, "")})`);
-}
 
 interface NotesBlockProps {
   block: NotesBlockType;
@@ -114,29 +75,12 @@ export const NotesBlock: React.FC<NotesBlockProps> = ({
             onChange={(e) => onUpdateData({ markdown: e.target.value })}
           />
         ) : (
-          <div className="notes-preview-scroll prose-content">
-            {data.markdown ? (
-              <ReactMarkdown
-                components={{
-                  a: ({ href, children, ...props }) => {
-                    if (href?.startsWith("#dice:")) {
-                      const notation = href.replace("#dice:", "");
-                      return <DiceRollChip notation={notation} />;
-                    }
-                    return (
-                      <a href={href} target="_blank" rel="noreferrer" {...props}>
-                        {children}
-                      </a>
-                    );
-                  },
-                }}
-              >
-                {formatMarkdownWithDice(interpolateTextFormulas(data.markdown, variables))}
-              </ReactMarkdown>
-            ) : (
-              <em>No notes written yet.</em>
-            )}
-          </div>
+          <RichMarkdown
+            content={data.markdown}
+            variables={variables}
+            className="notes-preview-scroll prose-content"
+            emptyFallback={<em>No notes written yet.</em>}
+          />
         )}
       </div>
     );
@@ -145,29 +89,12 @@ export const NotesBlock: React.FC<NotesBlockProps> = ({
   // Play Mode UX (§5.5) - Reading view
   return (
     <div className="notes-play-container">
-      <div className="notes-reading-view prose-content">
-        {data.markdown ? (
-          <ReactMarkdown
-            components={{
-              a: ({ href, children, ...props }) => {
-                if (href?.startsWith("#dice:")) {
-                  const notation = href.replace("#dice:", "");
-                  return <DiceRollChip notation={notation} />;
-                }
-                return (
-                  <a href={href} target="_blank" rel="noreferrer" {...props}>
-                    {children}
-                  </a>
-                );
-              },
-            }}
-          >
-            {formatMarkdownWithDice(interpolateTextFormulas(data.markdown, variables))}
-          </ReactMarkdown>
-        ) : (
-          <p className="empty-primitive-hint">No notes written yet.</p>
-        )}
-      </div>
+      <RichMarkdown
+        content={data.markdown}
+        variables={variables}
+        className="notes-reading-view prose-content"
+        emptyFallback={<p className="empty-primitive-hint">No notes written yet.</p>}
+      />
     </div>
   );
 };

@@ -7,23 +7,12 @@ import type {
   LayoutItem,
   Tab,
   CustomAsset,
+  RestAction,
+  Combatant,
+  Scratchpad,
 } from "./schema";
 
-
-// =============================================================================
-// PHASE 0 — CANONICAL STORE CONTRACT
-// This is the full mutation surface every component is allowed to talk to.
-// Nothing mutates `character` state ad hoc outside these actions. If a new
-// mutation is needed later, it gets added here first and CLAUDE.md gets
-// updated in the same commit — the contract is not allowed to drift silently
-// across sessions.
-// =============================================================================
-
-export interface RestAction {
-  id: string; // e.g. "rest_short"
-  label: string; // button label, e.g. "Short Rest"
-  tag: string; // the tag in blocks' tags[] this button resets, e.g. "#short-rest"
-}
+export type { RestAction, Combatant, Scratchpad };
 
 export type Mode = "edit" | "play";
 
@@ -91,6 +80,10 @@ export interface CharacterStore {
   applyRest: (tag: string) => void;
   addRestAction: (label: string, tag: string) => void;
   removeRestAction: (id: string) => void;
+
+  // ---- Scratchpad ----
+  updateScratchpadNotes: (notes: string) => void;
+  updateScratchpadCombatants: (combatants: Combatant[]) => void;
 
   // ---- Persistence ----
   saveStatus: "saved" | "saving" | "idle";

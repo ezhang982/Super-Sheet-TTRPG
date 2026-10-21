@@ -18,6 +18,8 @@ const PRESET_TAG_COLORS = [
   { name: "Rose", color: "#f7768e" },
 ];
 
+const EMPTY_TAG_COLORS: Record<string, string> = {};
+
 export const TagManagerModal: React.FC<TagManagerModalProps> = ({
   isOpen,
   onClose,
@@ -28,7 +30,7 @@ export const TagManagerModal: React.FC<TagManagerModalProps> = ({
   const renameTagGlobally = useCharacterStore((state) => state.renameTagGlobally);
   const deleteTagGlobally = useCharacterStore((state) => state.deleteTagGlobally);
 
-  const tagColors = character.theme.tagColors || {};
+  const tagColors = character.theme.tagColors || EMPTY_TAG_COLORS;
 
   const [editingTag, setEditingTag] = useState<string | null>(null);
   const [newTagName, setNewTagName] = useState("");

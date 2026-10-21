@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { useCharacterStore } from "./store/useCharacterStore";
 import { setupStorageLifecycleListeners } from "./store/storage";
 import { TabBar } from "./components/TabBar";
@@ -6,14 +6,38 @@ import { TagFilterAndRestBar } from "./components/TagFilterAndRestBar";
 import { Canvas } from "./components/Canvas";
 import { FloatingToolsMenu } from "./components/FloatingToolsMenu";
 import { BottomHistoryBar } from "./components/BottomHistoryBar";
-import { OmnisearchModal } from "./components/OmnisearchModal";
-import { ShortcutsModal } from "./components/ShortcutsModal";
-import { SessionScratchpadModal } from "./components/SessionScratchpadModal";
-import { TagManagerModal } from "./components/TagManagerModal";
-import { MyDesignsModal } from "./components/MyDesignsModal";
 import { PlayModeRevertToast } from "./components/PlayModeRevertToast";
 import { resolveCanvasPattern, resolveCanvasWatermark } from "./styles/resolveStyle";
 import "./App.css";
+
+// Lazy-load secondary and overlay modals to optimize initial bundle size & load performance
+const OmnisearchModal = lazy(() =>
+  import("./components/OmnisearchModal").then((m) => ({ default: m.OmnisearchModal }))
+);
+const ShortcutsModal = lazy(() =>
+  import("./components/ShortcutsModal").then((m) => ({ default: m.ShortcutsModal }))
+);
+const SessionScratchpadModal = lazy(() =>
+  import("./components/SessionScratchpadModal").then((m) => ({ default: m.SessionScratchpadModal }))
+);
+const TagManagerModal = lazy(() =>
+  import("./components/TagManagerModal").then((m) => ({ default: m.TagManagerModal }))
+);
+const MyDesignsModal = lazy(() =>
+  import("./components/MyDesignsModal").then((m) => ({ default: m.MyDesignsModal }))
+);
+const ThemeDrawer = lazy(() =>
+  import("./components/ThemeDrawer").then((m) => ({ default: m.ThemeDrawer }))
+);
+const RestActionModal = lazy(() =>
+  import("./components/RestActionModal").then((m) => ({ default: m.RestActionModal }))
+);
+const NewCharacterModal = lazy(() =>
+  import("./components/NewCharacterModal").then((m) => ({ default: m.NewCharacterModal }))
+);
+const CharacterSwitcherModal = lazy(() =>
+  import("./components/CharacterSwitcherModal").then((m) => ({ default: m.CharacterSwitcherModal }))
+);
 
 export const App: React.FC = () => {
   const theme = useCharacterStore((state) => state.character.theme);
@@ -32,6 +56,16 @@ export const App: React.FC = () => {
   const [isScratchpadOpen, setIsScratchpadOpen] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [isMyDesignsOpen, setIsMyDesignsOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
+  const [isNewCharOpen, setIsNewCharOpen] = useState(false);
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+  const [appToast, setAppToast] = useState<string | null>(null);
+
+  const showAppToast = (msg: string) => {
+    setAppToast(msg);
+    setTimeout(() => setAppToast(null), 2500);
+  };
 
   // Setup storage lifecycle listeners (visibilitychange, pagehide, beforeunload)
   useEffect(() => {
@@ -160,7 +194,7 @@ export const App: React.FC = () => {
       <TabBar onOpenOmnisearch={() => setIsOmnisearchOpen(true)} />
 
       {/* Play Mode Semantic Tag Filter & Rest Actions */}
-      <TagFilterAndRestBar />
+      <TagFilterAndRestBar onOpenRest={() => setIsRestModalOpen(true)} />
 
       {/* Main 12-Column Canvas */}
       <Canvas />
@@ -172,44 +206,95 @@ export const App: React.FC = () => {
         onOpenScratchpad={() => setIsScratchpadOpen(true)}
         onOpenTagManager={() => setIsTagManagerOpen(true)}
         onOpenMyDesigns={() => setIsMyDesignsOpen(true)}
+        onOpenTheme={() => setIsThemeOpen(true)}
+        onOpenRest={() => setIsRestModalOpen(true)}
+        onOpenNewChar={() => setIsNewCharOpen(true)}
+        onOpenSwitcher={() => setIsSwitcherOpen(true)}
       />
 
       {/* Minimal Bottom Undo/Redo Bar */}
       <BottomHistoryBar />
 
-      {/* Global Omnisearch & Command Palette Modal (Ctrl+K) */}
-      <OmnisearchModal
-        isOpen={isOmnisearchOpen}
-        onClose={() => setIsOmnisearchOpen(false)}
-        onOpenShortcuts={() => setIsShortcutsOpen(true)}
-        onOpenScratchpad={() => setIsScratchpadOpen(true)}
-        onOpenTagManager={() => setIsTagManagerOpen(true)}
-        onOpenMyDesigns={() => setIsMyDesignsOpen(true)}
-      />
+      {/* Secondary & Overlay Modals (Code-Split & Rendered on Demand) */}
+      <Suspense fallback={null}>
+        {isOmnisearchOpen && (
+          <OmnisearchModal
+            isOpen={isOmnisearchOpen}
+            onClose={() => setIsOmnisearchOpen(false)}
+            onOpenShortcuts={() => setIsShortcutsOpen(true)}
+            onOpenScratchpad={() => setIsScratchpadOpen(true)}
+            onOpenTagManager={() => setIsTagManagerOpen(true)}
+            onOpenMyDesigns={() => setIsMyDesignsOpen(true)}
+            onOpenTheme={() => setIsThemeOpen(true)}
+            onOpenRest={() => setIsRestModalOpen(true)}
+            onOpenNewChar={() => setIsNewCharOpen(true)}
+            onOpenSwitcher={() => setIsSwitcherOpen(true)}
+          />
+        )}
 
-      {/* Keyboard Shortcuts Cheatsheet Modal (?) */}
-      <ShortcutsModal
-        isOpen={isShortcutsOpen}
-        onClose={() => setIsShortcutsOpen(false)}
-      />
+        {isShortcutsOpen && (
+          <ShortcutsModal
+            isOpen={isShortcutsOpen}
+            onClose={() => setIsShortcutsOpen(false)}
+          />
+        )}
 
-      {/* Ephemeral Session Scratchpad & Combat Log */}
-      <SessionScratchpadModal
-        isOpen={isScratchpadOpen}
-        onClose={() => setIsScratchpadOpen(false)}
-      />
+        {isScratchpadOpen && (
+          <SessionScratchpadModal
+            isOpen={isScratchpadOpen}
+            onClose={() => setIsScratchpadOpen(false)}
+          />
+        )}
 
-      {/* Visual Tag Manager & Color Palette */}
-      <TagManagerModal
-        isOpen={isTagManagerOpen}
-        onClose={() => setIsTagManagerOpen(false)}
-      />
+        {isTagManagerOpen && (
+          <TagManagerModal
+            isOpen={isTagManagerOpen}
+            onClose={() => setIsTagManagerOpen(false)}
+          />
+        )}
 
-      {/* Custom User SVGs & "My Designs" Modal */}
-      <MyDesignsModal
-        isOpen={isMyDesignsOpen}
-        onClose={() => setIsMyDesignsOpen(false)}
-      />
+        {isMyDesignsOpen && (
+          <MyDesignsModal
+            isOpen={isMyDesignsOpen}
+            onClose={() => setIsMyDesignsOpen(false)}
+          />
+        )}
+
+        {isThemeOpen && (
+          <ThemeDrawer
+            isOpen={isThemeOpen}
+            onClose={() => setIsThemeOpen(false)}
+            onOpenMyDesigns={() => setIsMyDesignsOpen(true)}
+          />
+        )}
+
+        {isRestModalOpen && (
+          <RestActionModal
+            isOpen={isRestModalOpen}
+            onClose={() => setIsRestModalOpen(false)}
+          />
+        )}
+
+        {isNewCharOpen && (
+          <NewCharacterModal
+            isOpen={isNewCharOpen}
+            onClose={() => setIsNewCharOpen(false)}
+            onToast={showAppToast}
+          />
+        )}
+
+        {isSwitcherOpen && (
+          <CharacterSwitcherModal
+            isOpen={isSwitcherOpen}
+            onClose={() => setIsSwitcherOpen(false)}
+            onToast={showAppToast}
+            onOpenNewModal={() => setIsNewCharOpen(true)}
+          />
+        )}
+      </Suspense>
+
+      {/* Temporary Toast feedback */}
+      {appToast && <div className="floating-toast">{appToast}</div>}
 
       {/* Play Mode Counter Revert Toast */}
       <PlayModeRevertToast />

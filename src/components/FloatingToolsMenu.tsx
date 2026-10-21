@@ -2,17 +2,17 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { BlockType } from "../types/schema";
-import { ThemeDrawer } from "./ThemeDrawer";
-import { RestActionModal } from "./RestActionModal";
-import { NewCharacterModal } from "./NewCharacterModal";
-import { CharacterSwitcherModal } from "./CharacterSwitcherModal";
 
-interface FloatingToolsMenuProps {
+export interface FloatingToolsMenuProps {
   onOpenOmnisearch?: () => void;
   onOpenShortcuts?: () => void;
   onOpenScratchpad?: () => void;
   onOpenTagManager?: () => void;
   onOpenMyDesigns?: () => void;
+  onOpenTheme?: () => void;
+  onOpenRest?: () => void;
+  onOpenNewChar?: () => void;
+  onOpenSwitcher?: () => void;
 }
 
 export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
@@ -21,6 +21,10 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
   onOpenScratchpad,
   onOpenTagManager,
   onOpenMyDesigns,
+  onOpenTheme,
+  onOpenRest,
+  onOpenNewChar,
+  onOpenSwitcher,
 }) => {
   const mode = useCharacterStore((state) => state.mode);
   const character = useCharacterStore((state) => state.character);
@@ -33,15 +37,16 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [isRestModalOpen, setIsRestModalOpen] = useState(false);
-  const [isNewCharOpen, setIsNewCharOpen] = useState(false);
-  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Floating position state (default right: 32px, top: 70px)
-  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(() => {
+    if (typeof window !== "undefined") {
+      return { x: Math.max(20, window.innerWidth - 76), y: 70 };
+    }
+    return null;
+  });
   const hasDraggedRef = useRef(false);
   const dragStartRef = useRef<{ startX: number; startY: number; initX: number; initY: number }>({
     startX: 0,
@@ -52,13 +57,9 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize position near top right on mount and listen for resize
+  // Listen for window resize to keep floating menu within viewport boundaries
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const defaultX = Math.max(20, window.innerWidth - 76);
-      const defaultY = 70;
-      setPosition({ x: defaultX, y: defaultY });
-
       const handleResize = () => {
         setPosition((prev) => {
           if (!prev) return prev;
@@ -241,7 +242,7 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
                 color: "var(--accent-color, #e06c75)",
               }}
               onClick={() => {
-                setIsNewCharOpen(true);
+                onOpenNewChar?.();
                 setIsOpen(false);
               }}
             >
@@ -252,7 +253,7 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
               type="button"
               className="tools-btn"
               onClick={() => {
-                setIsSwitcherOpen(true);
+                onOpenSwitcher?.();
                 setIsOpen(false);
               }}
             >
@@ -303,7 +304,7 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
               type="button"
               className="tools-btn"
               onClick={() => {
-                setIsThemeOpen(true);
+                onOpenTheme?.();
                 setIsOpen(false);
               }}
             >
@@ -327,7 +328,7 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
               type="button"
               className="tools-btn"
               onClick={() => {
-                setIsRestModalOpen(true);
+                onOpenRest?.();
                 setIsOpen(false);
               }}
             >
@@ -435,34 +436,6 @@ export const FloatingToolsMenu: React.FC<FloatingToolsMenuProps> = ({
 
       {/* Temporary Toast feedback */}
       {toastMessage && <div className="floating-toast">{toastMessage}</div>}
-
-      {/* Global Theme Customizer Drawer */}
-      <ThemeDrawer
-        isOpen={isThemeOpen}
-        onClose={() => setIsThemeOpen(false)}
-        onOpenMyDesigns={onOpenMyDesigns}
-      />
-
-      {/* Rest Actions Configuration Modal */}
-      <RestActionModal
-        isOpen={isRestModalOpen}
-        onClose={() => setIsRestModalOpen(false)}
-      />
-
-      {/* New Character Sheet Modal */}
-      <NewCharacterModal
-        isOpen={isNewCharOpen}
-        onClose={() => setIsNewCharOpen(false)}
-        onToast={showToast}
-      />
-
-      {/* Character Switcher Modal */}
-      <CharacterSwitcherModal
-        isOpen={isSwitcherOpen}
-        onClose={() => setIsSwitcherOpen(false)}
-        onToast={showToast}
-        onOpenNewModal={() => setIsNewCharOpen(true)}
-      />
 
       {/* Error Modal rendered via createPortal */}
       {importError &&

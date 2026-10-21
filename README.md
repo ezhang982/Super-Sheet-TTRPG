@@ -20,7 +20,7 @@ But they also come with heavy trade-offs:
 
 **Super-Sheet takes the opposite approach.** 
 
-Think of it like a digital corkboard or a flexible canvas made specifically for TTRPGs. It doesn't calculate your math behind the scenes, it doesn't roll dice for you, and it doesn't care what game system you're playing. Instead, it gives you a freeform grid, a set of clean building blocks (health bars, spell slot trackers, stat groups, inventory lists, action cards), and lets you build a character sheet that actually fits how your brain works during a session.
+Think of it like a digital corkboard or a flexible canvas made specifically for TTRPGs. It doesn't impose rigid commercial rules systems on you, nor does it force you into paywalled subscriptions. Instead, it gives you a freeform grid, a set of 8 clean building blocks (health bars, spell slot trackers, stat groups, inventory lists, action cards), opt-in `@Variable` formula calculations, interactive click-to-roll dice chips, and lets you build a character sheet that actually fits how your brain works during a session.
 
 ---
 

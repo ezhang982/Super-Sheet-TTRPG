@@ -21,12 +21,25 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
   const [svgInput, setSvgInput] = useState("");
   const [slice, setSlice] = useState(32);
   const [recolor, setRecolor] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [sanitizedPreview, setSanitizedPreview] = useState<string | null>(null);
-  const [previewId, setPreviewId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Derived sanitization preview via useMemo (zero render lag, no cascading setState)
+  const previewData = React.useMemo(() => {
+    if (!svgInput.trim()) {
+      return { sanitizedPreview: null, previewId: null, parseError: null };
+    }
+    const res = sanitizeSvg(svgInput);
+    if (!res.ok) {
+      return { sanitizedPreview: null, previewId: null, parseError: res.reason };
+    }
+    return { sanitizedPreview: res.svg, previewId: res.id, parseError: null };
+  }, [svgInput]);
+
+  const { sanitizedPreview, previewId } = previewData;
+  const errorMsg = previewData.parseError || submitError;
 
   // Refresh designs on open
   useEffect(() => {
@@ -43,27 +56,6 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
-
-  // Live sanitization preview
-  useEffect(() => {
-    if (!svgInput.trim()) {
-      setSanitizedPreview(null);
-      setPreviewId(null);
-      setErrorMsg(null);
-      return;
-    }
-
-    const res = sanitizeSvg(svgInput);
-    if (!res.ok) {
-      setErrorMsg(res.reason);
-      setSanitizedPreview(null);
-      setPreviewId(null);
-    } else {
-      setErrorMsg(null);
-      setSanitizedPreview(res.svg);
-      setPreviewId(res.id);
-    }
-  }, [svgInput]);
 
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
@@ -89,12 +81,13 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
 
   const handleSaveDesign = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     if (!name.trim()) {
-      setErrorMsg("Please enter a name for your design.");
+      setSubmitError("Please enter a name for your design.");
       return;
     }
     if (!sanitizedPreview || !previewId) {
-      setErrorMsg("Please provide valid SVG code.");
+      setSubmitError("Please provide valid SVG code.");
       return;
     }
 
@@ -114,11 +107,9 @@ export const MyDesignsModal: React.FC<MyDesignsModalProps> = ({ isOpen, onClose 
       // Reset input form
       setSvgInput("");
       setName("");
-      setSanitizedPreview(null);
-      setPreviewId(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : String(err));
+      setSubmitError(err instanceof Error ? err.message : String(err));
     }
   };
 
