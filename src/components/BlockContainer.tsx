@@ -15,6 +15,8 @@ import { getSuggestedTags } from "../utils/tagKeywords";
 import { resolveBlockStyle } from "../styles/resolveStyle";
 import { CornerAccents } from "./CornerAccents";
 import { HeaderDivider } from "./HeaderDivider";
+import { Icon } from "./ui/Icon";
+import { faExpand, faXmark, faLightbulb } from "@fortawesome/free-solid-svg-icons";
 
 interface BlockContainerProps {
   blockId: string;
@@ -296,8 +298,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
               className="block-popout-btn"
               onClick={() => setIsPopout(true)}
               title="Expand / Focus view (view & edit full contents without resizing)"
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
             >
-              ⛶
+              <Icon icon={faExpand} />
             </button>
 
             {mode === "edit" && (
@@ -306,8 +309,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
                 className="delete-block-btn"
                 onClick={() => deleteBlock(block.id)}
                 title="Delete this block (or right-click for options)"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
               >
-                ×
+                <Icon icon={faXmark} />
               </button>
             )}
           </div>
@@ -317,7 +321,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
       {/* Non-intrusive Suggested Tags Tray (Edit Mode) */}
       {mode === "edit" && enableTagSuggestions && suggestedTags.length > 0 && (
         <div className="block-suggested-tags-tray">
-          <span className="suggested-tag-label">💡 Suggested:</span>
+          <span className="suggested-tag-label" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+            <Icon icon={faLightbulb} /> Suggested:
+          </span>
           {suggestedTags.map((tag) => {
             const customColor = tagColors[tag.toLowerCase()];
             return (
@@ -401,7 +407,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
               )}
               <div className="block-header">
                 <div className="block-header-left">
-                  <span className="popout-badge">⛶ Focus View</span>
+                  <span className="popout-badge" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <Icon icon={faExpand} /> Focus View
+                  </span>
                   <h3 className="block-title">{block.title}</h3>
                 </div>
                 <div className="block-header-right">
@@ -417,8 +425,9 @@ export const BlockContainer: React.FC<BlockContainerProps> = React.memo(({ block
                     className="popout-close-btn"
                     onClick={() => setIsPopout(false)}
                     title="Close focus view (Esc)"
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                   >
-                    ✕
+                    <Icon icon={faXmark} />
                   </button>
                 </div>
               </div>

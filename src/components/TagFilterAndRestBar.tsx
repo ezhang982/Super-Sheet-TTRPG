@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import { faMoon, faGear } from "@fortawesome/free-solid-svg-icons";
 
 export interface TagFilterAndRestBarProps {
   onOpenRest?: () => void;
@@ -75,8 +77,9 @@ export const TagFilterAndRestBar: React.FC<TagFilterAndRestBarProps> = ({ onOpen
             className="rest-action-btn"
             onClick={() => handleRestClick(action.label, action.tag)}
             title={`Reset counters and pips tagged with ${action.tag}`}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            🌙 {action.label}
+            <Icon icon={faMoon} /> {action.label}
           </button>
         ))}
 
@@ -85,8 +88,9 @@ export const TagFilterAndRestBar: React.FC<TagFilterAndRestBarProps> = ({ onOpen
           className="rest-config-btn"
           onClick={() => onOpenRest?.()}
           title="Configure rest actions"
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
         >
-          ⚙
+          <Icon icon={faGear} />
         </button>
 
         {restToast && <span className="rest-toast-badge">{restToast}</span>}

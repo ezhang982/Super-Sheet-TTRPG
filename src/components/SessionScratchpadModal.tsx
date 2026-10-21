@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
 import type { Combatant } from "../types/schema";
+import { Icon } from "./ui/Icon";
+import {
+  faScroll,
+  faXmark,
+  faPenToSquare,
+  faShieldHalved,
+  faCheck,
+  faCopy,
+  faPlus,
+  faBolt,
+} from "@fortawesome/free-solid-svg-icons";
 
 export type { Combatant };
 
@@ -124,7 +135,7 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
       >
         <div className="modal-header">
           <div className="modal-title-group">
-            <span className="modal-icon">📜</span>
+            <span className="modal-icon"><Icon icon={faScroll} /></span>
             <h3 id="scratchpad-dialog-title">Session Scratchpad & Combat Log</h3>
           </div>
           <button
@@ -133,7 +144,7 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
             onClick={onClose}
             aria-label="Close dialog"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -143,15 +154,17 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
             type="button"
             className={`scratchpad-nav-btn ${activeSubTab === "notes" ? "active" : ""}`}
             onClick={() => setActiveSubTab("notes")}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            📝 Scratchpad Notes
+            <Icon icon={faPenToSquare} /> Scratchpad Notes
           </button>
           <button
             type="button"
             className={`scratchpad-nav-btn ${activeSubTab === "combat" ? "active" : ""}`}
             onClick={() => setActiveSubTab("combat")}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            ⚔️ Combat & Initiative ({combatants.length})
+            <Icon icon={faShieldHalved} /> Combat & Initiative ({combatants.length})
           </button>
         </div>
 
@@ -185,8 +198,17 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
                   className="btn-secondary"
                   onClick={handleCopyNotes}
                   disabled={!notes}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  {copiedNotification ? "✓ Copied!" : "📋 Copy to Clipboard"}
+                  {copiedNotification ? (
+                    <>
+                      <Icon icon={faCheck} /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon={faCopy} /> Copy to Clipboard
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -194,8 +216,9 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
                   onClick={handlePromoteToBlock}
                   disabled={!notes.trim()}
                   title="Converts these notes into a permanent Notes block on the active sheet tab"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  ➕ Promote to Notes Block
+                  <Icon icon={faPlus} /> Promote to Notes Block
                 </button>
               </div>
             </div>
@@ -226,8 +249,8 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
                   className="combat-input num"
                   title="Hit Points"
                 />
-                <button type="submit" className="btn-primary add-actor-btn">
-                  + Add
+                <button type="submit" className="btn-primary add-actor-btn" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <Icon icon={faPlus} /> Add
                 </button>
               </form>
 
@@ -238,8 +261,9 @@ export const SessionScratchpadModal: React.FC<SessionScratchpadModalProps> = ({
                   onClick={handleSortInitiative}
                   disabled={combatants.length < 2}
                   title="Sort from highest initiative to lowest"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  ⚡ Sort Initiative
+                  <Icon icon={faBolt} /> Sort Initiative
                 </button>
                 <button
                   type="button"

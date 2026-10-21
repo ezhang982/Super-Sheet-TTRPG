@@ -4,6 +4,8 @@ import type { Mode } from "../../types/store-contract";
 import { FormulaInput } from "../FormulaInput";
 import { useCharacterVariables } from "../../store/useCharacterVariables";
 import { isFormula, evaluateFormula } from "../../utils/mathEngine";
+import { Icon } from "../ui/Icon";
+import { faMagnifyingGlass, faXmark, faBolt } from "@fortawesome/free-solid-svg-icons";
 
 interface SkillListBlockProps {
   block: SkillListBlockType;
@@ -125,7 +127,7 @@ export const SkillListBlock: React.FC<SkillListBlockProps> = ({
       {/* Search Bar & Sort Mode Toolbar */}
       <div className="skill-list-toolbar">
         <div className="skill-search-wrapper">
-          <span className="skill-search-icon">🔍</span>
+          <span className="skill-search-icon"><Icon icon={faMagnifyingGlass} /></span>
           <input
             type="text"
             className="skill-search-input"
@@ -140,7 +142,7 @@ export const SkillListBlock: React.FC<SkillListBlockProps> = ({
               onClick={() => setSearchTerm("")}
               title="Clear filter"
             >
-              ×
+              <Icon icon={faXmark} />
             </button>
           )}
         </div>
@@ -290,8 +292,9 @@ export const SkillListBlock: React.FC<SkillListBlockProps> = ({
               className="skill-preset-btn"
               onClick={handleSeedDndSkills}
               title="Seed standard 18 D&D 5e skills"
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
             >
-              ⚡ Seed 5e Skills
+              <Icon icon={faBolt} /> Seed 5e Skills
             </button>
           )}
         </div>

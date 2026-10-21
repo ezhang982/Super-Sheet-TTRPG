@@ -2,6 +2,8 @@ import React from "react";
 import { createPortal } from "react-dom";
 import type { Block, BlockStyle } from "../types/schema";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import { faPalette, faXmark, faCompassDrafting } from "@fortawesome/free-solid-svg-icons";
 import {
   DEFAULT_WATERMARK_OPACITY,
   WATERMARK_POSITIONS,
@@ -128,7 +130,7 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
       >
         <div className="modal-header">
           <div className="modal-title-group">
-            <span className="modal-icon">🎨</span>
+            <span className="modal-icon"><Icon icon={faPalette} /></span>
             <h3 id="block-style-dialog-title">Style Card: {block.title}</h3>
           </div>
           <button
@@ -137,7 +139,7 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
             onClick={onClose}
             aria-label="Close styling dialog"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -569,7 +571,9 @@ export const BlockStyleModal: React.FC<BlockStyleModalProps> = ({
           {/* Dimensions & Free Sizing */}
           {currentLayoutItem && (
             <div className="form-section dimensions-section">
-              <div className="section-title">📐 Dimensions & Grid Sizing</div>
+              <div className="section-title" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <Icon icon={faCompassDrafting} /> Dimensions & Grid Sizing
+              </div>
 
               <div className="form-row">
                 <div className="label-with-hint">

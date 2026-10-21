@@ -21,6 +21,17 @@ import { DEFAULT_PATTERN_OPACITY } from "../styles/resolveStyle";
 import { StyleOptionGrid } from "./StyleOptionGrid";
 import { listStylePacks, type StylePack } from "../styles/stylePacks";
 import { ApplyStylePackModal } from "./ApplyStylePackModal";
+import { Icon } from "./ui/Icon";
+import {
+  faPalette,
+  faXmark,
+  faBoxesStacked,
+  faBorderAll,
+  faWandMagicSparkles,
+  faShieldHalved,
+  faCloud,
+  faLayerGroup,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   buildCornerOptions,
   buildDividerOptions,
@@ -139,7 +150,7 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose, onOpe
       >
         <div className="drawer-header">
           <div className="drawer-title-group">
-            <span className="drawer-icon">🎨</span>
+            <span className="drawer-icon"><Icon icon={faPalette} /></span>
             <h2 id="theme-drawer-title">Theme & Styling</h2>
           </div>
           <button
@@ -148,7 +159,7 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose, onOpe
             onClick={onClose}
             aria-label="Close theme settings"
           >
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
@@ -157,7 +168,9 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose, onOpe
           <section className="drawer-section">
             <div className="drawer-section-header-row">
               <div>
-                <h3 className="drawer-section-title">📦 Style Packs</h3>
+                <h3 className="drawer-section-title" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                  <Icon icon={faBoxesStacked} /> Style Packs
+                </h3>
                 <p className="drawer-section-subtitle">
                   Curated 1-click themes bundling frames, corners, textures, watermarks, dividers, and typography.
                 </p>
@@ -209,16 +222,24 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose, onOpe
 
                     <div className="style-pack-tokens-row">
                       {pack.tokens.defaultFrame && (
-                        <span className="style-pack-token-pill">🖼️ {pack.tokens.defaultFrame}</span>
+                        <span className="style-pack-token-pill">
+                          <Icon icon={faBorderAll} /> {pack.tokens.defaultFrame}
+                        </span>
                       )}
                       {pack.tokens.defaultCorners && pack.tokens.defaultCorners !== "none" && (
-                        <span className="style-pack-token-pill">✨ {pack.tokens.defaultCorners}</span>
+                        <span className="style-pack-token-pill">
+                          <Icon icon={faWandMagicSparkles} /> {pack.tokens.defaultCorners}
+                        </span>
                       )}
                       {pack.tokens.defaultWatermark && pack.tokens.defaultWatermark !== "none" && (
-                        <span className="style-pack-token-pill">🛡️ {pack.tokens.defaultWatermark}</span>
+                        <span className="style-pack-token-pill">
+                          <Icon icon={faShieldHalved} /> {pack.tokens.defaultWatermark}
+                        </span>
                       )}
                       {pack.tokens.defaultTexture && pack.tokens.defaultTexture !== "none" && (
-                        <span className="style-pack-token-pill">🌫️ {pack.tokens.defaultTexture}</span>
+                        <span className="style-pack-token-pill">
+                          <Icon icon={faCloud} /> {pack.tokens.defaultTexture}
+                        </span>
                       )}
                     </div>
                   </button>
@@ -682,7 +703,8 @@ export const ThemeDrawer: React.FC<ThemeDrawerProps> = ({ isOpen, onClose, onOpe
                   onOpenMyDesigns();
                 }}
               >
-                <span>🎨 Manage My Designs (Custom SVGs)</span>
+                <Icon icon={faLayerGroup} />
+                <span>Manage My Designs (Custom SVGs)</span>
               </button>
             </section>
           )}

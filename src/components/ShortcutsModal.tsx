@@ -1,5 +1,15 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "./ui/Icon";
+import {
+  faKeyboard,
+  faXmark,
+  faCompass,
+  faWrench,
+  faDiceD20,
+  faLightbulb,
+} from "@fortawesome/free-solid-svg-icons";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 export interface ShortcutsModalProps {
   isOpen: boolean;
@@ -14,7 +24,7 @@ interface ShortcutItem {
 
 interface ShortcutCategory {
   title: string;
-  icon: string;
+  icon: IconDefinition;
   items: ShortcutItem[];
 }
 
@@ -34,7 +44,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
   const categories: ShortcutCategory[] = [
     {
       title: "Navigation & Modes",
-      icon: "🧭",
+      icon: faCompass,
       items: [
         { keys: ["Ctrl", "K"], desc: "Open Omnisearch & Command Palette" },
         { keys: ["Ctrl", "P"], desc: "Print Character Sheet / Export PDF" },
@@ -46,7 +56,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     },
     {
       title: "Authoring & Canvas",
-      icon: "🛠️",
+      icon: faWrench,
       items: [
         { keys: ["Ctrl", "B"], desc: "Add new Feature Card to active tab" },
         { keys: ["Ctrl", "T"], desc: "Create a new tab" },
@@ -61,7 +71,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     },
     {
       title: "Tabletop Calculations & Math",
-      icon: "🎲",
+      icon: faDiceD20,
       items: [
         { keys: ["Click Counter"], desc: "Enter rapid math: +10, -5, *2, /2, or exact number" },
         { keys: ["↺ Revert Toast"], desc: "One-click undo for ephemeral counter changes in Play mode" },
@@ -79,19 +89,19 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       <div className="shortcuts-modal-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="shortcuts-modal-header">
           <div className="shortcuts-header-title">
-            <span className="shortcuts-title-icon">⌨️</span>
+            <span className="shortcuts-title-icon"><Icon icon={faKeyboard} /></span>
             <h2>Keyboard Shortcuts & Gestures</h2>
           </div>
           <button type="button" className="shortcuts-close-btn" onClick={onClose} title="Close (Esc)">
-            ×
+            <Icon icon={faXmark} />
           </button>
         </div>
 
         <div className="shortcuts-modal-body">
           {categories.map((cat) => (
             <div key={cat.title} className="shortcuts-category-section">
-              <h3 className="shortcuts-category-title">
-                <span className="cat-icon">{cat.icon}</span>
+              <h3 className="shortcuts-category-title" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="cat-icon"><Icon icon={cat.icon} /></span>
                 <span>{cat.title}</span>
               </h3>
               <div className="shortcuts-list">
@@ -117,8 +127,11 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         </div>
 
         <div className="shortcuts-modal-footer">
-          <span className="footer-tip">
-            💡 <strong>Pro Tip:</strong> Press <kbd>Ctrl</kbd>+<kbd>K</kbd> anytime to jump to any block, skill, or item across all tabs.
+          <span className="footer-tip" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <Icon icon={faLightbulb} />
+            <span>
+              <strong>Pro Tip:</strong> Press <kbd>Ctrl</kbd>+<kbd>K</kbd> anytime to jump to any block, skill, or item across all tabs.
+            </span>
           </span>
           <button type="button" className="btn-primary" onClick={onClose}>
             Got it

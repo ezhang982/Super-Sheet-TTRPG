@@ -1,5 +1,6 @@
 @import "react-grid-layout/css/styles.css";
 @import "react-resizable/css/styles.css";
+@import "./styles/tokens.css";
 
 :root {
   /* Default fallbacks for CSS variables, injected dynamically by store */
@@ -21,6 +22,15 @@
   --radius-lg: 12px;
 
   --transition-fast: 0.15s ease;
+}
+
+/* FontAwesome baseline styling */
+.fa-icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+  line-height: 1;
+  color: inherit;
+  flex-shrink: 0;
 }
 
 *, *::before, *::after {

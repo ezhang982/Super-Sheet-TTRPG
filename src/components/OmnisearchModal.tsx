@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useCharacterStore } from "../store/useCharacterStore";
+import { Icon } from "./ui/Icon";
+import { faMagnifyingGlass, faCompass } from "@fortawesome/free-solid-svg-icons";
 
 export interface OmnisearchModalProps {
   isOpen: boolean;
@@ -142,7 +144,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
       {
         id: "cmd_my_designs",
         category: "Commands",
-        title: "🎨 My Designs (Custom SVGs)",
+        title: "My Designs (Custom SVGs)",
         subtitle: "Import, sanitize, and manage custom SVG frames, watermarks, corners & patterns",
         badge: "Styling",
         action: () => {
@@ -458,7 +460,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
     <div className="omnisearch-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="omnisearch-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="omnisearch-search-header">
-          <span className="omnisearch-icon">🔍</span>
+          <span className="omnisearch-icon"><Icon icon={faMagnifyingGlass} /></span>
           <input
             ref={inputRef}
             type="text"
@@ -479,7 +481,7 @@ export const OmnisearchModal: React.FC<OmnisearchModalProps> = ({
         <div className="omnisearch-results-list" ref={listRef}>
           {results.length === 0 ? (
             <div className="omnisearch-empty-state">
-              <span className="empty-icon">🍃</span>
+              <span className="empty-icon"><Icon icon={faCompass} size="2x" /></span>
               <p>No matching commands, blocks, items, or tags found for "{query}".</p>
             </div>
           ) : (
